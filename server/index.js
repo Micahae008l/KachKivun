@@ -12,6 +12,7 @@ import reportsRoutes from "./routes/reports.js";
 import rolesRoutes from "./routes/roles.js";
 import { isEmailConfigured, isResendConfigured } from "./utils/email.js";
 import { hasHealthToken, runDeepHealth } from "./utils/deepHealth.js";
+import { getDailyStats } from "./utils/dailyStats.js";
 import { corsOptions } from "./utils/corsOptions.js";
 import { SITE_NAME_EN, SITE_NAME_HE } from "./utils/brand.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
@@ -76,6 +77,16 @@ app.get("/api/health/deep", async (req, res, next) => {
   if (!hasHealthToken(req)) return next();
   const report = await runDeepHealth();
   res.status(report.status === "ok" ? 200 : 503).json(report);
+});
+
+// Business numbers for the morning Slack report: counts only, same token as above.
+app.get("/api/stats/daily", async (req, res, next) => {
+  if (!hasHealthToken(req)) return next();
+  try {
+    res.json(await getDailyStats());
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Unknown /api paths — logged as probes (scanners enumerate endpoints in bulk)

@@ -74,7 +74,7 @@ function certDaysLeft(host) {
 
 async function sslCheck() {
   return timed(async () => {
-    const hosts = [new URL(SITE).host, new URL(API).host];
+    const hosts = [new URL(SITE).hostname, new URL(API).hostname];
     const days = await Promise.all(hosts.map(certDaysLeft));
     const min = Math.min(...days);
     return { ok: min > 14, detail: min > 14 ? `valid · renews in ${min}+ days` : `expires in ${min} days` };
@@ -104,6 +104,16 @@ async function runChecks() {
   return all.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 }
 
+async function dailyStats() {
+  if (!TOKEN) return { error: "HEALTH_CHECK_TOKEN not set" };
+  try {
+    const r = await fetch(`${API}/api/stats/daily`, { headers: { "x-health-token": TOKEN }, signal: AbortSignal.timeout(30_000) });
+    return r.ok ? await r.json() : { error: `HTTP ${r.status}` };
+  } catch (err) {
+    return { error: err?.message || String(err) };
+  }
+}
+
 function readState() {
   try {
     return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
@@ -129,6 +139,47 @@ function buttons() {
   };
 }
 
+const SPARKS = "▁▂▃▄▅▆▇█";
+const sparkline = (values) => {
+  const max = Math.max(...values, 1);
+  return values.map((v) => SPARKS[Math.round((v / max) * 7)]).join("");
+};
+const num = (n) => Number(n || 0).toLocaleString("en-US");
+
+/** The morning card's "last 24 hours" section, from /api/stats/daily. */
+function statsBlocks(stats) {
+  if (!stats) return [];
+  if (stats.error) return [{ type: "context", elements: [{ type: "mrkdwn", text: `📈 Stats unavailable: ${stats.error}` }] }];
+  const { users, activity, ai } = stats;
+  const statuses = Object.entries(users.newByStatus || {}).map(([k, n]) => `${k} ${n}`).join(" · ");
+  const stat = (title, value, sub) => ({ type: "mrkdwn", text: `*${title}*\n${value}${sub ? `  _${sub}_` : ""}` });
+
+  return [
+    { type: "divider" },
+    { type: "section", text: { type: "mrkdwn", text: "*📈  Last 24 hours*" } },
+    {
+      type: "section",
+      fields: [
+        stat("👋 New users", `*+${num(users.new24h)}*`, `${num(users.total)} total`),
+        stat("🔥 Active users", `*${num(users.active24h)}*`, "signed in"),
+        stat("🎯 AI matches", `*${num(activity.matches24h)}*`),
+        stat("📄 Reports", `*${num(activity.reports24h)}*`),
+        stat("⭐ Reviews", `*${num(activity.reviews24h)}* new`, activity.pendingReviews ? `${activity.pendingReviews} waiting for approval` : ""),
+        stat("💸 AI cost", `*$${Number(ai.costUsd24h).toFixed(2)}*`, `${num(ai.calls24h)} calls`),
+      ],
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `Signups, last 7 days: \`${sparkline(users.signupsPerDay)}\` ${num(users.new7d)} total · Matches: \`${sparkline(activity.matchesPerDay)}\`${statuses ? ` · New today: ${statuses}` : ""}`,
+        },
+      ],
+    },
+  ];
+}
+
 function field(check) {
   return { type: "mrkdwn", text: `*${check.ok ? "✅" : "❌"}  ${label(check.name)}*\n${check.detail}` };
 }
@@ -141,7 +192,7 @@ function fieldSections(checks) {
   return sections;
 }
 
-function message(kind, checks, prev) {
+function message(kind, checks, prev, stats) {
   const ping = USER_ID ? `<@${USER_ID}>` : "<!here>";
   const failing = checks.filter((c) => !c.ok);
   const when = israelTime();
@@ -150,14 +201,18 @@ function message(kind, checks, prev) {
     const good = failing.length === 0;
     const title = good ? "☀️  Good morning: KachKivun is healthy" : `🚨  KachKivun needs attention: ${failing.length} problem${failing.length > 1 ? "s" : ""}`;
     return {
-      text: `${ping} ${good ? `All ${checks.length} checks passed ☀️` : `${failing.map((c) => label(c.name)).join(", ")} failing 🚨`}`,
+      text: `${ping} ${good ? `All ${checks.length} checks passed ☀️` : `${failing.map((c) => label(c.name)).join(", ")} failing 🚨`}${
+        stats?.users ? ` · 👋 +${num(stats.users.new24h)} new users · 🎯 ${num(stats.activity.matches24h)} matches` : ""
+      }`,
       attachments: [
         {
           color: good ? GREEN : RED,
           blocks: [
             { type: "header", text: { type: "plain_text", text: title, emoji: true } },
             { type: "context", elements: [{ type: "mrkdwn", text: `Morning report · ${when} Israel · ${checks.length - failing.length}/${checks.length} checks passing` }] },
+            ...statsBlocks(stats),
             { type: "divider" },
+            { type: "section", text: { type: "mrkdwn", text: "*🩺  Health*" } },
             ...fieldSections([...failing, ...checks.filter((c) => c.ok)]),
             buttons(),
           ],
@@ -227,7 +282,8 @@ async function main() {
   fs.writeFileSync(STATE_FILE, JSON.stringify({ failing, since }));
 
   if (!kind) return console.log("No change since the last run; nothing posted.");
-  const payload = message(kind, checks, { ...prev, since: prev.since || since });
+  const stats = kind === "report" ? await dailyStats() : null;
+  const payload = message(kind, checks, { ...prev, since: prev.since || since }, stats);
   if (process.env.DRY_RUN === "1" || !WEBHOOK) return console.log(JSON.stringify(payload, null, 2));
 
   const res = await fetch(WEBHOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
