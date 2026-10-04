@@ -14,6 +14,7 @@ import { Route as RoleInsightsRouteImport } from './routes/role-insights'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PostSignupRouteImport } from './routes/post-signup'
+import { Route as PaymentReturnRouteImport } from './routes/payment-return'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -48,6 +49,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PostSignupRoute = PostSignupRouteImport.update({
   id: '/post-signup',
   path: '/post-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentReturnRoute = PaymentReturnRouteImport.update({
+  id: '/payment-return',
+  path: '/payment-return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/payment-return': typeof PaymentReturnRoute
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/payment-return': typeof PaymentReturnRoute
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/payment-return': typeof PaymentReturnRoute
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/onboarding'
+    | '/payment-return'
     | '/post-signup'
     | '/privacy'
     | '/report'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/onboarding'
+    | '/payment-return'
     | '/post-signup'
     | '/privacy'
     | '/report'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/onboarding'
+    | '/payment-return'
     | '/post-signup'
     | '/privacy'
     | '/report'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PaymentReturnRoute: typeof PaymentReturnRoute
   PostSignupRoute: typeof PostSignupRoute
   PrivacyRoute: typeof PrivacyRoute
   ReportRoute: typeof ReportRouteWithChildren
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/post-signup'
       fullPath: '/post-signup'
       preLoaderRoute: typeof PostSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment-return': {
+      id: '/payment-return'
+      path: '/payment-return'
+      fullPath: '/payment-return'
+      preLoaderRoute: typeof PaymentReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -354,6 +374,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PaymentReturnRoute: PaymentReturnRoute,
   PostSignupRoute: PostSignupRoute,
   PrivacyRoute: PrivacyRoute,
   ReportRoute: ReportRouteWithChildren,

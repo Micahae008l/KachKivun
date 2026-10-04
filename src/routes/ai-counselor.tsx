@@ -12,7 +12,7 @@ import { RoleMatchCards } from "@/components/RoleMatchCards";
 import { MatchHistoryPanel } from "@/components/MatchHistoryPanel";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
-import { matchRolesRequest, type RoleMatch } from "@/lib/api";
+import { getMatchHistory, listMatchHistory, matchRolesRequest, type MatchedRole } from "@/lib/api";
 import { getErrorMessage } from "@/lib/api-errors";
 import { dashboardQueryOptions } from "@/lib/queries";
 import { getToken } from "@/lib/auth";
@@ -48,7 +48,7 @@ function AiCounselorPage() {
     },
   ]);
   const [loading, setLoading] = useState(false);
-  const [roles, setRoles] = useState<RoleMatch[] | null>(null);
+  const [roles, setRoles] = useState<MatchedRole[] | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -80,6 +80,29 @@ function AiCounselorPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, roles, loading]);
+
+  /**
+   * Show the latest saved match again, from history: after paying it comes back
+   * unlocked, and reloading it costs no AI call and no free use.
+   */
+  async function showLatestMatch() {
+    try {
+      const { generations } = await listMatchHistory();
+      if (!generations[0]) return;
+      const { generation } = await getMatchHistory(generations[0].id);
+      setRoles(generation.roles);
+      setHistoryId(generation.id);
+    } catch (e) {
+      toast.error(getErrorMessage(e, "לא הצלחנו לטעון את ההתאמה"));
+    }
+  }
+
+  // Back from the payment page: open the results, now unlocked.
+  useEffect(() => {
+    if (!mounted || !getToken() || window.location.hash !== "#unlocked") return;
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    void showLatestMatch();
+  }, [mounted]);
 
   async function runMatch() {
     if (!getToken()) {
@@ -349,7 +372,7 @@ function AiCounselorPage() {
                     {notice}
                   </p>
                 ) : null}
-                <RoleMatchCards roles={roles} />
+                <RoleMatchCards roles={roles} onUnlocked={showLatestMatch} />
               </>
             </motion.div>
           ) : null}

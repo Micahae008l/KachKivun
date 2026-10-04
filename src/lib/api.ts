@@ -388,6 +388,7 @@ export function updateProfile(body: ProfileUpdateBody) {
 }
 
 export type RoleMatch = {
+  locked?: false;
   roleTitle: string;
   matchPercentage: number;
   /** One-line headline — from AI or derived from description */
@@ -396,8 +397,41 @@ export type RoleMatch = {
   tags: string[];
 };
 
+/** A top match behind the paywall: the server sends only its rank and percentage. */
+export type LockedRoleMatch = {
+  locked: true;
+  rank: number;
+  matchPercentage: number | null;
+};
+
+export type MatchedRole = RoleMatch | LockedRoleMatch;
+
+export function isLockedRole(role: MatchedRole): role is LockedRoleMatch {
+  return role.locked === true;
+}
+
+export type TopMatchesStatus = { paywall: boolean; unlocked: boolean; priceIls: number };
+
+export function getTopMatchesStatus() {
+  return apiFetch<TopMatchesStatus>("/api/payments/top-matches/status");
+}
+
+/** Returns the payment page to send the browser to, or alreadyUnlocked. */
+export function startTopMatchesCheckout() {
+  return apiFetch<{ url?: string; alreadyUnlocked?: boolean; paymentId?: string }>(
+    "/api/payments/top-matches/checkout",
+    { method: "POST", body: JSON.stringify({}) },
+  );
+}
+
 export function matchRolesRequest() {
-  return apiFetch<{ roles: RoleMatch[]; aiCalls?: AiCallCapStatus; cached?: boolean; notice?: string }>("/api/ai/match-roles", {
+  return apiFetch<{
+    roles: MatchedRole[];
+    topLocked?: boolean;
+    aiCalls?: AiCallCapStatus;
+    cached?: boolean;
+    notice?: string;
+  }>("/api/ai/match-roles", {
     method: "POST",
     body: JSON.stringify({}),
   });
@@ -415,7 +449,8 @@ export type MatchHistoryItem = {
 };
 
 export type MatchHistoryDetail = MatchHistoryItem & {
-  roles: RoleMatch[];
+  roles: MatchedRole[];
+  topLocked?: boolean;
 };
 
 export function listMatchHistory() {

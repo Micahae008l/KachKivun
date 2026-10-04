@@ -6,7 +6,7 @@ import {
   deleteMatchHistory,
   getMatchHistory,
   type MatchHistoryItem,
-  type RoleMatch,
+  type MatchedRole,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { matchHistoryQueryOptions } from "@/lib/queries";
@@ -28,7 +28,7 @@ function formatWhen(iso: string) {
 }
 
 type Props = {
-  onSelect: (roles: RoleMatch[], meta: MatchHistoryItem) => void;
+  onSelect: (roles: MatchedRole[], meta: MatchHistoryItem) => void;
   activeId?: string | null;
 };
 

@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -13,11 +13,15 @@ import {
   Users,
   Waves,
   BookOpen,
+  Lock,
 } from "lucide-react";
+import { toast } from "sonner";
 import { IdfPhotoCredit } from "@/components/IdfPhotoCredit";
-import type { RoleMatch } from "@/lib/api";
-import { roleInsightSlug } from "@/lib/api";
-import { pickRolePhoto, type IdfPhoto } from "@/lib/idf-photo-catalog";
+import type { LockedRoleMatch, MatchedRole, RoleMatch } from "@/lib/api";
+import { isLockedRole, roleInsightSlug, startTopMatchesCheckout } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
+import { trackEvent } from "@/lib/analytics";
+import { idfPhotoAt, pickRolePhoto, type IdfPhoto } from "@/lib/idf-photo-catalog";
 import { ARIA } from "@/lib/a11y";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -196,16 +200,142 @@ function RoleCard({
   );
 }
 
-export function RoleMatchCards({ roles }: { roles: RoleMatch[] }) {
+const UNLOCK_PRICE_ILS = 10;
+
+/** A top match behind the paywall: blurred, with its real percentage as the teaser. */
+function LockedRoleCard({
+  role,
+  featured,
+  busy,
+  onUnlock,
+}: {
+  role: LockedRoleMatch;
+  featured: boolean;
+  busy: boolean;
+  onUnlock: () => void;
+}) {
+  const photo = idfPhotoAt(role.rank * 7 + 3);
+  const title = role.rank === 1 ? "ההתאמה הכי חזקה שלכם" : "ההתאמה השנייה בחוזקה שלכם";
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: role.rank * 0.05, ease }}
+      className={`relative overflow-hidden border text-right ${
+        featured ? "border-primary/60 bg-card shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]" : "border-iron/30 bg-card"
+      }`}
+      aria-label={`${title}, נעול`}
+    >
+      <div dir="rtl" className={`grid ${featured ? "md:grid-cols-[220px_1fr]" : "grid-cols-1"}`}>
+        <div className="relative min-h-[140px] overflow-hidden">
+          <img src={photo.src} alt="" className="h-full w-full scale-110 object-cover opacity-60 blur-md" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-r from-card via-card/70 to-transparent" />
+          <span
+            className="absolute top-3 right-3 rounded-sm border border-primary/30 bg-background/80 px-2 py-0.5 font-mono text-[10px] font-bold tracking-widest text-primary"
+            aria-hidden
+          >
+            #{role.rank}
+          </span>
+          <div className="absolute inset-0 flex items-center justify-center" aria-hidden>
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary">
+              <Lock className="h-5 w-5" />
+            </span>
+          </div>
+        </div>
+
+        <div className={`flex flex-col gap-4 p-6 ${featured ? "md:p-8" : ""}`} dir="rtl">
+          <div className="flex items-start justify-between gap-4" dir="rtl">
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-[10px] tracking-widest text-primary">נעול · #{role.rank}</p>
+              <h3 className={`mt-1 font-bold text-foreground ${featured ? "text-xl" : "text-base"}`}>{title}</h3>
+              <div className="mt-3 space-y-2 blur-[3px] select-none" aria-hidden>
+                <div className="h-2.5 w-11/12 rounded-sm bg-foreground/15" />
+                <div className="h-2.5 w-3/4 rounded-sm bg-foreground/15" />
+                {featured ? <div className="h-2.5 w-2/3 rounded-sm bg-foreground/15" /> : null}
+              </div>
+            </div>
+            {role.matchPercentage != null ? (
+              <MatchRing pct={role.matchPercentage} size={featured ? "lg" : "md"} />
+            ) : null}
+          </div>
+
+          {featured ? (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={onUnlock}
+                disabled={busy}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60 sm:w-auto"
+              >
+                <Lock className="h-4 w-4" aria-hidden />
+                {busy ? "פותחים את התשלום…" : `פתחו את 2 ההתאמות המובילות · ₪${UNLOCK_PRICE_ILS}`}
+              </button>
+              <p className="text-[11px] leading-relaxed text-dust">
+                תשלום חד־פעמי · Apple Pay · Google Pay · כרטיס אשראי · נפתח לתמיד, גם בהתאמות הבאות
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-dust">נפתח יחד עם #1 בתשלום אחד של ₪{UNLOCK_PRICE_ILS}</p>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+/** Opens the payment page; a user who already paid is sent straight to their unlocked results. */
+function useUnlockTopMatches(onUnlocked?: () => void) {
+  const [busy, setBusy] = useState(false);
+
+  async function unlock() {
+    trackEvent("unlock_clicked");
+    setBusy(true);
+    try {
+      const res = await startTopMatchesCheckout();
+      if (res.alreadyUnlocked) {
+        onUnlocked?.();
+        return;
+      }
+      if (res.url) {
+        window.location.assign(res.url);
+        return;
+      }
+      throw new Error("no payment page");
+    } catch (e) {
+      trackEvent("unlock_failed", { stage: "checkout" });
+      toast.error(getErrorMessage(e, "לא הצלחנו לפתוח את התשלום, נסו שוב"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return { busy, unlock };
+}
+
+export function RoleMatchCards({ roles, onUnlocked }: { roles: MatchedRole[]; onUnlocked?: () => void }) {
+  const open = useMemo(() => roles.filter((r): r is RoleMatch => !isLockedRole(r)), [roles]);
+  const locked = useMemo(() => roles.filter(isLockedRole), [roles]);
   const photos = useMemo(() => {
     const used = new Set<string>();
-    return roles.map((r, i) => pickRolePhoto(r.tags, r.roleTitle, i + 1, used));
-  }, [roles]);
+    return open.map((r, i) => pickRolePhoto(r.tags, r.roleTitle, locked.length + i + 1, used));
+  }, [open, locked.length]);
+  const { busy, unlock } = useUnlockTopMatches(onUnlocked);
+  const viewed = useRef(false);
+
+  useEffect(() => {
+    if (locked.length && !viewed.current) {
+      viewed.current = true;
+      trackEvent("paywall_viewed", { locked: locked.length });
+    }
+  }, [locked.length]);
 
   if (!roles.length) return null;
 
-  const [top, ...rest] = roles;
-  const [topPhoto, ...restPhotos] = photos;
+  // With the top matches locked, the first open card is #3 and none is "featured".
+  const [top, ...rest] = locked.length ? [undefined, ...open] : open;
+  const [topPhoto, ...restPhotos] = locked.length ? [undefined, ...photos] : photos;
+  const firstOpenRank = locked.length + 1;
 
   return (
     <section className="space-y-5" aria-labelledby="role-match-results-heading">
@@ -216,19 +346,25 @@ export function RoleMatchCards({ roles }: { roles: RoleMatch[] }) {
         <div className="min-w-0">
           <p className="font-mono text-[10px] tracking-widest text-primary uppercase">תוצאות</p>
           <h2 id="role-match-results-heading" className="text-xl font-bold text-foreground">
-            5 תפקידים מותאמים לפרופיל שלכם
+            {roles.length} תפקידים מותאמים לפרופיל שלכם
           </h2>
           <p className="mt-1 text-[11px] text-dust/70">לכל תפקיד תמונה שונה · קרדיט לצלם/מקור בתחתית התמונה</p>
         </div>
       </div>
 
-      <RoleCard role={top} rank={1} photo={topPhoto} featured />
+      {locked.map((r, i) => (
+        <LockedRoleCard key={`locked-${r.rank}`} role={r} featured={i === 0} busy={busy} onUnlock={unlock} />
+      ))}
+
+      {top && topPhoto ? <RoleCard role={top} rank={1} photo={topPhoto} featured /> : null}
 
       {rest.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
-          {rest.map((r, i) => (
-            <RoleCard key={`${r.roleTitle}-${i}`} role={r} rank={i + 2} photo={restPhotos[i]} />
-          ))}
+          {rest.map((r, i) =>
+            r ? (
+              <RoleCard key={`${r.roleTitle}-${i}`} role={r} rank={firstOpenRank + i + (locked.length ? 0 : 1)} photo={restPhotos[i]!} />
+            ) : null,
+          )}
         </div>
       ) : null}
     </section>
