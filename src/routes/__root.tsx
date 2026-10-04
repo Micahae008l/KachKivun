@@ -25,7 +25,12 @@ import { MATCH_TOOL_SHORT } from "@/lib/voice";
 import { ARIA, MAIN_CONTENT_ID, MOBILE_NAV_ID } from "@/lib/a11y";
 import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { getPlausibleDomain, getPlausibleScriptUrl, trackError } from "@/lib/analytics";
+import {
+  getPlausibleDomain,
+  getPlausibleScriptUrl,
+  initAnalytics,
+  trackError,
+} from "@/lib/analytics";
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,
@@ -100,6 +105,7 @@ function RootLayout() {
   // takes ~50s, and without this the visitor's first call is the OTP request.
   useEffect(() => {
     warmApi();
+    initAnalytics();
   }, []);
 
   useEffect(() => {

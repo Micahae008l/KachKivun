@@ -96,8 +96,8 @@ function PrivacyPage() {
               <strong className="text-foreground">Render ו־Cloudflare</strong>, להרצת השרת והאתר.
             </>,
             <>
-              <strong className="text-foreground">Plausible</strong>, למדידת שימוש באתר. הוא אינו משתמש
-              בקוקיז ואינו בונה פרופיל אישי עליכם.
+              <strong className="text-foreground">PostHog</strong> (שרתים באיחוד האירופי), למדידת שימוש באתר.
+              הוא אינו משתמש בקוקיז, אינו שומר את מה שאתם מקלידים ואינו מקושר לשם או לאימייל שלכם.
             </>,
           ]}
         />

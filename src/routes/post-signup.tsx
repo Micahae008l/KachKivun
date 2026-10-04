@@ -31,6 +31,13 @@ import { idfPhotoAt } from "@/lib/idf-images";
 import { defaultYomHameah12Scores, YOM_HAMEAH_12_KEYS, YOM_HAMEAH_12_LABELS_HE } from "@/lib/yom-hameah-12";
 import { ARIA } from "@/lib/a11y";
 import {
+  trackSignupCodeSent,
+  trackSignupCodeVerified,
+  trackSignupComplete,
+  trackSignupError,
+  trackSignupStep,
+} from "@/lib/analytics";
+import {
   PostSignupBootstrapSkeleton,
   PostSignupFormSkeleton,
 } from "@/components/skeletons/PageSkeletons";
@@ -69,6 +76,9 @@ const STEP = {
   code: 9,
 } as const;
 const LAST_PROFILE_STEP = STEP.name;
+const STEP_NAME: Record<number, string> = Object.fromEntries(
+  Object.entries(STEP).map(([name, n]) => [n, name]),
+);
 const TOTAL_STEPS = STEP.code;
 
 /** Answers survive an Instagram in-app-browser reload (very common when checking mail for the OTP). */
@@ -262,6 +272,11 @@ function PostSignupPage() {
     };
   }, [mounted, navigate, queryClient]);
 
+  // Funnel: one event per wizard screen the visitor actually sees.
+  useEffect(() => {
+    if (bootstrapped) trackSignupStep(step, TOTAL_STEPS, STEP_NAME[step] ?? String(step));
+  }, [bootstrapped, step]);
+
   // Persist answers for anonymous visitors only; signed-in state lives on the server.
   useEffect(() => {
     if (!bootstrapped || authed.current) return;
@@ -342,6 +357,7 @@ function PostSignupPage() {
         toast.success("שלחנו קוד באימייל (בדקו גם בספאם)");
       }
       clearFieldErrors("code");
+      trackSignupCodeSent(false);
       setStep(STEP.code);
     } catch (err) {
       // A cooldown means a still-valid code is already in their inbox — show the
@@ -350,10 +366,15 @@ function PostSignupPage() {
         setEmail(normalizedEmail);
         setDevOtpHint(null);
         clearFieldErrors("code");
+        trackSignupCodeSent(true);
         setStep(STEP.code);
         toast.success("כבר שלחנו קוד לאימייל הזה, הזינו אותו כאן (בדקו גם בספאם)");
         return;
       }
+      trackSignupError(
+        "email",
+        err instanceof ApiError ? err.code || `http_${err.status}` : "network",
+      );
       const msg = getErrorMessage(err, "שגיאה בשליחת קוד");
       const field = authErrorField(err) ?? "email";
       setFieldError(field, msg);
@@ -374,6 +395,7 @@ function PostSignupPage() {
     try {
       const res = await verifyOtp(normalizedEmail, clean);
       setAuthSession(res.token, res.role);
+      trackSignupCodeVerified(Boolean(res.isNewUser));
       authed.current = true;
       prefetchAuthedData(queryClient, res.token);
 
@@ -399,6 +421,10 @@ function PostSignupPage() {
         setStep(STEP.combat);
       }
     } catch (err) {
+      trackSignupError(
+        "code",
+        err instanceof ApiError ? err.code || `http_${err.status}` : "network",
+      );
       const msg = getErrorMessage(err, "קוד לא תקין");
       setFieldError(authErrorField(err) ?? "code", msg);
     } finally {
@@ -502,6 +528,7 @@ function PostSignupPage() {
         },
       });
       clearDraft();
+      trackSignupComplete();
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success("הפרופיל נשמר, אפשר להשתמש ביועץ AI");
       navigate({ to: "/dashboard" });
