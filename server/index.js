@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.js";
 import reportsRoutes from "./routes/reports.js";
 import rolesRoutes from "./routes/roles.js";
 import { isEmailConfigured, isResendConfigured } from "./utils/email.js";
+import { hasHealthToken, runDeepHealth } from "./utils/deepHealth.js";
 import { corsOptions } from "./utils/corsOptions.js";
 import { SITE_NAME_EN, SITE_NAME_HE } from "./utils/brand.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
@@ -67,6 +68,14 @@ app.use("/api/roles", rolesRoutes);
 // Health check
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Deep check for the daily monitor (.github/workflows/daily-health.yml): needs the
+// x-health-token header; without HEALTH_CHECK_TOKEN set it is a plain 404.
+app.get("/api/health/deep", async (req, res, next) => {
+  if (!hasHealthToken(req)) return next();
+  const report = await runDeepHealth();
+  res.status(report.status === "ok" ? 200 : 503).json(report);
 });
 
 // Unknown /api paths — logged as probes (scanners enumerate endpoints in bulk)

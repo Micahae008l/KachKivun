@@ -1,0 +1,103 @@
+# Watches kachkivun.com and everything behind it (DB, OpenAI key and live AI
+# requests, email, payments config, SSL) and reports to Slack:
+#   - every morning: a full report, good or bad
+#   - every hour: silent while healthy; one alert when something breaks, one when it recovers
+#
+# Repo secrets (Settings → Secrets and variables → Actions):
+#   SLACK_WEBHOOK_URL   — the Slack incoming webhook
+#   HEALTH_CHECK_TOKEN  — the same random value as HEALTH_CHECK_TOKEN on Render
+name: Health check
+
+on:
+  schedule:
+    - cron: "0 5 * * *" # morning report: 08:00 Israel summer time, 07:00 winter
+    - cron: "17 * * * *" # hourly watch
+  workflow_dispatch: {}
+
+concurrency:
+  group: health-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://kachkivun.com
+      API: https://api.kachkivun.com
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      HEALTH_CHECK_TOKEN: ${{ secrets.HEALTH_CHECK_TOKEN }}
+      MODE: ${{ (github.event_name == 'schedule' && github.event.schedule == '17 * * * *') && 'watch' || 'report' }}
+    steps:
+      - name: Restore last result
+        uses: actions/cache/restore@v4
+        with:
+          path: .health-state
+          key: health-state-${{ github.run_id }}
+          restore-keys: health-state-
+
+      - name: Run checks and tell Slack
+        run: |
+          set -u
+          lines=()
+          failures=()
+          ok()   { lines+=("✅ $1"); }
+          fail() { lines+=("❌ $1"); failures+=("$1"); }
+
+          # Site and API reachable (the API gets a second try: it may be redeploying).
+          code=$(curl -s -o /dev/null -w '%{http_code}' -m 30 "$SITE") || code=000
+          [ "$code" = 200 ] && ok "Site is up" || fail "Site returned HTTP $code"
+
+          code=$(curl -s -o /dev/null -w '%{http_code}' -m 60 --retry 1 --retry-delay 20 "$API/api/health") || code=000
+          [ "$code" = 200 ] && ok "API is up" || fail "API returned HTTP $code"
+
+          # Deep check: DB, OpenAI key, last real AI request, email, payments.
+          if [ -n "$HEALTH_CHECK_TOKEN" ]; then
+            body=$(curl -s -m 60 -H "x-health-token: $HEALTH_CHECK_TOKEN" "$API/api/health/deep") || body=""
+            if echo "$body" | jq -e '.checks' >/dev/null 2>&1; then
+              while IFS=$'\t' read -r good name detail; do
+                [ "$good" = true ] && ok "$name: $detail" || fail "$name: $detail"
+              done < <(echo "$body" | jq -r '.checks[] | [(.ok|tostring), .name, .detail] | @tsv')
+            else
+              fail "Deep check gave no report (is HEALTH_CHECK_TOKEN set on Render, and deployed?)"
+            fi
+          else
+            fail "HEALTH_CHECK_TOKEN secret not set, so DB / OpenAI / email were not checked"
+          fi
+
+          # SSL certificates: warn 14 days ahead.
+          for host in kachkivun.com api.kachkivun.com; do
+            end=$(echo | openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+            if [ -z "$end" ]; then fail "SSL $host: could not read certificate"; continue; fi
+            days=$(( ($(date -d "$end" +%s) - $(date +%s)) / 86400 ))
+            [ "$days" -gt 14 ] && ok "SSL $host: $days days left" || fail "SSL $host expires in $days days"
+          done
+
+          # What changed since the last run: compare the failing check names, not their details.
+          now_state=$(printf '%s\n' "${failures[@]+"${failures[@]}"}" | cut -d: -f1 | sort -u | tr '\n' ' ' | sed 's/ *$//')
+          prev_state=$(cat .health-state 2>/dev/null || echo "")
+          echo "$now_state" > .health-state
+          log="<$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|run log>"
+
+          text=""
+          if [ "$MODE" = report ]; then
+            if [ -z "$now_state" ]; then head="☀️ *KachKivun: all good this morning*"; else head="🚨 *KachKivun: something needs attention*"; fi
+            text=$(printf '%s\n' "$head" "${lines[@]}" "$log")
+          elif [ -n "$now_state" ] && [ "$now_state" != "$prev_state" ]; then
+            text=$(printf '%s\n' "🚨 *KachKivun alert: something just broke*" "${failures[@]/#/❌ }" "$log")
+          elif [ -z "$now_state" ] && [ -n "$prev_state" ]; then
+            text=$(printf '%s\n' "✅ *KachKivun recovered*: everything is working again" "$log")
+          fi
+
+          printf '%s\n' "${lines[@]}"
+          if [ -n "$text" ] && [ -n "$SLACK_WEBHOOK_URL" ]; then
+            jq -n --arg text "$text" '{text: $text}' | curl -s -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+          fi
+          [ -z "$now_state" ]
+
+      - name: Remember this result
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .health-state
+          key: health-state-${{ github.run_id }}

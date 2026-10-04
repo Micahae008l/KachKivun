@@ -77,6 +77,36 @@ async function getTransporter() {
   return transporterPromise;
 }
 
+/**
+ * Check the delivery channel works without sending anything: Resend's key is
+ * accepted (and the domain verified, when the key may read it), or the SMTP
+ * login succeeds.
+ */
+export async function verifyEmailChannel() {
+  if (isResendConfigured()) {
+    const res = await fetch("https://api.resend.com/domains", {
+      headers: { Authorization: `Bearer ${trimEnv("RESEND_API_KEY")}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    const body = await res.json().catch(() => ({}));
+    // A send-only key may not list domains, but Resend only says so for a real key.
+    if (res.status === 401 && body?.name === "restricted_api_key") {
+      return { ok: true, channel: "resend", detail: "send-only key accepted" };
+    }
+    if (!res.ok) return { ok: false, channel: "resend", detail: `HTTP ${res.status} ${body?.message ?? ""}`.trim() };
+    const domains = Array.isArray(body?.data) ? body.data : [];
+    const unverified = domains.filter((d) => d.status !== "verified").map((d) => `${d.name}: ${d.status}`);
+    return unverified.length
+      ? { ok: false, channel: "resend", detail: `domain not verified (${unverified.join(", ")})` }
+      : { ok: true, channel: "resend", detail: `${domains.length} domain(s) verified` };
+  }
+
+  const transporter = await getTransporter();
+  if (!transporter) return { ok: false, channel: "none", detail: "no RESEND_API_KEY or SMTP_* set" };
+  await transporter.verify();
+  return { ok: true, channel: "smtp", detail: "login accepted" };
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
