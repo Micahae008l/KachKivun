@@ -1,4 +1,5 @@
 import type { DashboardResponse } from "./api";
+import { STEP } from "@/lib/signup-steps";
 import {
   COMBAT_PREFERENCE_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
@@ -39,16 +40,19 @@ export function coerceFitness(v: string | undefined): FitnessPreferenceValue | "
   return FITNESS_SET.has(v as FitnessPreferenceValue) ? (v as FitnessPreferenceValue) : "";
 }
 
-/** First wizard step that still needs input (1–7). Assumes `!d.aiReady`. */
+/**
+ * First wizard step that still needs a required answer. Assumes `!d.aiReady`.
+ * The personal questions are optional, so a returning user is never sent back to them.
+ */
 export function computePostSignupResumeStep(d: DashboardResponse): number {
   const p = d.preferences;
-  if (!p?.combatPreference || p.combatPreference === "Undecided") return 1;
-  if (!p?.focus || p.focus === "Any") return 2;
-  if (!p?.physicalActivityLevel || p.physicalActivityLevel === "Unspecified") return 3;
-  if (d.stats?.daparScore == null || d.stats?.medicalProfile == null) return 4;
-  if (!migrateLegacyYomHameahTo12(d.stats?.yomHameah)) return 5;
-  if (!d.stats?.draftDate || Number.isNaN(Date.parse(String(d.stats.draftDate)))) return 6;
-  return 7;
+  if (!p?.combatPreference || p.combatPreference === "Undecided") return STEP.combat;
+  if (!p?.focus || p.focus === "Any") return STEP.focus;
+  if (!p?.physicalActivityLevel || p.physicalActivityLevel === "Unspecified") return STEP.fitness;
+  if (d.stats?.daparScore == null || d.stats?.medicalProfile == null) return STEP.scores;
+  if (!migrateLegacyYomHameahTo12(d.stats?.yomHameah)) return STEP.yom;
+  if (!d.stats?.draftDate || Number.isNaN(Date.parse(String(d.stats.draftDate)))) return STEP.draft;
+  return STEP.name;
 }
 
 /** Primary entry target after the user taps “connect” on marketing pages. */

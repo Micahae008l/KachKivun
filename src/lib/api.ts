@@ -244,7 +244,8 @@ export type RegisterProfilePayload = {
     focus: string;
     location: string;
     physicalActivityLevel: string;
-  }>;
+  }> &
+    PersonalAnswers;
   phone?: string;
 };
 
@@ -264,7 +265,7 @@ export type ScoreOnboardingPayload = {
     physicalActivityLevel: string;
     schedule?: string;
     location?: string;
-  };
+  } & PersonalAnswers;
 };
 
 export function completeScoreOnboarding(payload: ScoreOnboardingPayload) {
@@ -295,6 +296,12 @@ export function completeScoreOnboarding(payload: ScoreOnboardingPayload) {
       const { gender: _ignored, ...statsWithoutGender } = body.stats ?? {};
       return updateProfile({ ...body, stats: statsWithoutGender });
     }
+    // An API not yet deployed with the personal answers: save the rest, don't block signup.
+    if (err instanceof ApiError && /unknown preferences field/i.test(err.message || "")) {
+      const { motivation: _m, strengths: _s, environment: _e, languages: _l, ...corePreferences } =
+        body.preferences ?? {};
+      return updateProfile({ ...body, preferences: corePreferences });
+    }
     throw err;
   });
 }
@@ -318,6 +325,18 @@ export type PreferencesDto = {
   location?: string;
   physicalActivityLevel?: string;
   yomHameahSource?: string;
+  motivation?: string | null;
+  strengths?: string | null;
+  environment?: string | null;
+  languages?: string[];
+};
+
+/** The optional personal signup answers; the AI match uses them when given. */
+export type PersonalAnswers = {
+  motivation?: string;
+  strengths?: string;
+  environment?: string;
+  languages?: string[];
 };
 
 export type AiTokenCapStatus = {
@@ -377,7 +396,8 @@ export type ProfileUpdateBody = {
     location: string;
     physicalActivityLevel: string;
     yomHameahSource: string;
-  }>;
+  }> &
+    PersonalAnswers;
 };
 
 export function updateProfile(body: ProfileUpdateBody) {

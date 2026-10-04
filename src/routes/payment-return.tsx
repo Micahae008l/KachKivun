@@ -9,7 +9,9 @@ import { SITE_NAME_HE } from "@/lib/brand";
 
 export const Route = createFileRoute("/payment-return")({
   component: PaymentReturnPage,
-  head: () => ({ meta: [{ title: `אישור תשלום | ${SITE_NAME_HE}` }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: `אישור תשלום | ${SITE_NAME_HE}` }, { name: "robots", content: "noindex" }],
+  }),
 });
 
 /** The payment provider confirms to our server a moment after the redirect, so wait for it. */
@@ -57,7 +59,10 @@ function PaymentReturnPage() {
   }, [navigate]);
 
   return (
-    <main dir="rtl" className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-5 px-6 text-center">
+    <main
+      dir="rtl"
+      className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-5 px-6 text-center"
+    >
       {state === "waiting" ? (
         <>
           <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden />
@@ -71,9 +76,13 @@ function PaymentReturnPage() {
           <ShieldCheck className="h-10 w-10 text-primary" aria-hidden />
           <h1 className="text-xl font-bold text-foreground">האישור מתעכב</h1>
           <p className="text-sm leading-relaxed text-dust">
-            אם התשלום עבר, ההתאמות ייפתחו תוך כמה דקות. לא חויבתם פעמיים. אם זה נמשך, כתבו לנו ונסדר.
+            אם התשלום עבר, ההתאמות ייפתחו תוך כמה דקות. לא חויבתם פעמיים. אם זה נמשך, כתבו לנו
+            ונסדר.
           </p>
-          <Link to="/ai-counselor" className="rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground">
+          <Link
+            to="/ai-counselor"
+            className="rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground"
+          >
             חזרה לתוצאות
           </Link>
         </>
@@ -84,7 +93,11 @@ function PaymentReturnPage() {
           <Lock className="h-10 w-10 text-primary" aria-hidden />
           <h1 className="text-xl font-bold text-foreground">התחברו כדי לראות את ההתאמות</h1>
           <p className="text-sm text-dust">התשלום נשמר בחשבון שלכם, התחברו עם אותו אימייל.</p>
-          <Link to="/post-signup" hash="login" className="rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground">
+          <Link
+            to="/post-signup"
+            hash="login"
+            className="rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground"
+          >
             התחברות
           </Link>
         </>

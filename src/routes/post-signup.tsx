@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Calendar, ChevronLeft, ChevronRight, Mail, Shield, User, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Mail, Shield, Sparkles, User, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   ApiError,
@@ -18,12 +18,23 @@ import { PreferenceOptionGrid } from "@/components/PreferenceOptionGrid";
 import { DraftDateField } from "@/components/DraftDateField";
 import {
   COMBAT_PREFERENCE_OPTIONS,
+  ENVIRONMENT_OPTIONS,
   FOCUS_PREFERENCE_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
+  LANGUAGE_OPTIONS,
+  MOTIVATION_OPTIONS,
+  STRENGTH_OPTIONS,
+  languagesReaction,
   type CombatPreferenceValue,
+  type EnvironmentValue,
   type FocusPreferenceValue,
   type FitnessPreferenceValue,
+  type LanguageValue,
+  type MotivationValue,
+  type PersonalOption,
+  type StrengthValue,
 } from "@/lib/profile-preference-data";
+import { LAST_PROFILE_STEP, STEP, STEP_NAME, TOTAL_STEPS } from "@/lib/signup-steps";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { KachKivunLogo } from "@/components/KachKivunLogo";
 import { SITE_NAME_HE } from "@/lib/brand";
@@ -59,32 +70,36 @@ export const Route = createFileRoute("/post-signup")({
 const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
 const MEDICAL_SCORES = [21, 45, 64, 72, 82, 97] as const;
 
-/**
- * Profile questions come first, email/OTP last: cold ad traffic will not hand over
- * an address before seeing what the site does. Renumbering happens here only —
- * `computePostSignupResumeStep` mirrors steps 1–7.
- */
-const STEP = {
-  combat: 1,
-  focus: 2,
-  fitness: 3,
-  scores: 4,
-  yom: 5,
-  draft: 6,
-  name: 7,
-  email: 8,
-  code: 9,
-} as const;
-const LAST_PROFILE_STEP = STEP.name;
-const STEP_NAME: Record<number, string> = Object.fromEntries(
-  Object.entries(STEP).map(([name, n]) => [n, name]),
-);
-const TOTAL_STEPS = STEP.code;
-
 /** Answers survive an Instagram in-app-browser reload (very common when checking mail for the OTP). */
 const DRAFT_KEY = "kk_signup_draft_v1";
+/** Drafts saved before the personal questions numbered screens 1–9; map them onto today's. */
+const DRAFT_STEPS_V1: Record<number, number> = {
+  1: STEP.combat,
+  2: STEP.focus,
+  3: STEP.fitness,
+  4: STEP.scores,
+  5: STEP.yom,
+  6: STEP.draft,
+  7: STEP.name,
+  8: STEP.email,
+  9: STEP.code,
+};
 
-type FieldKey = "email" | "code" | "username" | "dapar" | "medical" | "gender" | "combat" | "focus" | "fitness" | "draftDate";
+type FieldKey =
+  | "email"
+  | "code"
+  | "username"
+  | "dapar"
+  | "medical"
+  | "gender"
+  | "combat"
+  | "focus"
+  | "fitness"
+  | "motivation"
+  | "strengths"
+  | "environment"
+  | "languages"
+  | "draftDate";
 type FieldErrors = Partial<Record<FieldKey, string>>;
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -114,6 +129,10 @@ function PostSignupPage() {
   const [combatPreference, setCombatPreference] = useState<CombatPreferenceValue | "">("");
   const [focusPref, setFocusPref] = useState<FocusPreferenceValue | "">("");
   const [fitnessPref, setFitnessPref] = useState<FitnessPreferenceValue | "">("");
+  const [motivation, setMotivation] = useState<MotivationValue | "">("");
+  const [strengths, setStrengths] = useState<StrengthValue | "">("");
+  const [environment, setEnvironment] = useState<EnvironmentValue | "">("");
+  const [languages, setLanguages] = useState<LanguageValue[]>([]);
   const [draftDate, setDraftDate] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
@@ -153,6 +172,10 @@ function PostSignupPage() {
     setFocusPref(coerceFocus(p?.focus));
     setFitnessPref(coerceFitness(p?.physicalActivityLevel));
     setDraftDate(draftDateToYmd(d.stats?.draftDate));
+    setMotivation(pickOption(MOTIVATION_OPTIONS, p?.motivation));
+    setStrengths(pickOption(STRENGTH_OPTIONS, p?.strengths));
+    setEnvironment(pickOption(ENVIRONMENT_OPTIONS, p?.environment));
+    setLanguages(pickLanguages(p?.languages));
     setStep(computePostSignupResumeStep(d));
   }
 
@@ -182,6 +205,10 @@ function PostSignupPage() {
       setFitnessPref(fitness);
       const draft = typeof d.draftDate === "string" ? d.draftDate : "";
       if (draft) setDraftDate(draft);
+      setMotivation(pickOption(MOTIVATION_OPTIONS, d.motivation));
+      setStrengths(pickOption(STRENGTH_OPTIONS, d.strengths));
+      setEnvironment(pickOption(ENVIRONMENT_OPTIONS, d.environment));
+      setLanguages(pickLanguages(d.languages));
 
       // Never resume on the email/OTP screens from a draft unless the quiz is done.
       // Accidental "כבר יש לי חשבון" used to stick people on the login screen forever.
@@ -195,7 +222,8 @@ function PostSignupPage() {
         draftDate: draft,
         username: typeof d.username === "string" ? d.username : "",
       });
-      const savedStep = typeof d.step === "number" ? d.step : STEP.combat;
+      const rawStep = typeof d.step === "number" ? d.step : STEP.combat;
+      const savedStep = d.v === 2 ? rawStep : (DRAFT_STEPS_V1[rawStep] ?? STEP.combat);
       if (missing !== 0) {
         setStep(missing);
       } else if (savedStep >= STEP.combat && savedStep <= TOTAL_STEPS) {
@@ -288,6 +316,7 @@ function PostSignupPage() {
       localStorage.setItem(
         DRAFT_KEY,
         JSON.stringify({
+          v: 2,
           step: draftStep,
           email,
           username,
@@ -298,6 +327,10 @@ function PostSignupPage() {
           combatPreference,
           focusPref,
           fitnessPref,
+          motivation,
+          strengths,
+          environment,
+          languages,
           draftDate,
         }),
       );
@@ -317,6 +350,10 @@ function PostSignupPage() {
     combatPreference,
     focusPref,
     fitnessPref,
+    motivation,
+    strengths,
+    environment,
+    languages,
     draftDate,
   ]);
 
@@ -454,6 +491,20 @@ function PostSignupPage() {
         return;
       }
     }
+    const personal: [number, FieldKey, boolean, string][] = [
+      [STEP.motivation, "motivation", !motivation, "בחרו מה הכי חשוב לכם"],
+      [STEP.strengths, "strengths", !strengths, "בחרו במה אתם הכי חזקים"],
+      [STEP.environment, "environment", !environment, "בחרו סביבה, או «לא משנה»"],
+      [STEP.languages, "languages", languages.length === 0, "בחרו לפחות אפשרות אחת, גם «עברית בלבד» זה בסדר"],
+    ];
+    for (const [screen, key, missing, message] of personal) {
+      if (step !== screen) continue;
+      clearFieldErrors(key);
+      if (missing) {
+        setFieldError(key, message);
+        return;
+      }
+    }
     if (step === STEP.scores) {
       clearFieldErrors("dapar", "medical", "gender");
       let hasError = false;
@@ -525,6 +576,10 @@ function PostSignupPage() {
           physicalActivityLevel: fitnessPref,
           schedule: "Any",
           location: "Anywhere",
+          ...(motivation ? { motivation } : {}),
+          ...(strengths ? { strengths } : {}),
+          ...(environment ? { environment } : {}),
+          ...(languages.length ? { languages } : {}),
         },
       });
       clearDraft();
@@ -701,6 +756,58 @@ function PostSignupPage() {
                     columnsClass="grid-cols-1 sm:grid-cols-3"
                   />
                   {fieldErrors.fitness ? <FieldError message={fieldErrors.fitness} /> : null}
+                </div>
+              )}
+
+              {step === STEP.motivation && (
+                <PersonalQuestion
+                  options={MOTIVATION_OPTIONS}
+                  selected={motivation}
+                  onSelect={(v) => {
+                    setMotivation(v);
+                    clearFieldErrors("motivation");
+                  }}
+                  error={fieldErrors.motivation}
+                />
+              )}
+
+              {step === STEP.strengths && (
+                <PersonalQuestion
+                  options={STRENGTH_OPTIONS}
+                  selected={strengths}
+                  onSelect={(v) => {
+                    setStrengths(v);
+                    clearFieldErrors("strengths");
+                  }}
+                  error={fieldErrors.strengths}
+                />
+              )}
+
+              {step === STEP.environment && (
+                <PersonalQuestion
+                  options={ENVIRONMENT_OPTIONS}
+                  selected={environment}
+                  onSelect={(v) => {
+                    setEnvironment(v);
+                    clearFieldErrors("environment");
+                  }}
+                  error={fieldErrors.environment}
+                />
+              )}
+
+              {step === STEP.languages && (
+                <div className="space-y-3">
+                  <PreferenceOptionGrid
+                    options={LANGUAGE_OPTIONS}
+                    selectedMany={languages}
+                    onSelect={(v) => {
+                      clearFieldErrors("languages");
+                      setLanguages((prev) => toggleLanguage(prev, v));
+                    }}
+                    columnsClass="grid-cols-2 sm:grid-cols-4"
+                  />
+                  <ReactionLine text={languagesReaction(languages)} />
+                  {fieldErrors.languages ? <FieldError message={fieldErrors.languages} /> : null}
                 </div>
               )}
 
@@ -942,6 +1049,13 @@ function getStepMeta(step: number, loginOnly = false) {
     return { icon, title: "איך אתם רואים את השירות?", subtitle: "בחרו כיוון שמתאים לכם. בלי הרשמה, מתחילים ישר." };
   if (step === STEP.focus) return { icon, title: "מה הכי חשוב לכם?", subtitle: "מיקוד אחד עוזר ליועץ AI." };
   if (step === STEP.fitness) return { icon, title: "רמת כושר", subtitle: "הערכה עצמית." };
+  if (step === STEP.motivation)
+    return { icon, title: "מה הכי חשוב לכם בשירות?", subtitle: "אין תשובה נכונה. זה עוזר לנו לדייק את ההתאמה בשבילכם." };
+  if (step === STEP.strengths)
+    return { icon, title: "במה אתם הכי חזקים?", subtitle: "לפי איך שאתם רואים את עצמכם, לא לפי ציונים." };
+  if (step === STEP.environment) return { icon, title: "איפה אתם רואים את עצמכם?", subtitle: "בחרו את הסביבה שהכי מושכת אתכם." };
+  if (step === STEP.languages)
+    return { icon, title: "אילו שפות אתם מדברים?", subtitle: "אפשר לבחור כמה. שפות פותחות תפקידים שלא כולם מכירים." };
   if (step === STEP.scores) return { icon, title: "ציונים בסיסיים", subtitle: "דפ״ר ופרופיל רפואי קובעים לאילו תפקידים אתם עומדים בסף." };
   if (step === STEP.yom) return { icon, title: "ציוני מא״ה", subtitle: "12 מדדים. דירוג 1 עד 5 לכל אחד." };
   if (step === STEP.draft)
@@ -1001,6 +1115,68 @@ function YomSliderCard({ title, value, onChange }: { title: string; value: numbe
           aria-valuetext={ARIA.rangeValue(title, value, 5)}
         />
       </label>
+    </div>
+  );
+}
+
+/** A saved answer if it is still one of the options, else empty. */
+function pickOption<T extends string>(options: { value: T }[], value: unknown): T | "" {
+  return options.find((o) => o.value === value)?.value ?? "";
+}
+
+function pickLanguages(value: unknown): LanguageValue[] {
+  if (!Array.isArray(value)) return [];
+  return LANGUAGE_OPTIONS.map((o) => o.value).filter((v) => value.includes(v));
+}
+
+/** "Hebrew only" and the other languages exclude each other. */
+function toggleLanguage(prev: LanguageValue[], v: LanguageValue): LanguageValue[] {
+  if (prev.includes(v)) return prev.filter((l) => l !== v);
+  if (v === "HebrewOnly") return ["HebrewOnly"];
+  return [...prev.filter((l) => l !== "HebrewOnly"), v];
+}
+
+/** The personal touch: what the match will do with the answer just picked. */
+function ReactionLine({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <motion.p
+      key={text}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease }}
+      className="flex items-start gap-2 rounded-sm border border-primary/25 bg-primary/5 px-3 py-2.5 text-right text-sm text-foreground/90"
+      dir="rtl"
+      role="status"
+    >
+      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+      <span>{text}</span>
+    </motion.p>
+  );
+}
+
+function PersonalQuestion<T extends string>({
+  options,
+  selected,
+  onSelect,
+  error,
+}: {
+  options: PersonalOption<T>[];
+  selected: T | "";
+  onSelect: (value: T) => void;
+  error?: string;
+}) {
+  const reaction = options.find((o) => o.value === selected)?.reaction ?? "";
+  return (
+    <div className="space-y-3">
+      <PreferenceOptionGrid
+        options={options}
+        selected={selected}
+        onSelect={onSelect}
+        columnsClass="grid-cols-1 sm:grid-cols-2"
+      />
+      <ReactionLine text={reaction} />
+      {error ? <FieldError message={error} /> : null}
     </div>
   );
 }

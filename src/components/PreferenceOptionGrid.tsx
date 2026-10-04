@@ -4,21 +4,24 @@ type Option<T extends string> = { value: T; title: string; subtitle: string };
 
 type Props<T extends string> = {
   options: Option<T>[];
-  selected: T | "";
+  /** Single choice; or pass `selectedMany` for a multi-select (the caller toggles in onSelect). */
+  selected?: T | "";
+  selectedMany?: T[];
   onSelect: (value: T) => void;
   columnsClass?: string;
 };
 
 export function PreferenceOptionGrid<T extends string>({
   options,
-  selected,
+  selected = "",
+  selectedMany,
   onSelect,
   columnsClass = "grid-cols-1 sm:grid-cols-2",
 }: Props<T>) {
   return (
     <div className={`grid gap-3 ${columnsClass}`} dir="rtl" role="group">
       {options.map((opt, idx) => {
-        const isOn = selected === opt.value;
+        const isOn = selectedMany ? selectedMany.includes(opt.value) : selected === opt.value;
         return (
           <motion.button
             key={opt.value}
@@ -35,7 +38,7 @@ export function PreferenceOptionGrid<T extends string>({
             }`}
           >
             <p className="font-semibold text-foreground">{opt.title}</p>
-            <p className="mt-1 text-sm text-dust">{opt.subtitle}</p>
+            {opt.subtitle ? <p className="mt-1 text-sm text-dust">{opt.subtitle}</p> : null}
           </motion.button>
         );
       })}
