@@ -57,8 +57,9 @@ export const Route = createRootRoute({
       { name: "twitter:image", content: "/og-image.png" },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "apple-touch-icon", href: "/favicon.png" },
+      // Bump ?v= whenever the icon changes: browsers cache favicons separately and ignore normal reloads.
+      { rel: "icon", type: "image/png", href: "/favicon.png?v=2" },
+      { rel: "apple-touch-icon", href: "/favicon.png?v=2" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: appCss },
