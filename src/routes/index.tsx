@@ -9,9 +9,8 @@ import {
   Target,
   Lock,
   Shield,
+  Gift,
   ArrowUpLeft,
-  Users,
-  Star,
 } from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
@@ -76,39 +75,6 @@ function HomePrimaryCta({ className }: { className: string }) {
   );
 }
 
-function Testimonial({
-  quote,
-  name,
-  detail,
-  idx,
-}: {
-  quote: string;
-  name: string;
-  detail: string;
-  idx: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-card p-6 sm:p-8 text-right"
-    >
-      <div className="mb-4 flex gap-0.5 text-primary">
-        {Array.from({ length: 5 }, (_, i) => (
-          <Star key={i} className="h-3 w-3 fill-current" />
-        ))}
-      </div>
-      <p className="text-sm leading-relaxed text-dust">&ldquo;{quote}&rdquo;</p>
-      <div className="mt-4 border-t border-iron/20 pt-4">
-        <p className="text-sm font-bold text-foreground">{name}</p>
-        <p className="text-xs text-dust">{detail}</p>
-      </div>
-    </motion.div>
-  );
-}
-
 function HomePage() {
   return (
     <div className="topo-lines">
@@ -156,10 +122,10 @@ function HomePage() {
               <div className="flex items-center gap-4">
                 <HomePrimaryCta className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
                 <Link
-                  to="/role-insights"
+                  to="/about"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-dust transition hover:text-foreground"
                 >
-                  מה זה בכלל
+                  איך זה עובד
                   <ArrowUpLeft className="h-3.5 w-3.5" />
                 </Link>
               </div>
@@ -240,48 +206,6 @@ function HomePage() {
 
       <div className="section-divider" />
 
-      {/* ── Social proof ── */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.4, ease }}
-            className="mb-12 flex items-center justify-center gap-3 text-dust"
-          >
-            <Users className="h-4 w-4 text-primary" />
-            <p className="text-sm">
-              <span className="font-bold text-foreground">500+</span> מתגייסים
-              כבר משתמשים בפלטפורמה
-            </p>
-          </motion.div>
-
-          <div className="grid gap-px bg-iron/20 grid-cols-1 sm:grid-cols-3">
-            <Testimonial
-              quote="קיבלתי המלצת תפקיד שלא הכרתי, ועכשיו זה בדיוק מה שאני עושה בצה״ל."
-              name="נועם כ׳"
-              detail="לוחם, נח״ל"
-              idx={0}
-            />
-            <Testimonial
-              quote="תוך 3 דקות הבנתי מה הפרופיל שלי אומר ואיפה אני יכולה להתאים."
-              name="שירה ד׳"
-              detail="קצינה, חיל האוויר"
-              idx={1}
-            />
-            <Testimonial
-              quote="היועץ AI הציע לי מסלולים שלא חשבתי עליהם. שווה כל שנייה."
-              name="איתי מ׳"
-              detail="תותחן, חיל התותחנים"
-              idx={2}
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
       {/* ── Evidence: photo + text, offset grid ── */}
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -345,9 +269,9 @@ function HomePage() {
             למה לסמוך עלינו
           </motion.p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <TrustBlock icon={<Lock className="h-5 w-5" />} title="הצפנה מקצה לקצה" desc="כל הנתונים מוצפנים ומאובטחים. אף אחד מלבדכם לא יכול לגשת למידע." idx={0} />
-            <TrustBlock icon={<Shield className="h-5 w-5" />} title="פרטיות מלאה" desc="לא משתפים, לא מוכרים, לא מעבירים מידע לצד שלישי. אף פעם." idx={1} />
-            <TrustBlock icon={<Target className="h-5 w-5" />} title="חינם לשימוש" desc="ללא תשלום, ללא מנוי, ללא פרסומות. כלי הכנה לשירות שפתוח לכולם." idx={2} />
+            <TrustBlock icon={<Lock className="h-5 w-5" />} title="כניסה בלי סיסמה" desc="נכנסים עם קוד חד־פעמי לאימייל, אז אין סיסמה שיכולה לדלוף. וכל התעבורה באתר מוצפנת." idx={0} />
+            <TrustBlock icon={<Shield className="h-5 w-5" />} title="לא מוכרים את המידע" desc="לא מוכרים ולא מעבירים למפרסמים. המידע משמש רק כדי לבנות לכם התאמה, ואפשר לבקש למחוק אותו בכל רגע." idx={1} />
+            <TrustBlock icon={<Gift className="h-5 w-5" />} title="חינם לשימוש" desc="ללא תשלום, ללא מנוי, ללא פרסומות. כלי הכנה לשירות שפתוח לכולם." idx={2} />
           </div>
         </div>
       </section>
@@ -355,7 +279,7 @@ function HomePage() {
       <div className="section-divider" />
 
       {/* ── CTA with photo ── */}
-      <section className="py-20 sm:py-28">
+      <section className="pt-20 pb-6 sm:pt-28 sm:pb-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -367,7 +291,7 @@ function HomePage() {
             <IdfPhotoPanel
               photo={getIdfPhoto("s4")}
               aspectClassName="aspect-[16/10] min-h-[220px]"
-              overlayClassName="from-background/25 via-background/45 to-background/80"
+              overlayClassName="from-background/50 via-transparent to-transparent"
               loading="lazy"
               fetchPriority="auto"
             />
@@ -378,7 +302,7 @@ function HomePage() {
               <span className="text-primary">בראש שקט.</span>
             </h2>
             <p className="mt-4 text-base text-dust">
-              בחינם, בעברית, ועם פרטיות מלאה.
+              בחינם, בעברית, ובלי למכור את המידע שלכם.
             </p>
             <HomePrimaryCta className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
             <p className="mt-3 flex items-center gap-1.5 text-xs text-dust/70">
@@ -459,7 +383,7 @@ function CapabilityCard({
       <IdfPhotoPanel
         photo={photo}
         aspectClassName="aspect-[21/9]"
-        overlayClassName="from-background/70 via-background/85 to-background"
+        overlayClassName="from-card via-background/10 to-transparent"
         showCredit={false}
         loading="lazy"
         fetchPriority="auto"

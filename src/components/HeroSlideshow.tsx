@@ -58,9 +58,9 @@ export function HeroSlideshow({ className = "", slides = HERO_SLIDES, controls =
       </AnimatePresence>
 
       {/* Cinematic overlays */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-background via-background/55 to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-background/25" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,transparent_0%,oklch(0.1_0.005_260/0.45)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-background/70 via-background/15 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,transparent_0%,oklch(0.1_0.005_260/0.3)_100%)]" />
 
       {/* Progress bars */}
       <div
