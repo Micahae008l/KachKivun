@@ -228,8 +228,13 @@ function LockedRoleCard({
       aria-label={`${title}, נעול`}
     >
       <div dir="rtl" className={`grid ${featured ? "md:grid-cols-[220px_1fr]" : "grid-cols-1"}`}>
-        <div className="relative min-h-[140px] overflow-hidden">
-          <img src={photo.src} alt="" className="h-full w-full scale-110 object-cover opacity-60 blur-md" loading="lazy" />
+        <div className={`relative overflow-hidden ${featured ? "min-h-[140px]" : "h-[140px]"}`}>
+          <img
+            src={photo.src}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-md"
+            loading="lazy"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-card via-card/70 to-transparent" />
           <span
             className="absolute top-3 right-3 rounded-sm border border-primary/30 bg-background/80 px-2 py-0.5 font-mono text-[10px] font-bold tracking-widest text-primary"
@@ -332,11 +337,9 @@ export function RoleMatchCards({ roles, onUnlocked }: { roles: MatchedRole[]; on
 
   if (!roles.length) return null;
 
-  // With the top matches locked, the first open card is #3 and none is "featured".
-  const [top, ...rest] = locked.length ? [undefined, ...open] : open;
-  const [topPhoto, ...restPhotos] = locked.length ? [undefined, ...photos] : photos;
+  // Same layout as before the paywall: the best match featured on top, the rest in a grid.
+  // Locked, that is #1 locked and featured, then #2 locked beside #3, then #4 and #5.
   const firstOpenRank = locked.length + 1;
-
   return (
     <section className="space-y-5" aria-labelledby="role-match-results-heading">
       <div dir="rtl" className="flex items-center justify-start gap-2 text-right">
@@ -352,21 +355,21 @@ export function RoleMatchCards({ roles, onUnlocked }: { roles: MatchedRole[]; on
         </div>
       </div>
 
-      {locked.map((r, i) => (
-        <LockedRoleCard key={`locked-${r.rank}`} role={r} featured={i === 0} busy={busy} onUnlock={unlock} />
-      ))}
-
-      {top && topPhoto ? <RoleCard role={top} rank={1} photo={topPhoto} featured /> : null}
-
-      {rest.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {rest.map((r, i) =>
-            r ? (
-              <RoleCard key={`${r.roleTitle}-${i}`} role={r} rank={firstOpenRank + i + (locked.length ? 0 : 1)} photo={restPhotos[i]!} />
-            ) : null,
-          )}
-        </div>
+      {locked[0] ? (
+        <LockedRoleCard role={locked[0]} featured busy={busy} onUnlock={unlock} />
+      ) : open[0] && photos[0] ? (
+        <RoleCard role={open[0]} rank={1} photo={photos[0]} featured />
       ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {locked.slice(1).map((r) => (
+          <LockedRoleCard key={`locked-${r.rank}`} role={r} featured={false} busy={busy} onUnlock={unlock} />
+        ))}
+        {(locked.length ? open : open.slice(1)).map((r, i) => {
+          const at = locked.length ? i : i + 1;
+          return <RoleCard key={`${r.roleTitle}-${at}`} role={r} rank={locked.length ? firstOpenRank + i : at + 1} photo={photos[at]} />;
+        })}
+      </div>
     </section>
   );
 }
