@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import OpenAI from "openai";
+import { isTopUnlocked, lockTopRoles } from "../utils/topMatchLock.js";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
@@ -258,7 +259,14 @@ export async function matchRoles(req, res) {
       });
       const aiCalls = await getCallCapStatusForUserId(userId).catch(() => null);
       console.log(`[ai/match-roles] cache hit for user ${userId}`);
-      return res.json({ roles: cachedMatch.roles, aiCalls, notice: profileNotice, cached: true });
+      const unlocked = await isTopUnlocked(userId);
+      return res.json({
+        roles: lockTopRoles(cachedMatch.roles, unlocked),
+        topLocked: !unlocked,
+        aiCalls,
+        notice: profileNotice,
+        cached: true,
+      });
     }
 
     let filteredRoles;
@@ -496,7 +504,8 @@ ${yomLines}${legacyQ}
     // Recompute after logging so the client shows the up-to-date remaining count.
     const aiCalls = await getCallCapStatusForUserId(userId).catch(() => null);
 
-    res.json({ roles: normalized, aiCalls, notice: profileNotice });
+    const unlocked = await isTopUnlocked(userId);
+    res.json({ roles: lockTopRoles(normalized, unlocked), topLocked: !unlocked, aiCalls, notice: profileNotice });
   } catch (err) {
     await recordAiUsage({
       userId,

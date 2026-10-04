@@ -10,6 +10,7 @@ import aiRoutes from "./routes/ai.js";
 import adminRoutes from "./routes/admin.js";
 import reportsRoutes from "./routes/reports.js";
 import rolesRoutes from "./routes/roles.js";
+import paymentsRoutes from "./routes/payments.js";
 import { isEmailConfigured, isResendConfigured } from "./utils/email.js";
 import { corsOptions } from "./utils/corsOptions.js";
 import { SITE_NAME_EN, SITE_NAME_HE } from "./utils/brand.js";
@@ -63,6 +64,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/roles", rolesRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {

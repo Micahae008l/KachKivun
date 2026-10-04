@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       default: null,
       min: 0,
     },
+    /** Set once the user paid to see their top 2 matches; unlocks them for good. */
+    topMatchesUnlockedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

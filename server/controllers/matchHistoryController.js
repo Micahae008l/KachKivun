@@ -1,17 +1,18 @@
 import MatchGeneration from "../models/MatchGeneration.js";
 import AiMatchResult from "../models/AiMatchResult.js";
 import { sendServerError } from "../utils/httpError.js";
+import { isTopUnlocked, lockTopRoles } from "../utils/topMatchLock.js";
 
 
-function summarize(doc) {
-  const roles = Array.isArray(doc.roles) ? doc.roles : [];
+function summarize(doc, unlocked) {
+  const roles = lockTopRoles(Array.isArray(doc.roles) ? doc.roles : [], unlocked);
   const top = roles[0];
   return {
     id: String(doc._id),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
     engineVersion: doc.engineVersion || "",
-    topRole: doc.topRole || top?.roleTitle || "",
+    topRole: unlocked ? doc.topRole || top?.roleTitle || "" : "",
     topMatch: doc.topMatch ?? top?.matchPercentage ?? null,
     roleCount: roles.length,
     roleTitles: roles.slice(0, 5).map((r) => r.roleTitle).filter(Boolean),
@@ -42,7 +43,8 @@ export async function listMatchHistory(req, res) {
       }));
     }
 
-    res.json({ generations: docs.map(summarize) });
+    const unlocked = await isTopUnlocked(userId);
+    res.json({ generations: docs.map((d) => summarize(d, unlocked)) });
   } catch (err) {
     return sendServerError(res, err, "[ai/match-history/list]");
   }
@@ -60,10 +62,12 @@ export async function getMatchHistory(req, res) {
     if (!doc?.roles?.length) {
       return res.status(404).json({ error: "ההפעלה לא נמצאה", code: "NOT_FOUND" });
     }
+    const unlocked = await isTopUnlocked(userId);
     res.json({
       generation: {
-        ...summarize(doc),
-        roles: doc.roles,
+        ...summarize(doc, unlocked),
+        roles: lockTopRoles(doc.roles, unlocked),
+        topLocked: !unlocked,
       },
     });
   } catch (err) {
