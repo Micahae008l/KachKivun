@@ -324,6 +324,8 @@ export function computeProfileHash(profile, catalogVersion, promptVersion) {
     engine: process.env.AI_MATCH_ENGINE || "v2",
     // Bump when gate/weight logic changes so old cached matches are not served.
     scoringRev: "combat-floor-82-yom-downweight-v1",
+    // Only when given, so profiles without personal answers keep their cached match.
+    ...(profile.personal ? { personal: profile.personal } : {}),
   };
   return crypto.createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
 }

@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import OpenAI from "openai";
 import { isTopUnlocked, lockTopRoles } from "../utils/topMatchLock.js";
+import { personalSignalsOf, personalSignalsPromptLines } from "../utils/personalSignals.js";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
@@ -232,6 +233,7 @@ export async function matchRoles(req, res) {
       physicalActivityLevel: preferences?.physicalActivityLevel,
       yom,
       yomSource: preferences?.yomHameahSource || null,
+      personal: personalSignalsOf(preferences),
     };
     const profileNotice = buildProfileNotice(profileForMatch);
 
@@ -337,7 +339,7 @@ ${yomLines}${legacyQ}
 - ${weaknessLine}
 - העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
 - מיקוד: ${preferences?.focus || "כללי"}
-- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}${personalSignalsPromptLines(profileForMatch.personal)}
 
 בחר 5 תפקידים מהמאגר בלבד. שמות מדויקים כפי שמופיעים במאגר, תיאורים בעברית בלבד.` : `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
 

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ENVIRONMENTS, LANGUAGES, MOTIVATIONS, STRENGTHS } from "../utils/personalSignals.js";
 
 const preferencesSchema = new mongoose.Schema(
   {
@@ -47,6 +48,11 @@ const preferencesSchema = new mongoose.Schema(
       enum: ["official", "self", "unspecified"],
       default: "unspecified",
     },
+    // Personal signup answers (utils/personalSignals.js); optional, feed the AI match.
+    motivation: { type: String, enum: [...Object.keys(MOTIVATIONS), null], default: null },
+    strengths: { type: String, enum: [...Object.keys(STRENGTHS), null], default: null },
+    environment: { type: String, enum: [...Object.keys(ENVIRONMENTS), null], default: null },
+    languages: { type: [{ type: String, enum: Object.keys(LANGUAGES) }], default: [] },
   },
   { timestamps: true }
 );

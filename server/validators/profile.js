@@ -10,6 +10,7 @@ import {
 } from "../utils/sanitize.js";
 import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
 import { SERVICE_MAP } from "../utils/profileApply.js";
+import { ENVIRONMENTS, LANGUAGES, MOTIVATIONS, STRENGTHS } from "../utils/personalSignals.js";
 
 const USER_STATUSES = ["Pre-Draft", "Active Duty", "Discharged"];
 const SERVICE_LIFECYCLES = Object.keys(SERVICE_MAP);
@@ -175,11 +176,36 @@ function parsePreferencesPatch(value) {
     "location",
     "physicalActivityLevel",
     "yomHameahSource",
+    "motivation",
+    "strengths",
+    "environment",
+    "languages",
   ];
   for (const key of Object.keys(obj.value)) {
     if (!allowed.includes(key)) return fail(`Unknown preferences field: ${key}`);
   }
   const patch = {};
+  for (const [key, options] of [
+    ["motivation", MOTIVATIONS],
+    ["strengths", STRENGTHS],
+    ["environment", ENVIRONMENTS],
+  ]) {
+    if (obj.value[key] === undefined) continue;
+    const v = parseEnum(obj.value[key], Object.keys(options), { label: key });
+    if (!v.ok) return v;
+    patch[key] = v.value;
+  }
+  if (obj.value.languages !== undefined) {
+    const langs = obj.value.languages;
+    if (!Array.isArray(langs) || langs.length > Object.keys(LANGUAGES).length) {
+      return fail("languages must be a short list");
+    }
+    for (const l of langs) {
+      const v = parseEnum(l, Object.keys(LANGUAGES), { label: "languages" });
+      if (!v.ok) return v;
+    }
+    patch.languages = [...new Set(langs)];
+  }
   if (obj.value.combatPreference !== undefined) {
     const v = parseEnum(obj.value.combatPreference, COMBAT_PREFS, { label: "combatPreference" });
     if (!v.ok) return v;

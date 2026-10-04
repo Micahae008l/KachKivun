@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import { ENVIRONMENTS, LANGUAGES, MOTIVATIONS, STRENGTHS } from "./personalSignals.js";
 import { addMonths, aggregateYomFromAnswers, loadYomQuestionDefs } from "./yomLoad.js";
 import { isValidYomHameah12, migrateLegacyYomHameahTo12 } from "./yomHameah12Keys.js";
 
@@ -147,6 +148,12 @@ export async function applyPreferencesPatch(userId, preferences) {
   }
   if (preferences.yomHameahSource !== undefined && YOM_SOURCES.has(preferences.yomHameahSource)) {
     p.yomHameahSource = preferences.yomHameahSource;
+  }
+  if (preferences.motivation in MOTIVATIONS) p.motivation = preferences.motivation;
+  if (preferences.strengths in STRENGTHS) p.strengths = preferences.strengths;
+  if (preferences.environment in ENVIRONMENTS) p.environment = preferences.environment;
+  if (Array.isArray(preferences.languages)) {
+    p.languages = [...new Set(preferences.languages.filter((l) => l in LANGUAGES))];
   }
   if (Object.keys(p).length) {
     await Preferences.findOneAndUpdate({ userId }, { $set: p }, { new: true, upsert: true });
