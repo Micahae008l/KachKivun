@@ -190,13 +190,16 @@ function validateBusinessDetails(env, errors, confirmations) {
   // Confirm with counsel whether a phone is also required for distance sales before relying on that.
   for (const [name, maxLength] of [
     ["BUSINESS_LEGAL_NAME", 200],
-    ["BUSINESS_ADDRESS", 300],
     ["BUSINESS_CONTACT_EMAIL", 254],
   ]) {
     const value = text(env[name]);
     if (!value) errors.push(`${name} is required when the production paywall is enabled`);
     else if (value.length > maxLength) errors.push(`${name} is too long`);
   }
+  // BUSINESS_ADDRESS is optional by the owner's decision (2026-10-09): a sole trader does not want
+  // a home address public. Distance-sale law lists the seller's address, so this is an accepted
+  // risk; a mailing address (virtual office, coworking) can be added later with no code change.
+  if (text(env.BUSINESS_ADDRESS).length > 300) errors.push("BUSINESS_ADDRESS is too long");
 
   const email = text(env.BUSINESS_CONTACT_EMAIL);
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

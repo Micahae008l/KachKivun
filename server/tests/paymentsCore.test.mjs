@@ -257,7 +257,7 @@ test("enabled production requires truthful merchant details, reviews, and ISO la
   const errors = validatePaymentEnvironment({
     ...validProductionEnv,
     BUSINESS_PHONE: "call me maybe",
-    BUSINESS_ADDRESS: "",
+    BUSINESS_LEGAL_NAME: "",
     PAYWALL_LAUNCH_AT: "tomorrow",
     CANCELLATION_URL: "https://app.example.test/cancellation?token=secret",
     GROW_CALLBACK_AUTH_CONFIRMED: "false",
@@ -266,7 +266,7 @@ test("enabled production requires truthful merchant details, reviews, and ISO la
   });
   for (const expected of [
     "BUSINESS_PHONE",
-    "BUSINESS_ADDRESS",
+    "BUSINESS_LEGAL_NAME",
     "PAYWALL_LAUNCH_AT",
     "CANCELLATION_URL",
     "GROW_CALLBACK_AUTH_CONFIRMED",
@@ -287,13 +287,26 @@ test("live Grow safety gates apply even when NODE_ENV is misconfigured", () => {
   const misconfigured = {
     ...validProductionEnv,
     NODE_ENV: "development",
-    BUSINESS_ADDRESS: "",
+    BUSINESS_LEGAL_NAME: "",
     GROW_CALLBACK_AUTH_CONFIRMED: "false",
   };
   const errors = validatePaymentEnvironment(misconfigured);
-  assert.ok(errors.some((message) => message.includes("BUSINESS_ADDRESS")));
+  assert.ok(errors.some((message) => message.includes("BUSINESS_LEGAL_NAME")));
   assert.ok(errors.some((message) => message.includes("GROW_CALLBACK_AUTH_CONFIRMED")));
   assert.ok(productionEnvironmentErrors(misconfigured).length >= 2);
+});
+
+test("address is optional (owner's decision), but capped if given", () => {
+  assert.ok(
+    !validatePaymentEnvironment({ ...validProductionEnv, BUSINESS_ADDRESS: "" }).some((m) =>
+      m.includes("BUSINESS_ADDRESS"),
+    ),
+  );
+  assert.ok(
+    validatePaymentEnvironment({ ...validProductionEnv, BUSINESS_ADDRESS: "x".repeat(301) }).some(
+      (m) => m.includes("BUSINESS_ADDRESS"),
+    ),
+  );
 });
 
 test("phone is optional when written contact exists, but must be valid if given", () => {
