@@ -144,8 +144,8 @@ function HomePage() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-12 flex gap-6 sm:mt-16 sm:gap-10">
-              <DataPoint value="+120" label="תפקידים" />
-              <DataPoint value="12" label="ממדי מא״ה" />
+              <DataPoint value="+300" label="תפקידים ומסלולים" />
+              <DataPoint value="11" label="ממדי מא״ה" />
               <DataPoint value="3 דק׳" label="זמן הרשמה" />
             </motion.div>
           </motion.div>
@@ -194,7 +194,7 @@ function HomePage() {
             <CapabilityCard
               icon={<Target className="h-5 w-5" />}
               title="התאמת תפקיד"
-              description="מנוע התאמה שמצליב נתונים מול 120+ תפקידים בצה״ל ומציג אחוזי דיוק."
+              description="מנוע התאמה שמצליב את הנתונים שלכם מול 300+ תפקידים ומסלולים בצה״ל, עם ספי דפ״ר ופרופיל רשמיים, ומציג ציון התאמה לכל אחד."
               photo={idfPhotoAt(1)}
               idx={1}
             />
