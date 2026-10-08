@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import OpenAI from "openai";
+import { chatJson } from "../utils/llmClient.js";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
@@ -58,7 +58,7 @@ function loadSystemPromptV2() {
 const BASE_SYSTEM_PROMPT_V2 = loadSystemPromptV2();
 
 /** v2 system prompt: pre-scored pool with rich v3 fields; model returns adjustment, not matchPercentage. */
-function buildSystemPromptV2(pool) {
+export function buildSystemPromptV2(pool) {
   const catalogSection = pool?.length
     ? `
 
@@ -75,19 +75,31 @@ ${JSON.stringify(
     combat: r.combat,
     basePercent: r.basePercent,
     breakdownHe: r.breakdownHe,
+    tier: r.tier,
     dayToDay: r.dayToDay || undefined,
     requirements: r.requirements?.length ? r.requirements : undefined,
+    serviceLengthLabel: r.serviceLengthLabel || undefined,
     keyDimensions: r.keyDimensions,
-    popularity: r.popularity,
   })),
   null,
   0
 )}`
     : "";
-  return BASE_SYSTEM_PROMPT_V2 + catalogSection;
+  return `${BASE_SYSTEM_PROMPT_V2}\n\n${VERIFIED_FACTS_HE}${catalogSection}`;
 }
 
-function buildSystemPromptV3(rankedRoles) {
+export // Verified against mitgaisim.idf.il and the July 2026 service-length law. See docs/IDF-FACTS-AND-SITE-GAPS.md.
+const VERIFIED_FACTS_HE = `עובדות מאומתות (אוקטובר 2026), השתמש רק בהן ואל תוסיף מספרים משלך:
+- שירות חובה: גברים 32 חודשים (למתגייסים עד יוני 2029). נשים 24 חודשים, או 32 בתפקידי "דין אישה כדין גבר" (כל תפקידי הלחימה ורוב מסלולי הטכנולוגיה והמודיעין).
+- פרופיל: 97 הכול כולל יחידות מובחרות; 82 חי"ר, סיירות והנדסה קרבית; 72 שאר הלחימה (שריון, תותחנים, הגנה אווירית, חילוץ, חי"ר גבולות); 70 (חדש) כמו 72 בלי חי"ר; 64 תומכי לחימה ומעברים; 45 עורפי.
+- דפ"ר: סף נפוץ לטכנולוגיה ומודיעין 60; תוכניתן, מגן סייבר, DevOps ולה"ב 70; שחקים 80-90; תלפיות 90. בנים עם פרופיל קרבי צריכים דפ"ר 80 ו-10 יח"ל טכנולוגיות למיוני אשכול מקצועות המחשב.
+- בן עם פרופיל 72, 82 או 97 הוא "מיועד ללוחמה": הוא מקבל את שאלון ההעדפות של יחידות השדה ותפקידי עורף לא מופיעים בו. פרופיל גבוה אינו "פותח הכול"; לטכנולוגיה הוא מגיע רק דרך מיון שמקבל פרופיל קרבי: אשכול מקצועות המחשב ("מיוני ממר"ם", דורש לבעלי פרופיל קרבי דפ"ר 80 ו-10 יח"ל טכנולוגיות), שחקים, גאמ"א, חבצלות, עתודה, חיל האוויר. יום המיון לכלל חמ"ן אינו מזמין בנים המיועדים ללוחמה. מאז יוני 2024 צומצמו מכסות בעלי פרופיל קרבי ב-8200 ובתקשוב. נשים בוחרות לוחמה מרצון ואין להן מגבלה כזו.
+- "ממר"ם" בפי המועמדים = מיוני אשכול מקצועות המחשב של אגף התקשוב (תוכניתן, מגן סייבר, DevOps, בודק תוכנה, דאטא אנליסט); מתקיימים כפעמיים בשנה.
+- 8200 אינה מופיעה בשמה באתר מתגייסים; המסלולים הם אמנון, אח"מ, אע"מ, מט"מ, אופק, גאמ"א, שחקים. מגן סייבר שייך לאגף התקשוב, לא ל-8200.
+- מבחן דפ"ר חוזר מאושר רק למי שהדפ"ר שלו 70 ומטה; למי שיש 80 או 90 אין "להעלות דפ"ר". קב"א כמעט לא מוצג היום למועמדים. צה"ל לא מפרסם מערכת יציאות לפי תפקיד; מה שרשמי הוא בסיס סגור או פתוח.
+- התחייבות קבע: תוכניתן 2.5 שנים, מגן סייבר 2, DevOps 1, גאמ"א ואמנון 3, שלדג 18 חודשים, סיירת מטכ"ל 3 שנים, חובלים 5, טיס 7, עתודה 3.`;
+
+export function buildSystemPromptV3(rankedRoles) {
   return `אתה עורך תוכן ליועץ תפקידים בצה"ל. מנוע דטרמיניסטי כבר קבע את חמשת התפקידים, הסדר והציונים.
 
 כללי חוזה:
@@ -95,9 +107,12 @@ function buildSystemPromptV3(rankedRoles) {
 - החזר כל roleTitle בדיוק כפי שנמסר, ללא החלפה, השמטה או שינוי סדר.
 - אל תחזיר matchPercentage או adjustment. אינך רשאי לשנות ציון או דירוג.
 - לכל תפקיד כתוב רק summary בעברית ו-description בעברית.
-- הוסף nextStepPrompts עם 1 עד 3 שאלות המשך קצרות בעברית.
+- הוסף nextStepPrompts עם 1 עד 3 שאלות קצרות בעברית שהמועמד/ת יכולים לשאול את מיטב (1111) או נציג היחידה על התפקיד (למשל "מתי חלון המיונים הבא?"), לא שאלות ראיון למועמד.
 - אל תחזיר tags, category, requirements, dayToDay, locations, serviceLength, rank או נתוני זכאות; כל המטא-דאטה מגיע מהמנוע הדטרמיניסטי בלבד.
+- אם מופיעה "בקשה אישית של המועמד/ת", החזר גם מפתח personalAnswer ברמת השורש: 3-5 משפטים בעברית שעונים עליה ישירות, בגוף שני, רק לפי העובדות המאומתות ונתוני התפקידים; אם אין בקשה, החזר personalAnswer ריק.
 - אין להמציא תנאי סף. הצג את הזכאות ככפופה לאימות בערוצים הרשמיים.
+
+${VERIFIED_FACTS_HE}
 
 התפקידים הנעולים בסדר הקנוני:
 ${JSON.stringify(
@@ -113,8 +128,8 @@ ${JSON.stringify(
   })),
 )}
 
-מבנה כל רשומה:
-{"roleTitle":"שם מדויק","summary":"משפט קצר","description":"2-3 משפטים","nextStepPrompts":["שאלת המשך"]}`;
+מבנה התשובה:
+{"roles":[{"roleTitle":"שם מדויק","summary":"משפט קצר","description":"2-3 משפטים","nextStepPrompts":["שאלת המשך"]}],"personalAnswer":"תשובה לבקשה האישית או מחרוזת ריקה"}`;
 }
 
 /**
@@ -154,7 +169,22 @@ ${JSON.stringify(filteredRoles.map(r => ({
 /**
  * Normalize model output: JSON mode object, legacy raw array, or fenced / prefixed text.
  */
-function parseRolesArray(raw) {
+/** Root-level personalAnswer string, if the model returned one. */
+export function parsePersonalAnswer(raw) {
+  if (!raw || typeof raw !== "string") return "";
+  const s = raw.trim().replace(/^```(?:json)?\s*\r?\n?/i, "").replace(/\r?\n?```\s*$/i, "");
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start === -1 || end <= start) return "";
+  try {
+    const parsed = JSON.parse(s.slice(start, end + 1));
+    return typeof parsed?.personalAnswer === "string" ? parsed.personalAnswer.trim().slice(0, 2000) : "";
+  } catch {
+    return "";
+  }
+}
+
+export function parseRolesArray(raw) {
   if (!raw || typeof raw !== "string") return null;
   let s = raw.trim();
   s = s.replace(/^```(?:json)?\s*\r?\n?/i, "").replace(/\r?\n?```\s*$/i, "").trim();
@@ -188,8 +218,6 @@ function parseRolesArray(raw) {
   return null;
 }
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 const AI_MODEL = process.env.AI_MATCH_MODEL || "gpt-4o";
 const AI_TEMPERATURE = parseFloat(process.env.AI_MATCH_TEMPERATURE) || 0.2;
 
@@ -207,7 +235,7 @@ const MATCH_PROMPT_VERSION =
  * Percentage = deterministic basePercent (looked up from the pool) + clamped AI adjustment.
  * Enforces strict descending order so the UI's ranked layout is always monotonic.
  */
-function finalizeRolesV2(rawRoles, pool) {
+export function finalizeRolesV2(rawRoles, pool) {
   const byTitle = new Map(pool.map((r) => [r.roleTitle, r]));
   const titles = pool.map((r) => r.roleTitle);
 
@@ -307,6 +335,7 @@ async function persistRecommendation({
   promptVersion,
   engineVersion,
   notice,
+  personalAnswer = "",
   scoringVersion = SCORING_VERSION,
 }) {
   const storedRoles = completeStoredRoles(roles);
@@ -323,6 +352,7 @@ async function persistRecommendation({
     promptVersion,
     roles: storedRoles,
     notice: String(notice || ""),
+    personalAnswer: String(personalAnswer || "").slice(0, 2000),
   };
 
   try {
@@ -340,6 +370,159 @@ async function persistRecommendation({
     if (error?.code !== 11000) throw error;
     return RoleRecommendation.findOne({ userId, profileHash }).lean();
   }
+}
+
+/** Builds the per-engine user prompt. Exported so scripts can run the exact production prompt offline. */
+export function buildMatchUserPrompt({
+  engine,
+  profileForMatch,
+  preferences,
+  yom,
+  stats,
+  assessmentSignals,
+  filteredRoleCount,
+  personalRequest = "",
+}) {
+    const requestLine = personalRequest
+      ? `- בקשה אישית של המועמד/ת (ענה עליה במפתח personalAnswer): """${personalRequest}"""
+`
+      : "";
+    const legacyQ =
+      stats?.yomQuestionnaire?.length > 0
+        ? ` (יש גם נתון ישן של שאלון ${stats?.yomQuestionnaire.length} פריטים — אם יש סתירה מול ציוני הממדים, עדיף להסתמך על ציוני הממדים)`
+        : "";
+
+    const yomSrc =
+      preferences?.yomHameahSource === "official"
+        ? "רשמי (מאה/מכון ממיין)"
+        : preferences?.yomHameahSource === "self"
+          ? "הערכה עצמית לסימולציה בלבד"
+          : preferences?.yomHameahSource === "unknown"
+            ? "לא ידוע — ציונים ניטרליים הם מצייני מקום בלבד"
+            : "לא צוין מקור";
+
+    const daparLabel =
+      typeof profileForMatch.daparScore === "number"
+        ? String(profileForMatch.daparScore)
+        : "לא ידוע";
+    const medicalLabel =
+      typeof profileForMatch.medicalProfile === "number"
+        ? String(profileForMatch.medicalProfile)
+        : "לא ידוע";
+    const yomKnown = preferences?.yomHameahSource !== "unknown";
+
+    const yomLines = yom && yomKnown
+      ? YOM_HAMEAH_12_KEYS.map(
+          (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
+        ).join("\n")
+      : preferences?.yomHameahSource === "unknown"
+        ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
+        : "  (לא הוזנו ציוני מאה)";
+
+    // Compute yom peaks and lows for the AI to focus on
+    const yomSorted = yom && yomKnown
+      ? YOM_HAMEAH_12_KEYS
+          .map(k => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
+          .filter(d => typeof d.score === "number")
+          .sort((a, b) => b.score - a.score)
+      : [];
+    const topDims = yomSorted.filter(d => d.score >= 4).slice(0, 5);
+    const lowDims = yomSorted.filter(d => d.score <= 2);
+
+    const strengthsLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חוזקות"
+      : topDims.length
+        ? `חוזקות בולטות: ${topDims.map(d => `${d.label} (${d.score})`).join(", ")}`
+        : "אין ציונים בולטים גבוהים";
+    const weaknessLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חולשות"
+      : lowDims.length
+        ? `ממדים נמוכים: ${lowDims.map(d => `${d.label} (${d.score})`).join(", ")}`
+        : "אין ציונים בולטים נמוכים";
+
+    const userPrompt = engine === "v3"
+      ? `ענה לפי כללי המערכת ב-JSON בלבד. כתוב הסברים ושאלות המשך לחמשת התפקידים שכבר דורגו, בלי לבחור תפקידים ובלי לשנות סדר או ציון.
+
+נתוני פרופיל:
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
+- מקור ציוני מא"ה: ${yomSrc}
+- ציוני מא"ה:
+${yomLines}
+- ${strengthsLine}
+- ${weaknessLine}
+- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
+- מיקוד: ${preferences?.focus || "כללי"}
+- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+- אותות שאלון מובנים: ${JSON.stringify(assessmentSignals)}
+${requestLine}
+החזר copy בלבד לכל חמשת השמות המדויקים שסופקו בהוראות המערכת.`
+      : engine === "v2" ? `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
+
+מהמאגר המדורג מראש שבהוראות המערכת, בחר את 5 התפקידים הטובים ביותר עבור המועמד, דרג מ-#1 (החזק ביותר) ל-#5, והחזר adjustment (מ-8- עד 8+) לכל תפקיד. אל תחזיר matchPercentage — המערכת מחשבת אותו מ-basePercent ומה-adjustment שלך.
+
+חוזה ההסבר (חובה בכל description): התייחס בכנות לדפ"ר ${daparLabel} ולפרופיל הרפואי ${medicalLabel}; אם נתון אינו ידוע, אסור להסיק ממנו זכאות. צטט ממד מא"ה רק אם המקור ידוע, ולפחות עובדה אחת מתוך שדה dayToDay של התפקיד.
+
+## פרופיל מועמד
+
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
+- מקור ציוני מאה: ${yomSrc}
+- ציוני מאה (כל 12 ממדים):
+${yomLines}${legacyQ}
+- ${strengthsLine}
+- ${weaknessLine}
+- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
+- מיקוד: ${preferences?.focus || "כללי"}
+- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+${requestLine}
+בחר 5 תפקידים מהמאגר בלבד. שמות מדויקים כפי שמופיעים במאגר, תיאורים בעברית בלבד.` : `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
+
+החזר אובייקט JSON עם מפתח יחיד "roles" (מערך של 5 תפקידים), בדיוק כפי שמוגדר בהוראות המערכת.
+
+## הנחיות חשיבה
+
+לפני שתבחר תפקידים, חשוב שלב-אחר-שלב:
+
+1. מה הדפ״ר (${daparLabel}) מאפשר ומגביל? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
+
+2. מה הפרופיל הרפואי (${medicalLabel}) מאפשר? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
+
+3. מה החוזקות הבולטות במא״ה? ${strengthsLine}. התאימו תפקידים שמנצלים חוזקות אלה.
+
+4. מה הממדים הנמוכים? ${weaknessLine}. הימנעו מתפקידים שדורשים בדיוק את הממדים הנמוכים.
+
+5. מה ההעדפות? ${preferences?.combatPreference || "—"} (קרביות), ${preferences?.focus || "—"} (מיקוד), ${preferences?.physicalActivityLevel || "—"} (כושר). כבדו העדפות אבל ציינו בכנות אם משהו סותר.
+
+6. סרקו את ${filteredRoleCount} התפקידים המסוננים ובחרו 5 שמתאימים הכי טוב לשילוב של כל הנ״ל. תפקיד #1 חייב להיות ההתאמה החזקה ביותר, ולאחריו סדר יורד.
+
+## חובה בכל תיאור
+
+בשדה description של כל תפקיד חייבים להופיע במפורש:
+(1) לפחות משפט שמתייחס לדפ״ר ${daparLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
+(2) לפחות משפט שמתייחס לפרופיל רפואי ${medicalLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
+(3) התייחסות לממד מא״ה רק אם המקור ידוע; אחרת ציין שהמדדים לא ידועים.
+(4) הסבר קצר מה עושים ביומיום בתפקיד.
+
+matchPercentage: סדרו מ-#1 (הגבוה ביותר) ל-#5 (הנמוך). #1 יהיה 85-95 רק אם ההתאמה מצוינת. טווחים: 85-95 (מצוין), 72-84 (חזק), 58-71 (סביר).
+
+## פרופיל מועמד
+
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
+- מקור ציוני מאה: ${yomSrc}
+- ציוני מאה (כל 12 ממדים):
+${yomLines}${legacyQ}
+- ${strengthsLine}
+- ${weaknessLine}
+- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
+- מערכת שבוע: ${preferences?.schedule || "כללי"}
+- מיקוד: ${preferences?.focus || "כללי"}
+- מיקום: ${preferences?.location || "כל מקום"}
+- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+
+המלץ על 5 תפקידי צה"ל. שמות ותיאורים — בעברית בלבד.`;
+    return userPrompt;
 }
 
 export async function matchRoles(req, res) {
@@ -394,6 +577,7 @@ export async function matchRoles(req, res) {
       yom,
       yomSource: preferences?.yomHameahSource || null,
       assessmentSignals,
+      personalRequest: String(latestAssessment?.answers?.extraNote || "").trim().slice(0, 400),
     };
     const profileNotice = buildProfileNotice(profileForMatch);
     const catalogV3 = getIdfRoleCatalogV3();
@@ -402,10 +586,11 @@ export async function matchRoles(req, res) {
     // Cache: identical profile + catalog + prompt + engine → return the saved
     // result instantly. Logged as cache_hit (not success) so it costs nothing
     // and does not consume the internal generation allowance.
+    // Non-default models get their own cache namespace; gpt-4o keeps legacy hashes intact.
     const profileHash = computeProfileHash(
       profileForMatch,
       catalogVersion,
-      MATCH_PROMPT_VERSION,
+      AI_MODEL === "gpt-4o" ? MATCH_PROMPT_VERSION : `${MATCH_PROMPT_VERSION}|${AI_MODEL}`,
       MATCH_ENGINE,
     );
     const [durableMatch, cachedMatch] = await Promise.all([
@@ -506,179 +691,43 @@ export async function matchRoles(req, res) {
       console.log(`[ai/match-roles] engine=v1 pre-filtered ${allRoles.length} → ${filteredRoles.length} for user ${userId}`);
     }
 
-    const legacyQ =
-      stats.yomQuestionnaire?.length > 0
-        ? ` (יש גם נתון ישן של שאלון ${stats.yomQuestionnaire.length} פריטים — אם יש סתירה מול ציוני הממדים, עדיף להסתמך על ציוני הממדים)`
-        : "";
-
-    const yomSrc =
-      preferences?.yomHameahSource === "official"
-        ? "רשמי (מאה/מכון ממיין)"
-        : preferences?.yomHameahSource === "self"
-          ? "הערכה עצמית לסימולציה בלבד"
-          : preferences?.yomHameahSource === "unknown"
-            ? "לא ידוע — ציונים ניטרליים הם מצייני מקום בלבד"
-            : "לא צוין מקור";
-
-    const daparLabel =
-      typeof profileForMatch.daparScore === "number"
-        ? String(profileForMatch.daparScore)
-        : "לא ידוע";
-    const medicalLabel =
-      typeof profileForMatch.medicalProfile === "number"
-        ? String(profileForMatch.medicalProfile)
-        : "לא ידוע";
-    const yomKnown = preferences?.yomHameahSource !== "unknown";
-
-    const yomLines = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS.map(
-          (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
-        ).join("\n")
-      : preferences?.yomHameahSource === "unknown"
-        ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
-        : "  (לא הוזנו ציוני מאה)";
-
-    // Compute yom peaks and lows for the AI to focus on
-    const yomSorted = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS
-          .map(k => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
-          .filter(d => typeof d.score === "number")
-          .sort((a, b) => b.score - a.score)
-      : [];
-    const topDims = yomSorted.filter(d => d.score >= 4).slice(0, 5);
-    const lowDims = yomSorted.filter(d => d.score <= 2);
-
-    const strengthsLine = !yomKnown
-      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חוזקות"
-      : topDims.length
-        ? `חוזקות בולטות: ${topDims.map(d => `${d.label} (${d.score})`).join(", ")}`
-        : "אין ציונים בולטים גבוהים";
-    const weaknessLine = !yomKnown
-      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חולשות"
-      : lowDims.length
-        ? `ממדים נמוכים: ${lowDims.map(d => `${d.label} (${d.score})`).join(", ")}`
-        : "אין ציונים בולטים נמוכים";
-
-    const userPrompt = MATCH_ENGINE === "v3"
-      ? `ענה לפי כללי המערכת ב-JSON בלבד. כתוב הסברים ושאלות המשך לחמשת התפקידים שכבר דורגו, בלי לבחור תפקידים ובלי לשנות סדר או ציון.
-
-נתוני פרופיל:
-- דפ"ר: ${daparLabel}
-- פרופיל רפואי: ${medicalLabel}
-- מקור ציוני מא"ה: ${yomSrc}
-- ציוני מא"ה:
-${yomLines}
-- ${strengthsLine}
-- ${weaknessLine}
-- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
-- מיקוד: ${preferences?.focus || "כללי"}
-- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
-- אותות שאלון מובנים: ${JSON.stringify(assessmentSignals)}
-
-החזר copy בלבד לכל חמשת השמות המדויקים שסופקו בהוראות המערכת.`
-      : MATCH_ENGINE === "v2" ? `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
-
-מהמאגר המדורג מראש שבהוראות המערכת, בחר את 5 התפקידים הטובים ביותר עבור המועמד, דרג מ-#1 (החזק ביותר) ל-#5, והחזר adjustment (מ-8- עד 8+) לכל תפקיד. אל תחזיר matchPercentage — המערכת מחשבת אותו מ-basePercent ומה-adjustment שלך.
-
-חוזה ההסבר (חובה בכל description): התייחס בכנות לדפ"ר ${daparLabel} ולפרופיל הרפואי ${medicalLabel}; אם נתון אינו ידוע, אסור להסיק ממנו זכאות. צטט ממד מא"ה רק אם המקור ידוע, ולפחות עובדה אחת מתוך שדה dayToDay של התפקיד.
-
-## פרופיל מועמד
-
-- דפ"ר: ${daparLabel}
-- פרופיל רפואי: ${medicalLabel}
-- מקור ציוני מאה: ${yomSrc}
-- ציוני מאה (כל 12 ממדים):
-${yomLines}${legacyQ}
-- ${strengthsLine}
-- ${weaknessLine}
-- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
-- מיקוד: ${preferences?.focus || "כללי"}
-- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
-
-בחר 5 תפקידים מהמאגר בלבד. שמות מדויקים כפי שמופיעים במאגר, תיאורים בעברית בלבד.` : `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
-
-החזר אובייקט JSON עם מפתח יחיד "roles" (מערך של 5 תפקידים), בדיוק כפי שמוגדר בהוראות המערכת.
-
-## הנחיות חשיבה
-
-לפני שתבחר תפקידים, חשוב שלב-אחר-שלב:
-
-1. מה הדפ״ר (${daparLabel}) מאפשר ומגביל? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
-
-2. מה הפרופיל הרפואי (${medicalLabel}) מאפשר? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
-
-3. מה החוזקות הבולטות במא״ה? ${strengthsLine}. התאימו תפקידים שמנצלים חוזקות אלה.
-
-4. מה הממדים הנמוכים? ${weaknessLine}. הימנעו מתפקידים שדורשים בדיוק את הממדים הנמוכים.
-
-5. מה ההעדפות? ${preferences?.combatPreference || "—"} (קרביות), ${preferences?.focus || "—"} (מיקוד), ${preferences?.physicalActivityLevel || "—"} (כושר). כבדו העדפות אבל ציינו בכנות אם משהו סותר.
-
-6. סרקו את ${filteredRoles.length} התפקידים המסוננים ובחרו 5 שמתאימים הכי טוב לשילוב של כל הנ״ל. תפקיד #1 חייב להיות ההתאמה החזקה ביותר, ולאחריו סדר יורד.
-
-## חובה בכל תיאור
-
-בשדה description של כל תפקיד חייבים להופיע במפורש:
-(1) לפחות משפט שמתייחס לדפ״ר ${daparLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
-(2) לפחות משפט שמתייחס לפרופיל רפואי ${medicalLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
-(3) התייחסות לממד מא״ה רק אם המקור ידוע; אחרת ציין שהמדדים לא ידועים.
-(4) הסבר קצר מה עושים ביומיום בתפקיד.
-
-matchPercentage: סדרו מ-#1 (הגבוה ביותר) ל-#5 (הנמוך). #1 יהיה 85-95 רק אם ההתאמה מצוינת. טווחים: 85-95 (מצוין), 72-84 (חזק), 58-71 (סביר).
-
-## פרופיל מועמד
-
-- דפ"ר: ${daparLabel}
-- פרופיל רפואי: ${medicalLabel}
-- מקור ציוני מאה: ${yomSrc}
-- ציוני מאה (כל 12 ממדים):
-${yomLines}${legacyQ}
-- ${strengthsLine}
-- ${weaknessLine}
-- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
-- מערכת שבוע: ${preferences?.schedule || "כללי"}
-- מיקוד: ${preferences?.focus || "כללי"}
-- מיקום: ${preferences?.location || "כל מקום"}
-- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
-
-המלץ על 5 תפקידי צה"ל. שמות ותיאורים — בעברית בלבד.`;
+    const userPrompt = buildMatchUserPrompt({
+      engine: MATCH_ENGINE,
+      profileForMatch,
+      preferences,
+      yom,
+      stats,
+      assessmentSignals,
+      filteredRoleCount: filteredRoles.length,
+      personalRequest: profileForMatch.personalRequest,
+    });
 
     const isV3 = MATCH_ENGINE === "v3";
     const isV2 = MATCH_ENGINE === "v2";
-    const openaiParams = {
-      model: AI_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: isV3
-            ? buildSystemPromptV3(candidatePool)
-            : isV2
-              ? buildSystemPromptV2(candidatePool)
-              : buildSystemPrompt(filteredRoles),
-        },
-        { role: "user", content: userPrompt },
-      ],
-      max_tokens: 8000,
-      response_format: { type: "json_object" },
-      temperature: isV3 || isV2 ? 0.1 : AI_TEMPERATURE,
-    };
-    if (isV3 || isV2) {
-      // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
-      openaiParams.seed = seedFromString(profileHash);
-    }
+    const systemPrompt = isV3
+      ? buildSystemPromptV3(candidatePool)
+      : isV2
+        ? buildSystemPromptV2(candidatePool)
+        : buildSystemPrompt(filteredRoles);
 
     let roles = [];
+    let personalAnswer = "";
     try {
-      const completion = await openai.chat.completions.create(openaiParams);
+      const completion = await chatJson({
+        model: AI_MODEL,
+        system: systemPrompt,
+        user: userPrompt,
+        maxTokens: 8000,
+        temperature: isV3 || isV2 ? 0.1 : AI_TEMPERATURE,
+        // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
+        seed: isV3 || isV2 ? seedFromString(profileHash) : undefined,
+      });
       const durationMs = Date.now() - startedAt;
-      const usage = completion.usage ?? {};
       const modelUsed = completion.model || AI_MODEL;
-      const promptTokens = usage.prompt_tokens ?? 0;
-      const completionTokens = usage.completion_tokens ?? 0;
-      const totalTokens = usage.total_tokens ?? promptTokens + completionTokens;
-      const choice = completion.choices[0];
-      const content = choice?.message?.content?.trim() ?? "";
-      const finishReason = choice?.finish_reason ?? null;
+      const { promptTokens, completionTokens, content, finishReason } = completion;
+      const totalTokens = promptTokens + completionTokens;
       const parsedRoles = parseRolesArray(content);
+      personalAnswer = parsePersonalAnswer(content);
       const copyComplete = Array.isArray(parsedRoles) && parsedRoles.length === 5;
 
       if (finishReason === "length") {
@@ -782,6 +831,7 @@ ${yomLines}${legacyQ}
       promptVersion: MATCH_PROMPT_VERSION,
       engineVersion: MATCH_ENGINE,
       notice: profileNotice,
+      personalAnswer,
     });
     if (!recommendation || recommendation.roles?.length !== 5) {
       throw new Error("Durable role recommendation persistence was incomplete");
@@ -838,7 +888,7 @@ ${yomLines}${legacyQ}
       });
     }
     if (err?.status === 401) {
-      return res.status(503).json({ error: "OpenAI API key is invalid or missing." });
+      return res.status(503).json({ error: "AI API key is invalid or missing." });
     }
     return sendServerError(res, err, "[ai/match-roles]");
   }

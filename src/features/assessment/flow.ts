@@ -98,7 +98,7 @@ export function validateAssessmentStep(
   if (step === "motivation") {
     if (answers.motivations.length === 0) return "בחרו לפחות דבר אחד שחשוב לכם בשירות";
     if (answers.motivations.length > 4) return "אפשר לבחור עד ארבע מוטיבציות";
-    if (answers.extraNote.trim().length > 120) return "ההערה יכולה להכיל עד 120 תווים";
+    if (answers.extraNote.trim().length > 400) return "הבקשה האישית יכולה להכיל עד 400 תווים";
   }
   if (step === "identity") {
     if (!answers.preferredName.trim()) return "כתבו איך לקרוא לכם";

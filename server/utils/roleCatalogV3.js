@@ -256,6 +256,7 @@ function deriveGenderEligibility() {
 const VALID_GENDER_ELIG = new Set(["all", "male_only", "female_only"]);
 const VALID_COMPETITIVENESS = new Set(["low", "medium", "high", "very_high"]);
 const VALID_POPULARITY = new Set(["famous", "known", "niche"]);
+const VALID_TIER = new Set(["elite", "standard"]);
 const VALID_ENRICH_STATUS = new Set(["none", "ai_draft", "reviewed", "verified"]);
 const VALID_DAPAR = new Set([10, 20, 30, 40, 50, 60, 70, 80, 90]);
 const VALID_MEDICAL = new Set([21, 45, 64, 72, 82, 97]);
@@ -328,6 +329,8 @@ export function normalizeRoleV3(role) {
     genderEligibility: pickEnum(role.genderEligibility, VALID_GENDER_ELIG, deriveGenderEligibility(role)),
     keyDimensions: normalizedKeyDimensions,
     popularity: pickEnum(role.popularity, VALID_POPULARITY, "known"),
+    tier: pickEnum(role.tier, VALID_TIER, "standard"),
+    maleMedicalMax: Number.isFinite(Number(role.maleMedicalMax)) ? Number(role.maleMedicalMax) : null,
     // Structured assessment affinities. Unknown operational data stays unknown
     // so it scores neutrally; none of these derived fields are eligibility gates.
     interestAreas,

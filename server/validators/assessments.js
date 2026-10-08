@@ -268,7 +268,7 @@ function parseAnswers(value) {
       ? ok("")
       : parseStrictString(raw.extraNote, {
           label: "extraNote",
-          maxLen: 120,
+          maxLen: 400,
           allowEmpty: true,
         });
   if (!extraNote.ok) return extraNote;

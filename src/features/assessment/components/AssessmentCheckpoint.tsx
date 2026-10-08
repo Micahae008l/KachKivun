@@ -29,6 +29,7 @@ import {
 } from "../options";
 import { deriveAssessmentBranches } from "../flow";
 import type { AssessmentAnswers } from "../types";
+import { AssessmentInsights, DraftRoadmap } from "./AssessmentInsights";
 
 type Props = {
   answers: AssessmentAnswers;
@@ -168,6 +169,8 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
           זהו סיכום של התשובות שלכם, לא ציון התאמה ולא תחזית שיבוץ. אפשר לחזור ולשנות.
         </p>
       </div>
+
+      <AssessmentInsights answers={answers} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="border border-iron/25 bg-card/70 p-3 sm:p-5">
@@ -416,6 +419,8 @@ function FinalSignalsReview({
           </li>
         ))}
       </ul>
+
+      <DraftRoadmap answers={answers} />
     </section>
   );
 }

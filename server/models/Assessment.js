@@ -116,7 +116,7 @@ const answersSchema = new mongoose.Schema(
     },
     combatDetails: { type: combatDetailsSchema, default: null },
     technicalDetails: { type: technicalDetailsSchema, default: null },
-    extraNote: { type: String, trim: true, maxlength: 120, default: "" },
+    extraNote: { type: String, trim: true, maxlength: 400, default: "" }, // personal request to the counselor
   },
   { _id: false },
 );

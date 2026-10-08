@@ -79,6 +79,8 @@ const roleRecommendationSchema = new mongoose.Schema(
       },
     },
     notice: { type: String, default: "", trim: true, maxlength: 2000 },
+    // AI answer to the candidate's free-text personal request (extraNote), if any.
+    personalAnswer: { type: String, default: "", trim: true, maxlength: 2000 },
   },
   { timestamps: true },
 );

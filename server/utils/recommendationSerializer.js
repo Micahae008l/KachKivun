@@ -104,6 +104,7 @@ export function serializeRecommendation(doc, access) {
     catalogVersion: text(doc?.catalogVersion),
     promptVersion: text(doc?.promptVersion),
     notice: text(doc?.notice),
+    personalAnswer: text(doc?.personalAnswer),
     roles: serializeRecommendationRoles(doc, resolvedAccess),
     access: resolvedAccess,
   };
@@ -135,6 +136,7 @@ export function serializeRecommendationDetail(doc, access) {
     catalogVersion: serialized.catalogVersion,
     promptVersion: serialized.promptVersion,
     notice: serialized.notice,
+    personalAnswer: serialized.personalAnswer,
     roles: serialized.roles,
   };
 }

@@ -38,6 +38,7 @@ function AiCounselorPage() {
   const [generationState, setGenerationState] = useState<GenerationState>("idle");
   const [roles, setRoles] = useState<RoleMatch[] | null>(null);
   const [notice, setNotice] = useState("");
+  const [personalAnswer, setPersonalAnswer] = useState("");
   const [error, setError] = useState("");
   const [historyId, setHistoryId] = useState<string | null>(null);
 
@@ -80,6 +81,7 @@ function AiCounselorPage() {
       setGenerationState("loading");
       setError("");
       setNotice("");
+      setPersonalAnswer("");
       if (manual) {
         setRoles(null);
         setHistoryId(null);
@@ -89,6 +91,7 @@ function AiCounselorPage() {
         const response = await matchRolesRequest();
         setRoles(response.roles);
         setNotice(response.notice || "");
+        setPersonalAnswer(response.personalAnswer || "");
         setHistoryId(response.recommendationId || null);
         setGenerationState("success");
         await Promise.all([
@@ -254,6 +257,12 @@ function AiCounselorPage() {
 
         {roles?.length ? (
           <>
+            {personalAnswer ? (
+              <section className="border border-primary/40 bg-primary/10 px-5 py-4 text-right">
+                <p className="font-mono text-[10px] tracking-widest text-primary uppercase">תשובה לבקשה האישית</p>
+                <p className="mt-2 text-sm leading-7 text-foreground whitespace-pre-line">{personalAnswer}</p>
+              </section>
+            ) : null}
             {notice ? (
               <p className="border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-6 text-amber-100">
                 {notice}
@@ -270,6 +279,7 @@ function AiCounselorPage() {
               setRoles(historyRoles);
               setHistoryId(meta.id);
               setNotice("");
+              setPersonalAnswer(meta.personalAnswer || "");
               setError("");
               setGenerationState("success");
             }}

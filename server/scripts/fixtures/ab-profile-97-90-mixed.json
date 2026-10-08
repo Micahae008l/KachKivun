@@ -1,0 +1,57 @@
+{
+  "_edit_me": "Same profile is sent to every model/engine. Enums: daparScore 10..90 step 10 | medicalProfile 21,45,64,72,82,97 | gender male/female | combatPreference FieldCombat,SupportHQ,TechTrack,MedicalInstruction,Mixed | focus Tech,Physical,Research,Medical | physicalActivityLevel Low,Medium,High | yomHameahSource official,self,unknown",
+  "daparScore": 90,
+  "medicalProfile": 97,
+  "gender": "male",
+  "combatPreference": "Mixed",
+  "focus": "Tech",
+  "physicalActivityLevel": "High",
+  "yomHameahSource": "official",
+  "yomHameah": {
+    "technicalActivation": 5,
+    "spatialPerception": 5,
+    "dataProcessing": 5,
+    "teamwork": 5,
+    "command": 5,
+    "instruction": 5,
+    "interpersonalCare": 5,
+    "diligencePersistence": 5,
+    "sustainedAttention": 5,
+    "speedAndAccuracy": 5,
+    "managementOrganization": 5,
+    "disciplineMaturity": 5
+  },
+  "assessmentSignals": {
+    "rolesInterested": [
+      "cyber",
+      "technology_engineering",
+      "combat",
+      "intelligence"
+    ],
+    "rolesAvoided": [
+      "kitchen_maintenance",
+      "guard_duty_nights"
+    ],
+    "exitsPreference": "hamshushim",
+    "environment": "mixed",
+    "leadership": "want_lead",
+    "stress": "high",
+    "motivations": [
+      "career",
+      "challenge"
+    ],
+    "technicalDetails": {
+      "level": "advanced",
+      "areas": [
+        "programming",
+        "cybersecurity"
+      ]
+    },
+    "combatDetails": {
+      "run3kmBand": "under_13",
+      "pullUpsBand": "16_plus",
+      "pushUpsBand": "61_plus",
+      "readiness": "ready"
+    }
+  }
+}

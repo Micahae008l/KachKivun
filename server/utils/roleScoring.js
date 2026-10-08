@@ -21,23 +21,25 @@ export const SCORE_BREAKDOWN_KEYS = [
 // ── Scoring weights (the tuning surface). Must sum to 1.0 in each mode. ──
 // Eligibility (medical/DAPAR) outranks מא"ה — profile gates who can serve where;
 // מא"ה only ranks among roles that are already open.
-const W_NORMAL = { pref: 0.28, focus: 0.22, yom: 0.18, elig: 0.22, quality: 0.1 };
+// Catalog data quality is reported in the breakdown but no longer ranks roles: it buried every
+// never-validated elite track (תלפיות, סיירת מטכ"ל, טיס) under validated rear roles. Its weight moved to elig.
+const W_NORMAL = { pref: 0.28, focus: 0.22, yom: 0.18, elig: 0.32, quality: 0 };
 // When מא"ה scores carry no signal (flat/duplicated), move weight off yom.
-const W_FLAT_YOM = { pref: 0.34, focus: 0.26, yom: 0.1, elig: 0.2, quality: 0.1 };
+const W_FLAT_YOM = { pref: 0.34, focus: 0.26, yom: 0.1, elig: 0.3, quality: 0 };
 const W_STRUCTURED = {
   pref: 0.2,
   focus: 0.14,
   yom: 0.14,
-  elig: 0.2,
-  quality: 0.07,
+  elig: 0.27,
+  quality: 0,
   assessment: 0.25,
 };
 const W_STRUCTURED_FLAT_YOM = {
   pref: 0.23,
   focus: 0.17,
   yom: 0.08,
-  elig: 0.2,
-  quality: 0.07,
+  elig: 0.27,
+  quality: 0,
   assessment: 0.25,
 };
 /** Self-estimated מא"ה: keep weights, but compress yomFit toward neutral (0.5). */
@@ -56,7 +58,8 @@ const FINAL_MIN = 40;
 const FINAL_MAX = 96;
 
 const FOCUS_TO_TAGS = {
-  Tech: ["coding", "software", "cyber", "networks", "it", "data", "ai", "electronics", "hardware", "devops", "qa"],
+  // math/physics/research/intelligence included: תלפיות, שחקים and the אמ"ן tech tracks are "technology" to a teen.
+  Tech: ["coding", "software", "cyber", "networks", "it", "data", "ai", "electronics", "hardware", "devops", "qa", "math", "physics", "research", "intelligence"],
   Physical: ["combat", "fitness", "fieldwork", "rescue", "driving", "construction", "mechanics"],
   Research: ["intelligence", "research", "data", "maps", "visual-analysis", "math", "physics", "attention-to-detail"],
   Medical: ["medicine", "emergency", "dentistry", "lab", "biology", "chemistry", "helping-people"],
@@ -257,13 +260,21 @@ function medicalStepMargin(medical, floor) {
 }
 
 function eligibilityMargin(role, dapar, medical) {
-  const daparComp =
+  // Clearing a known floor is what matters; 10 points above it is already full credit. Without this,
+  // a דפ"ר 90 candidate scored 0 on תלפיות (floor 90) and full on roles with no data.
+  let daparComp =
     dapar == null
       ? 0.5
       : role.daparFloor == null
-        ? 0.6
-        : clamp01((dapar - role.daparFloor) / 30);
-  const medComp = medicalStepMargin(medical, effectiveMedicalFloor(role));
+        ? 0.65
+        : clamp01(0.75 + (dapar - role.daparFloor) / 40);
+  const medFloor = effectiveMedicalFloor(role);
+  let medComp = medicalStepMargin(medical, medFloor);
+  // Elite floors are the bar itself (תלפיות 90, טיס 97): meeting them is full credit, not a thin margin.
+  if (role.tier === "elite") {
+    if (dapar != null && (role.daparFloor == null || dapar >= role.daparFloor)) daparComp = 1;
+    if (medical != null && (medFloor == null || medical >= medFloor)) medComp = 1;
+  }
   let margin = 0.5 * daparComp + 0.5 * medComp;
   if (role.competitiveness === "very_high" && daparComp < 0.3) margin *= 0.85;
   return clamp01(margin);
@@ -522,6 +533,12 @@ export function scoreRole(role, profile) {
     if (role.genderEligibility !== wanted) hardFailReasons.push("התפקיד אינו פתוח למגדר הנבחר");
   }
 
+  // Several rear roles cap men at a rear profile ("גברים פרופיל 45-64"); women are uncapped.
+  if (profile.gender === "male" && medical != null && role.maleMedicalMax != null && medical > role.maleMedicalMax) {
+    if (floorsTrusted) hardFailReasons.push(`מיועד לגברים עם פרופיל עורפי (עד ${role.maleMedicalMax})`);
+    else softMult *= SOFT_FLOOR_MULT;
+  }
+
   if (dapar != null && role.daparFloor != null && dapar < role.daparFloor) {
     if (floorsTrusted) hardFailReasons.push(`דפ"ר מתחת לסף (${role.daparFloor})`);
     else softMult *= SOFT_FLOOR_MULT;
@@ -537,7 +554,9 @@ export function scoreRole(role, profile) {
   }
 
   const prefFit = 0.6 * combatMatch(role.combat, profile.combatPreference) + 0.4 * physMatch(role.physicalDemand, profile.physicalActivityLevel);
-  const ff = focusFit(role, profile.focus);
+  // A combat role is not "off focus" for someone who asked for combat or a mix of both.
+  const wantsAnyCombat = profile.combatPreference === "FieldCombat" || profile.combatPreference === "Mixed";
+  const ff = role.combat && wantsAnyCombat ? Math.max(focusFit(role, profile.focus), 0.65) : focusFit(role, profile.focus);
   let yf = yomFit(role, profile.yom);
   if (unknownYom) yf = 0.5;
   else if (selfYom) yf = 0.5 + (yf - 0.5) * SELF_YOM_SIGNAL;
@@ -560,7 +579,20 @@ export function scoreRole(role, profile) {
     W.elig * em +
     W.quality * qp +
     (W.assessment || 0) * structured.fit;
-  base01 = clamp01(base01 * softMult);
+  // ponytail: ambition heuristic. A candidate 30+ דפ"ר points above a known floor is over-qualified for
+  // that role (×0.93); within 20 points of the floor is right-sized (×1.05). Replace with a learned prior if needed.
+  // Elite tracks (סיירות, תלפיות, טיס, שחקים) have low official דפ"ר floors but select the top of the
+  // cohort, so they are never "over-qualified for" and get a lift for strong candidates instead.
+  let ambitionMult = 1;
+  if (role.tier === "elite") {
+    if (dapar != null && dapar >= 80) ambitionMult = 1.08;
+    else if (dapar != null && dapar < 70) ambitionMult = 0.92;
+  } else if (dapar != null && role.daparFloor != null) {
+    const over = dapar - role.daparFloor;
+    if (over >= 30) ambitionMult = 0.93;
+    else if (over >= 0 && over < 20) ambitionMult = 1.05;
+  }
+  base01 = clamp01(base01 * softMult * ambitionMult);
   const basePercent = BASE_MIN + Math.round(BASE_SPAN * base01);
 
   // A compact Hebrew rationale line for the AI prompt (not user-facing).
@@ -611,7 +643,14 @@ export function buildProfileNotice(profile) {
   if (medical && medical < ABSOLUTE_COMBAT_MEDICAL_MIN) {
     notes.push(`עם פרופיל רפואי ${medical}, תפקידי לחימה סגורים בפניכם — ההמלצות מתמקדות בתפקידים עורפיים ותומכי-לחימה.`);
   } else if (medical && medical < DEFAULT_COMBAT_MEDICAL_FLOOR) {
-    notes.push(`עם פרופיל רפואי ${medical}, רוב תפקידי הלחימה (כולל הנדסה קרבית וחי״ר) דורשים פרופיל 82 — ההמלצות מתמקדות בתפקידים שאינם לחימה מלאה, ובמסלולים קרביים שפתוחים לפרופיל שלכם (אם יש).`);
+    // Official ladder (mitgaisim): 82 = חי"ר, סיירות, הנדסה קרבית; 72 = all other combat; 70 (Sept 2026) = 72 minus שריון/חי"ר; 64 = תומכי לחימה + מעברים.
+    notes.push(
+      medical >= 72
+        ? `עם פרופיל רפואי ${medical}, חי״ר, סיירות והנדסה קרבית (דורשים 82) סגורים בפניכם, אבל שריון, תותחנים, הגנה אווירית, חילוץ והצלה, חי״ר גבולות ומג״ב פתוחים.`
+        : medical >= 70
+          ? `פרופיל 70 (חדש מספטמבר 2026) פותח תותחנים, הגנה אווירית וחיל האוויר, אך לא חי״ר. ההמלצות מתמקדות בתפקידים שפתוחים לפרופיל שלכם.`
+          : `עם פרופיל רפואי ${medical}, תפקידי לחימה מלאה דורשים 72 ומעלה — פתוחים תומכי לחימה ולוחם מעברים.`,
+    );
   }
   if (profile.gender === "female") {
     notes.push("תנאי ההתנדבות והזכאות למסלולי לחימה לנשים משתנים בין מסלולים ויש לאמת אותם בערוצים הרשמיים.");
@@ -758,6 +797,7 @@ export function computeProfileHash(
       ? Object.keys(profile.yom).sort().map((k) => `${k}:${profile.yom[k]}`).join(",")
       : "",
     assessment: normalizeAssessmentSignals(profile),
+    request: String(profile.personalRequest || "").trim(),
     catalog: catalogVersion || "",
     prompt: promptVersion || "",
     engine: engineVersion,

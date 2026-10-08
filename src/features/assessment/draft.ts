@@ -164,7 +164,7 @@ export function normalizeAssessmentAnswers(value: unknown): AssessmentAnswers {
       level: enumOrEmpty(technical.level, technicalLevels),
       areas: enumArray(technical.areas, technicalAreas, 4),
     },
-    extraNote: text(source.extraNote, 120),
+    extraNote: text(source.extraNote, 400),
   };
 }
 

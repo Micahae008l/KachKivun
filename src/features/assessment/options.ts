@@ -30,7 +30,7 @@ export type AssessmentOption<T extends string> = {
 export { COMBAT_PREFERENCE_OPTIONS, FITNESS_PREFERENCE_OPTIONS, FOCUS_PREFERENCE_OPTIONS };
 
 export const DAPAR_SCORES: readonly DaparScore[] = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-export const MEDICAL_PROFILES: readonly MedicalProfile[] = [21, 45, 64, 72, 82, 97];
+export const MEDICAL_PROFILES: readonly MedicalProfile[] = [21, 45, 64, 70, 72, 82, 97];
 export const UNKNOWN_SCORE_VALUE = "unknown" as const;
 export const UNKNOWN_SCORE_LABEL = "לא יודע/ת כרגע";
 

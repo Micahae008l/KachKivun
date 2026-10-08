@@ -363,18 +363,22 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
             onChange={(motivations) => update({ motivations })}
           />
         </OptionSection>
-        <FormField label="משהו נוסף שחשוב שנדע? (אופציונלי)">
+        <FormField label="בקשה אישית ליועץ (אופציונלי)">
+          <p className="mb-2 text-xs leading-5 text-dust">
+            שאלה או דילמה ספציפית, והיועץ יענה עליה ישירות בתוצאות. לדוגמה: ״יש לי פרופיל 97 אבל אני רוצה
+            טכנולוגיה, מה האפשרויות שלי?״ או ״אני רוצה 8200 אבל הדפ״ר שלי 60״.
+          </p>
           <textarea
             value={answers.extraNote}
-            onChange={(event) => update({ extraNote: event.target.value.slice(0, 120) })}
-            maxLength={120}
-            rows={3}
-            placeholder="עד 120 תווים"
-            className="input-field min-h-24 resize-y"
+            onChange={(event) => update({ extraNote: event.target.value.slice(0, 400) })}
+            maxLength={400}
+            rows={4}
+            placeholder="עד 400 תווים"
+            className="input-field min-h-28 resize-y"
           />
         </FormField>
         <p className="-mt-4 text-left font-mono text-[10px] tabular-nums text-dust">
-          {answers.extraNote.length}/120
+          {answers.extraNote.length}/400
         </p>
       </div>
     );

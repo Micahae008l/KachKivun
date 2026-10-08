@@ -4,7 +4,7 @@ export const ASSESSMENT_SCHEMA_VERSIONS = [1, 2];
 export const SERVICE_LIFE_CYCLES = ["pre"];
 export const GENDERS = ["male", "female"];
 export const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90];
-export const MEDICAL_PROFILES = [21, 45, 64, 72, 82, 97];
+export const MEDICAL_PROFILES = [21, 45, 64, 70, 72, 82, 97];
 export const UNKNOWN_ASSESSMENT_VALUE = "unknown";
 export const COMBAT_PREFERENCES = [
   "FieldCombat",

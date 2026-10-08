@@ -653,6 +653,7 @@ export function matchRolesRequest() {
     access?: RecommendationAccess;
     cached?: boolean;
     notice?: string;
+    personalAnswer?: string;
   }>("/api/ai/match-roles", {
     method: "POST",
     body: JSON.stringify({}),
@@ -670,6 +671,7 @@ export type MatchHistoryItem = {
   roleTitles: string[];
   recommendationId?: string;
   access?: RecommendationAccess;
+  personalAnswer?: string;
 };
 
 export type MatchHistoryDetail = MatchHistoryItem & {
