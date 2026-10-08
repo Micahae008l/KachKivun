@@ -8,9 +8,9 @@ import { getErrorMessage } from "@/lib/api-errors";
 import { trackEvent } from "@/lib/analytics";
 import { getToken, subscribeAuth } from "@/lib/auth";
 import { rememberAuthReturnTarget } from "@/lib/auth-return";
-import { SITE_NAME_HE } from "@/lib/brand";
+import { SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 
-const CONTACT_EMAIL = "mishlahat.idf@gmail.com";
+const CONTACT_EMAIL = SUPPORT_EMAIL;
 
 export const Route = createFileRoute("/cancellation")({
   component: CancellationPage,
@@ -74,7 +74,10 @@ function CancellationPage() {
         <section className="mt-8 border border-iron/30 bg-card p-5 text-sm leading-6 text-dust">
           <h2 className="font-bold text-foreground">אפשר גם לפנות אלינו</h2>
           <p className="mt-2">
-            כתבו מהאימייל של החשבון אל{" "}
+            <Link to="/contact" search={{ topic: "cancellation" }} className="font-semibold text-primary hover:underline">
+              טופס פנייה בכתב
+            </Link>{" "}
+            (מקבלים תשובה למייל), או כתבו מהאימייל של החשבון אל{" "}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="font-semibold text-primary hover:underline"

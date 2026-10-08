@@ -231,9 +231,9 @@ function RootLayoutInner() {
               <Link to="/about" className="transition hover:text-foreground">
                 אודות
               </Link>
-              <a href="/about#contact-heading" className="transition hover:text-foreground">
+              <Link to="/contact" className="transition hover:text-foreground">
                 צור קשר
-              </a>
+              </Link>
               <Link to="/role-insights" className="transition hover:text-foreground">
                 תובנות
               </Link>

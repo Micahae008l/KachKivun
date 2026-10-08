@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bullets, LegalDoc, Section } from "@/components/LegalDoc";
-import { SITE_NAME_HE } from "@/lib/brand";
+import { SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 
-const CONTACT_EMAIL = "mishlahat.idf@gmail.com";
+const CONTACT_EMAIL = SUPPORT_EMAIL;
 const COORDINATOR = "מיכאל חדד";
 const LAST_UPDATED = "31 באוגוסט 2026";
 

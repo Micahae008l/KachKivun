@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
-import { SITE_NAME_EN, SITE_NAME_HE } from "@/lib/brand";
+import { SITE_NAME_EN, SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 import { MATCH_TOOL_NAME } from "@/lib/voice";
 
 export const Route = createFileRoute("/about")({
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/about")({
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;
-const CONTACT_EMAIL = "mishlahat.idf@gmail.com";
+const CONTACT_EMAIL = SUPPORT_EMAIL;
 const CEO_LINKEDIN = "https://www.linkedin.com/in/michael-haddad-6b2b83412/";
 
 const fadeUp = {

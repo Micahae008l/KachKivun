@@ -539,6 +539,9 @@ export function CheckoutPage({ shareToken }: Props) {
                   ביטול עסקה ובקשת החזר
                 </Link>
               )}
+              <Link to="/contact" search={{ topic: "payment" }} className="mt-2 mr-4 inline-flex text-primary hover:underline">
+                שאלה על התשלום? טופס פנייה
+              </Link>
             </div>
             {isSharedCheckout && info.expiresAt ? (
               <p className="mt-5 text-xs text-dust/80">

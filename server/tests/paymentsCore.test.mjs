@@ -256,7 +256,7 @@ test("rollback gate blocks only new checkout creation routes", () => {
 test("enabled production requires truthful merchant details, reviews, and ISO launch cutoff", () => {
   const errors = validatePaymentEnvironment({
     ...validProductionEnv,
-    BUSINESS_PHONE: "",
+    BUSINESS_PHONE: "call me maybe",
     BUSINESS_ADDRESS: "",
     PAYWALL_LAUNCH_AT: "tomorrow",
     CANCELLATION_URL: "https://app.example.test/cancellation?token=secret",
@@ -287,13 +287,20 @@ test("live Grow safety gates apply even when NODE_ENV is misconfigured", () => {
   const misconfigured = {
     ...validProductionEnv,
     NODE_ENV: "development",
-    BUSINESS_PHONE: "",
+    BUSINESS_ADDRESS: "",
     GROW_CALLBACK_AUTH_CONFIRMED: "false",
   };
   const errors = validatePaymentEnvironment(misconfigured);
-  assert.ok(errors.some((message) => message.includes("BUSINESS_PHONE")));
+  assert.ok(errors.some((message) => message.includes("BUSINESS_ADDRESS")));
   assert.ok(errors.some((message) => message.includes("GROW_CALLBACK_AUTH_CONFIRMED")));
   assert.ok(productionEnvironmentErrors(misconfigured).length >= 2);
+});
+
+test("phone is optional when written contact exists, but must be valid if given", () => {
+  const withoutPhone = validatePaymentEnvironment({ ...validProductionEnv, BUSINESS_PHONE: "" });
+  assert.equal(withoutPhone.some((message) => message.includes("BUSINESS_PHONE")), false);
+  const badPhone = validatePaymentEnvironment({ ...validProductionEnv, BUSINESS_PHONE: "phone" });
+  assert.ok(badPhone.some((message) => message.includes("BUSINESS_PHONE")));
 });
 
 test("Grow config hard-codes environment URLs and only legacy-falls back for card", () => {

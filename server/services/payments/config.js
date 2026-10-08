@@ -186,9 +186,10 @@ function validateGrowLinkEnvironment(env, errors) {
 }
 
 function validateBusinessDetails(env, errors, confirmations) {
+  // BUSINESS_PHONE is optional: written contact (email + /contact form) is the support channel.
+  // Confirm with counsel whether a phone is also required for distance sales before relying on that.
   for (const [name, maxLength] of [
     ["BUSINESS_LEGAL_NAME", 200],
-    ["BUSINESS_PHONE", 40],
     ["BUSINESS_ADDRESS", 300],
     ["BUSINESS_CONTACT_EMAIL", 254],
   ]) {
@@ -203,6 +204,7 @@ function validateBusinessDetails(env, errors, confirmations) {
   }
 
   const phone = text(env.BUSINESS_PHONE);
+  if (phone.length > 40) errors.push("BUSINESS_PHONE is too long");
   if (phone && !/^[+\d][+\d().\s-]{5,38}$/.test(phone)) {
     errors.push("BUSINESS_PHONE has an invalid format");
   }

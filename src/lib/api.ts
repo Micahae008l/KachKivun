@@ -1029,3 +1029,21 @@ export function unblockIpRequest(id: string) {
     method: "DELETE",
   });
 }
+
+export type ContactTopic = "cancellation" | "payment" | "bug" | "account" | "other";
+
+export function sendContactMessage(body: {
+  topic: ContactTopic;
+  email: string;
+  name?: string;
+  message: string;
+  orderId?: string;
+  website?: string;
+}) {
+  return apiFetch<{ ok: true }>("/api/contact", {
+    method: "POST",
+    body: JSON.stringify(body),
+    skipAuth: true,
+    retries: 0,
+  });
+}

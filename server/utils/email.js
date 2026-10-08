@@ -38,14 +38,14 @@ export function isEmailConfigured() {
   return isResendConfigured() || isSmtpConfigured();
 }
 
-async function sendViaResend({ from, to, subject, html, text }) {
+async function sendViaResend({ from, to, subject, html, text, replyTo }) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${trimEnv("RESEND_API_KEY")}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from, to, subject, html, text }),
+    body: JSON.stringify({ from, to, subject, html, text, ...(replyTo ? { reply_to: replyTo } : {}) }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
@@ -260,5 +260,36 @@ export async function sendOtpEmail(email, code) {
   }
 
   await transporter.sendMail({ from, to: email, subject, text, html });
+  return { delivered: true };
+}
+
+/**
+ * Contact-form message to the support inbox (SUPPORT_EMAIL, falling back to BUSINESS_CONTACT_EMAIL).
+ * Reply-To is the sender, so answering from the inbox goes straight to them.
+ */
+export async function sendSupportMessage({ topic, name, email, message, orderId }) {
+  const to = trimEnv("SUPPORT_EMAIL") || trimEnv("BUSINESS_CONTACT_EMAIL");
+  const subject = `[${SITE_NAME_HE}] ${topic}${name ? ` · ${name}` : ""}`;
+  const lines = [`נושא: ${topic}`, `מאת: ${name || "(לא צוין שם)"} <${email}>`, orderId ? `הזמנה: ${orderId}` : "", "", message].filter(
+    (line, i) => line || i >= 3,
+  );
+  const text = lines.join("\n");
+  const html = `<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">${lines
+    .map((l) => (l ? escapeHtml(l) : "<br>"))
+    .join("<br>")}</div>`;
+
+  if (!to) {
+    console.warn("[contact] SUPPORT_EMAIL/BUSINESS_CONTACT_EMAIL not set; message not sent");
+    if (process.env.NODE_ENV !== "production") console.log(`[contact] dev message:\n${text}`);
+    return { delivered: false };
+  }
+  if (isResendConfigured()) {
+    const from = trimEnv("RESEND_FROM") || `${SITE_NAME_HE} <no-reply@kachkivun.com>`;
+    return sendViaResend({ from, to, subject, html, text, replyTo: email });
+  }
+  const transporter = await getTransporter();
+  if (!transporter) return { delivered: false };
+  const from = trimEnv("SMTP_FROM") || `${SITE_NAME_HE} <${trimEnv("SMTP_USER")}>`;
+  await transporter.sendMail({ from, to, subject, text, html, replyTo: email });
   return { delivered: true };
 }
