@@ -7,7 +7,7 @@
 import "../env.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
 import { rankRolesV3, normalizeAssessmentSignals } from "../utils/roleScoring.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 
 const n = Number(process.argv[process.argv.indexOf("--n") + 1]) || 300;
 let seed = 42;
@@ -22,7 +22,7 @@ const INTERESTS = ["cyber", "combat", "intelligence", "technology_engineering", 
 function syntheticProfile() {
   const gender = pick(["male", "female"]);
   const direction = pick(DIRECTIONS);
-  const yom = Object.fromEntries(YOM_HAMEAH_12_KEYS.map((k) => [k, 1 + Math.floor(rnd() * 5)]));
+  const yom = Object.fromEntries(YOM_HAMEAH_KEYS.map((k) => [k, 1 + Math.floor(rnd() * 5)]));
   return {
     daparScore: pick([30, 40, 50, 60, 70, 80, 90]),
     medicalProfile: pick([45, 64, 72, 82, 97]),

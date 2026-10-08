@@ -1,4 +1,4 @@
-import { YOM_HAMEAH_12_KEYS } from "@/lib/yom-hameah-12";
+import { YOM_HAMEAH_KEYS } from "@/lib/yom-hameah";
 import type { AssessmentAnswers, AssessmentStepId } from "./types";
 
 const COMBAT_ROLE_IDS = new Set(["combat"]);
@@ -88,7 +88,7 @@ export function validateAssessmentStep(
   if (
     step === "yom" &&
     answers.yomHameahSource !== "unknown" &&
-    !YOM_HAMEAH_12_KEYS.every((key) => {
+    !YOM_HAMEAH_KEYS.every((key) => {
       const score = answers.yomHameah[key];
       return Number.isInteger(score) && score >= 1 && score <= 5;
     })

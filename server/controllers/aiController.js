@@ -9,10 +9,10 @@ import Assessment from "../models/Assessment.js";
 import { recordAiUsage } from "../utils/recordAiUsage.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import {
-  YOM_HAMEAH_12_KEYS,
-  YOM_HAMEAH_12_LABELS_HE,
-  migrateLegacyYomHameahTo12,
-} from "../utils/yomHameah12Keys.js";
+  YOM_HAMEAH_KEYS,
+  YOM_HAMEAH_LABELS_HE,
+  migrateLegacyYomHameah,
+} from "../utils/yomHameahKeys.js";
 import { getIdfRoleCatalogParsed } from "../utils/idfRoleCatalog.js";
 import { preFilterRoles } from "../utils/rolePreFilter.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
@@ -235,12 +235,22 @@ const MATCH_PROMPT_VERSION =
  * Percentage = deterministic basePercent (looked up from the pool) + clamped AI adjustment.
  * Enforces strict descending order so the UI's ranked layout is always monotonic.
  */
+/** Models normalize Hebrew gershayim/geresh (״ ׳) to ASCII quotes; compare titles without quote style. */
+export function normalizeRoleTitle(title) {
+  return String(title || "")
+    .normalize("NFKC")
+    .replace(/[״"”“]/g, '"')
+    .replace(/[׳'’‘]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function finalizeRolesV2(rawRoles, pool) {
-  const byTitle = new Map(pool.map((r) => [r.roleTitle, r]));
-  const titles = pool.map((r) => r.roleTitle);
+  const byTitle = new Map(pool.map((r) => [normalizeRoleTitle(r.roleTitle), r]));
+  const titles = [...byTitle.keys()];
 
   const out = rawRoles.map((r) => {
-    const roleTitle = String(r.roleTitle || "").trim();
+    const roleTitle = normalizeRoleTitle(r.roleTitle);
     let poolRole = byTitle.get(roleTitle);
     if (!poolRole) {
       const hit = titles.find((t) => t.includes(roleTitle) || roleTitle.includes(t));
@@ -412,8 +422,8 @@ export function buildMatchUserPrompt({
     const yomKnown = preferences?.yomHameahSource !== "unknown";
 
     const yomLines = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS.map(
-          (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
+      ? YOM_HAMEAH_KEYS.map(
+          (k) => `  • ${k} (${YOM_HAMEAH_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
         ).join("\n")
       : preferences?.yomHameahSource === "unknown"
         ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
@@ -421,8 +431,8 @@ export function buildMatchUserPrompt({
 
     // Compute yom peaks and lows for the AI to focus on
     const yomSorted = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS
-          .map(k => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
+      ? YOM_HAMEAH_KEYS
+          .map(k => ({ key: k, label: YOM_HAMEAH_LABELS_HE[k] ?? k, score: yom[k] }))
           .filter(d => typeof d.score === "number")
           .sort((a, b) => b.score - a.score)
       : [];
@@ -558,7 +568,7 @@ export async function matchRoles(req, res) {
     }
 
     // Migrate yom hameah to 12-key format
-    const yom = migrateLegacyYomHameahTo12(stats.yomHameah);
+    const yom = migrateLegacyYomHameah(stats.yomHameah);
     const yomForLegacyScoring =
       preferences?.yomHameahSource === "unknown" ? null : yom;
 

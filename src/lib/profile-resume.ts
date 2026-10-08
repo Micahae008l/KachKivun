@@ -7,7 +7,7 @@ import {
   type FitnessPreferenceValue,
   type FocusPreferenceValue,
 } from "./profile-preference-data";
-import { defaultYomHameah12Scores, migrateLegacyYomHameahTo12, type YomHameah } from "./yom-hameah-12";
+import { defaultYomHameahScores, migrateLegacyYomHameah, type YomHameah } from "./yom-hameah";
 
 const COMBAT_SET = new Set(COMBAT_PREFERENCE_OPTIONS.map((o) => o.value));
 const FOCUS_SET = new Set(FOCUS_PREFERENCE_OPTIONS.map((o) => o.value));
@@ -21,7 +21,7 @@ export function draftDateToYmd(raw: string | Date | null | undefined): string {
 }
 
 export function yomFromDashboard(stats: DashboardResponse["stats"]): YomHameah {
-  return migrateLegacyYomHameahTo12(stats?.yomHameah) ?? defaultYomHameah12Scores();
+  return migrateLegacyYomHameah(stats?.yomHameah) ?? defaultYomHameahScores();
 }
 
 export function coerceCombat(v: string | undefined): CombatPreferenceValue | "" {
@@ -46,7 +46,7 @@ export function computePostSignupResumeStep(d: DashboardResponse): number {
   if (!p?.focus || p.focus === "Any") return 2;
   if (!p?.physicalActivityLevel || p.physicalActivityLevel === "Unspecified") return 3;
   if (d.stats?.daparScore == null || d.stats?.medicalProfile == null) return 4;
-  if (!migrateLegacyYomHameahTo12(d.stats?.yomHameah)) return 5;
+  if (!migrateLegacyYomHameah(d.stats?.yomHameah)) return 5;
   if (!d.stats?.draftDate || Number.isNaN(Date.parse(String(d.stats.draftDate)))) return 6;
   return 7;
 }

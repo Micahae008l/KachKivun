@@ -118,7 +118,7 @@
       "keyDimensions": [
         "interpersonalCare",
         "dataProcessing",
-        "disciplineMaturity"
+        "frameworkBehavior"
       ],
       "popularity": "niche",
       "enrichment": {
@@ -150,7 +150,7 @@
       "keyDimensions": [
         "technicalActivation",
         "dataProcessing",
-        "disciplineMaturity"
+        "frameworkBehavior"
       ],
       "popularity": "famous",
       "genderEligibility": "all",
@@ -181,7 +181,7 @@
       "competitiveness": "high",
       "keyDimensions": [
         "spatialPerception",
-        "disciplineMaturity",
+        "frameworkBehavior",
         "teamwork"
       ],
       "popularity": "famous",
@@ -213,7 +213,7 @@
       "competitiveness": "high",
       "keyDimensions": [
         "spatialPerception",
-        "disciplineMaturity",
+        "frameworkBehavior",
         "teamwork"
       ],
       "popularity": "famous",
@@ -247,7 +247,7 @@
       "keyDimensions": [
         "spatialPerception",
         "technicalActivation",
-        "disciplineMaturity",
+        "frameworkBehavior",
         "teamwork"
       ],
       "popularity": "known",
@@ -280,7 +280,7 @@
       "keyDimensions": [
         "interpersonalCare",
         "teamwork",
-        "disciplineMaturity"
+        "frameworkBehavior"
       ],
       "popularity": "known",
       "genderEligibility": "all",
@@ -1710,6 +1710,655 @@
       "daparFloor": 50,
       "serviceLengthLabel": "נשים 32 חודשים",
       "medicalFloor": 21
+    },
+    "מסלול אח\"מ פיתוח": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "דפ\"ר 60",
+        "5 יח\"ל מדעי המחשב או תואר",
+        "טר\"צ כ-12 שבועות"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-אחמ-פיתוח/"
+      },
+      "serviceLengthLabel": "כ-6 חודשי הכשרה; 32 חודשים (גם לנשים) + 3 שנות קבע"
+    },
+    "מסלול מט\"מ": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "דפ\"ר 60 ומעלה",
+        "פרופיל 25 ומעלה",
+        "מגמה ריאלית"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-מטמ/"
+      },
+      "serviceLengthLabel": "כ-4 חודשי הכשרה במרכז; נשים 32 חודשים"
+    },
+    "מסלול בכיר לדוברי השפה הפרסית": {
+      "daparFloor": 50,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "פרסית מהבית",
+        "דפ\"ר 50 ומעלה",
+        "פרופיל 25 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/תפקידים/מסלול-בכיר-לדוברי-השפה-הפרסית/"
+      },
+      "serviceLengthLabel": "4-5 חודשי הכשרה; עבודה במשמרות; נשים 32 חודשים"
+    },
+    "מסלולי ערבית (אלמוג, רשף, קדם)": {
+      "daparFloor": 50,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "5 יח\"ל ערבית",
+        "דפ\"ר 50 ומעלה",
+        "עברית 7",
+        "פרופיל 25 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/תפקידים/מסלולי-ערבית/"
+      },
+      "serviceLengthLabel": "כ-5 חודשים אחרי רובאי 02; בסיסים סגורים 11/3"
+    },
+    "מסלול ממ\"ש": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "דפ\"ר 60 ומעלה",
+        "פרופיל 25 ומעלה",
+        "מגמה ריאלית"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-ממש/"
+      },
+      "serviceLengthLabel": "טר\"צ + קורס צבאי; שנת קבע; נשים כמו גברים"
+    },
+    "מסלול אניגמה מחשבים": {
+      "daparFloor": 50,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "דפ\"ר 50 ומעלה",
+        "ידע נרחב במחשבים"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-אניגמה-מחשבים/"
+      },
+      "serviceLengthLabel": "חניכה ביחידה; שנת קבע"
+    },
+    "מסלול רומא": {
+      "daparFloor": 70,
+      "medicalFloor": 72,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פרופיל 72 ומעלה",
+        "דפ\"ר 70 ומעלה",
+        "מחשבים / פיזיקה / רובוטיקה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-רומא/"
+      },
+      "serviceLengthLabel": "טירונות 03 + קורס יחידתי; 4 חודשי קבע; נשים 16א"
+    },
+    "מסלול נץ": {
+      "daparFloor": null,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "פרופיל 25 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-נץ/"
+      },
+      "serviceLengthLabel": "3 חודשי הכשרה; נשים 30 חודשים"
+    },
+    "חוקר/ת מודיעין טכנולוגי (מסלול חומה)": {
+      "daparFloor": null,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "מגמה ריאלית יתרון"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/חוקר-מודיעין-טכנולוגי/"
+      },
+      "serviceLengthLabel": "טירונות 02 + כ-20 שבועות; נשים 32 חודשים"
+    },
+    "אנליסט/ית ביטחוני/ת": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "דפ\"ר 60",
+        "עברית 8"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/אנליסט-בטחוני/"
+      },
+      "serviceLengthLabel": "כ-4 חודשים בבה\"ד 15"
+    },
+    "מש\"ק/ית מערך (מודיעין שדה)": {
+      "daparFloor": 60,
+      "medicalFloor": 64,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "פרופיל 64 ומעלה",
+        "דפ\"ר 60",
+        "עברית 7",
+        "לא נדרש מיון"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/משקית-מערך-בחיל-המודיעין/"
+      },
+      "serviceLengthLabel": "טירונות 02 + חודשיים בבה\"ד 15"
+    },
+    "לוחם אתגרים": {
+      "daparFloor": null,
+      "medicalFloor": 82,
+      "genderEligibility": "male_only",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פרופיל 82 ומעלה",
+        "מגמה ריאלית",
+        "גברים"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/לוחם-אתגרים/"
+      },
+      "serviceLengthLabel": "32 חודשים"
+    },
+    "מט\"ס - מפתח/ת טכנולוגיות סייבר (מצו\"ב)": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "very_high",
+      "requirements": [
+        "מיוני אשכול או מיון ייעודי",
+        "דפ\"ר 70 (80 לפרופיל קרבי)"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מטס-מפתח-טכנולוגיות-סייבר-ביחידת-מצוב/"
+      },
+      "serviceLengthLabel": "32 חודשים; התחייבות קבע צפויה לעבור לתקנה 16א"
+    },
+    "מסלול SRE - תקשוב": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "מיוני אשכול מקצועות המחשב",
+        "דפ\"ר 60",
+        "לא לבעלי ייעוד קרבי",
+        "עברית 5"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-sre-תקשוב/"
+      }
+    },
+    "דאטא אנליסט/ית (אנליסט מידע מבצעי)": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "מיוני אשכול מקצועות המחשב",
+        "דפ\"ר 60",
+        "פרופיל עורפי לגברים"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/דאטא-אנליסט/"
+      },
+      "serviceLengthLabel": "32 חודשים (גם לנשים)",
+      "maleMedicalMax": 64
+    },
+    "מנהל/ת DC": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "מיוני אשכול מקצועות המחשב",
+        "דפ\"ר 60",
+        "פרופיל עורפי לגברים"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מנהלת-dc/"
+      },
+      "maleMedicalMax": 64
+    },
+    "פס\"י - מפתח/ת ספקטרום (פריזמה)": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "very_high",
+      "requirements": [
+        "מיוני אשכול + מיון ייעודי",
+        "דפ\"ר 70",
+        "10 יח\"ל טכנולוגיות לפרופיל קרבי"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/פסי-פיתוח-ספקטראלי-ייעודי-מפתח-ספקטרום/"
+      },
+      "serviceLengthLabel": "14-19 שבועות הכשרה בבסיס סגור"
+    },
+    "טכנאי/ת סיסטם (דיגיטל מבצעי)": {
+      "daparFloor": null,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "לא נדרש מיון",
+        "פרופיל 45 ומעלה",
+        "עברית 6",
+        "הפעלה טכנית 3"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/טכנאית-סיסטם-טכנאית-דיגיטל-מבצעי/"
+      }
+    },
+    "מפעיל/ת דיגיטל מבצעי": {
+      "daparFloor": null,
+      "medicalFloor": 64,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "פרופיל 64 ומעלה",
+        "הפעלה טכנית 3",
+        "לא לבעלי ייעוד קרבי"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מפעילת-דיגיטל-מבצעי/"
+      },
+      "serviceLengthLabel": "טירונות 02 + כ-6 שבועות"
+    },
+    "מש\"ק/ית שליטה בדיגיטל": {
+      "daparFloor": 50,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "לא נדרש מיון",
+        "דפ\"ר 50"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/משק-שליטה-בדיגיטל/"
+      }
+    },
+    "בקר/ית רשת (חושן)": {
+      "daparFloor": null,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "פרופיל 45 ומעלה",
+        "הפעלה טכנית 3",
+        "קשב 3"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/בקרית-רשת/"
+      },
+      "serviceLengthLabel": "טירונות 02 + 5 שבועות, צריפין"
+    },
+    "רכז/ת שירותי תקשוב": {
+      "daparFloor": null,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "low",
+      "requirements": [
+        "פרופיל 45 ומעלה",
+        "ללא ידע קודם"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/רכז-שירותי-תקשוב/"
+      },
+      "serviceLengthLabel": "טירונות 02 + 4 שבועות, צריפין"
+    },
+    "קצונה ייעודית מבצעית בחיל התקשוב": {
+      "daparFloor": null,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "פרופיל 45 ומעלה",
+        "מיון ייעודי מאוחד",
+        "הדרכה 2, פיקוד 2"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/קצונה-ייעודית-מבצעית-בחיל-התקשוב/"
+      },
+      "serviceLengthLabel": "כ-55 שבועות הכשרה כולל בה\"ד 1"
+    },
+    "תכנית רעמים": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 650",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "https://www.bgu.ac.il/articles/new-elite-academic-programs-idf/"
+      },
+      "serviceLengthLabel": "5 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "תכנית סילון": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 650",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "מידעון העתודה תשפ\"ז"
+      },
+      "serviceLengthLabel": "5 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "תכנית גבישים": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 650",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "מידעון העתודה תשפ\"ז"
+      },
+      "serviceLengthLabel": "5 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "תכנית אביבים": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 660",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "מידעון העתודה תשפ\"ז"
+      },
+      "serviceLengthLabel": "4.5 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "תכנית גלקסיה": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 675",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "מידעון העתודה תשפ\"ז"
+      },
+      "serviceLengthLabel": "4 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "תכנית ביו": {
+      "daparFloor": 70,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "פסיכומטרי 720",
+        "דפ\"ר 70"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "מידעון העתודה תשפ\"ז"
+      },
+      "serviceLengthLabel": "4 שנות לימוד + 32 חודשי חובה כקצין + 3 שנות קבע"
+    },
+    "מסלול אקדמיזציה": {
+      "daparFloor": null,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "תואר ראשון בתחום נדרש, ממוצע 75+",
+        "סיווג סודי ביותר",
+        "ראיונות ינואר-מאי"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/כתבות/ראשי/עתודה/מסלול-אקדמיזציה"
+      },
+      "serviceLengthLabel": "שירות חובה מלא (דין אישה כדין גבר) + 24 חודשי קבע"
+    },
+    "מסלול אדרים": {
+      "daparFloor": 60,
+      "medicalFloor": 64,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "דפ\"ר 60",
+        "פרופיל 64",
+        "4 יח\"ל מתמטיקה ואנגלית"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/מסלול-אדרים/"
+      },
+      "serviceLengthLabel": "40 חודשי הכשרה + 3 שנים ו-4 חודשי קבע"
+    },
+    "תוכנית ארז": {
+      "daparFloor": null,
+      "medicalFloor": 82,
+      "genderEligibility": "male_only",
+      "tier": "elite",
+      "competitiveness": "very_high",
+      "requirements": [
+        "מיון ברמת סיירות",
+        "פרופיל 82 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "https://www.idf.il/אתרי-יחידות/תוכנית-ארז/"
+      },
+      "serviceLengthLabel": "כ-6 שנים ו-8 חודשים סה\"כ; 4 שנות קבע"
+    },
+    "רכז/ת שליטה קרקעית (קשל\"ט)": {
+      "daparFloor": 50,
+      "medicalFloor": 45,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "פרופיל 45 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/"
+      }
+    },
+    "לוחמות טנקים בגדודי חי\"ר גבולות": {
+      "daparFloor": null,
+      "medicalFloor": 72,
+      "genderEligibility": "female_only",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "מיון לוחמות",
+        "גובה 1.65 מ' ומשקל 60 ק\"ג לפחות",
+        "פרופיל 72 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/תפקידים/לוחמות-טנקים-בגדודי-חיר-גבולות/"
+      },
+      "serviceLengthLabel": "32 חודשים + מילואים"
+    },
+    "חובש/ת קדמי/ת": {
+      "daparFloor": 50,
+      "medicalFloor": 64,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "high",
+      "requirements": [
+        "פרופיל 64 ומעלה",
+        "דפ\"ר 50 ומעלה",
+        "עברית 8",
+        "סיכויי שיבוץ נמוכים"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/חובשת-קדמית/"
+      },
+      "serviceLengthLabel": "טירונות 02 + 3 חודשי קורס; גברים 32, נשים 24"
     }
   }
 }

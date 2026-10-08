@@ -94,7 +94,7 @@ export function preFilterRoles(roles, stats, prefs, yom) {
       if (peopleTags && yom.interpersonalCare <= 2) score -= 3;
 
       // Attention-intensive roles
-      if (tags.includes("attention-to-detail") && yom.sustainedAttention >= 4) score += 3;
+      if (tags.includes("attention-to-detail") && yom.diligencePersistence >= 4) score += 3;
 
       // Management roles
       if (tags.some(t => ["operations", "war-room", "logistics", "admin"].includes(t)) && yom.managementOrganization >= 4) score += 4;
@@ -107,7 +107,7 @@ export function preFilterRoles(roles, stats, prefs, yom) {
       if (role.selective && yom.diligencePersistence <= 2) score -= 3;
 
       // Discipline for sensitive environments
-      if (tags.some(t => ["intelligence", "cyber"].includes(t)) && yom.disciplineMaturity >= 4) score += 3;
+      if (tags.some(t => ["intelligence", "cyber"].includes(t)) && yom.frameworkBehavior >= 4) score += 3;
     }
 
     // Validation quality bonus

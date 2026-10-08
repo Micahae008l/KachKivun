@@ -1,4 +1,4 @@
-import { YOM_HAMEAH_12_KEYS } from "./yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "./yomHameahKeys.js";
 
 export const ASSESSMENT_SCHEMA_VERSIONS = [1, 2];
 export const SERVICE_LIFE_CYCLES = ["pre"];
@@ -18,7 +18,7 @@ export const FITNESS_LEVELS = ["Low", "Medium", "High"];
 export const YOM_SOURCES = ["official", "self", UNKNOWN_ASSESSMENT_VALUE];
 
 export function neutralYomHameahScores() {
-  return Object.fromEntries(YOM_HAMEAH_12_KEYS.map((key) => [key, 3]));
+  return Object.fromEntries(YOM_HAMEAH_KEYS.map((key) => [key, 3]));
 }
 
 export const ROLE_INTERESTS = [

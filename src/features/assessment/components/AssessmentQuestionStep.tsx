@@ -4,10 +4,10 @@ import { FieldError, FormField } from "@/components/FormField";
 import { PreferenceOptionGrid } from "@/components/PreferenceOptionGrid";
 import { ARIA } from "@/lib/a11y";
 import {
-  defaultYomHameah12Scores,
-  YOM_HAMEAH_12_KEYS,
-  YOM_HAMEAH_12_LABELS_HE,
-} from "@/lib/yom-hameah-12";
+  defaultYomHameahScores,
+  YOM_HAMEAH_KEYS,
+  YOM_HAMEAH_LABELS_HE,
+} from "@/lib/yom-hameah";
 import { AssessmentCheckpoint } from "./AssessmentCheckpoint";
 import {
   COMBAT_PREFERENCE_OPTIONS,
@@ -312,7 +312,7 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
             onChange={(yomHameahSource) =>
               update({
                 yomHameahSource,
-                ...(yomHameahSource === "unknown" ? { yomHameah: defaultYomHameah12Scores() } : {}),
+                ...(yomHameahSource === "unknown" ? { yomHameah: defaultYomHameahScores() } : {}),
               })
             }
             cards
@@ -329,10 +329,10 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
         </p>
         {answers.yomHameahSource === "official" || answers.yomHameahSource === "self" ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            {YOM_HAMEAH_12_KEYS.map((key) => (
+            {YOM_HAMEAH_KEYS.map((key) => (
               <YomSlider
                 key={key}
-                title={YOM_HAMEAH_12_LABELS_HE[key]}
+                title={YOM_HAMEAH_LABELS_HE[key]}
                 value={answers.yomHameah[key]}
                 onChange={(value) => update({ yomHameah: { ...answers.yomHameah, [key]: value } })}
               />

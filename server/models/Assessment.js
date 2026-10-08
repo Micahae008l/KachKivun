@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 import {
   ASSESSMENT_SCHEMA_VERSIONS,
   COMBAT_PREFERENCES,
@@ -46,7 +46,7 @@ const thresholdAnswer = (values, label) => ({
 });
 
 const yomShape = Object.fromEntries(
-  YOM_HAMEAH_12_KEYS.map((key) => [key, { type: Number, min: 1, max: 5, required: true }]),
+  YOM_HAMEAH_KEYS.map((key) => [key, { type: Number, min: 1, max: 5, required: true }]),
 );
 
 const combatDetailsSchema = new mongoose.Schema(

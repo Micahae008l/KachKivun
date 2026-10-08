@@ -1,4 +1,4 @@
-import { defaultYomHameah12Scores } from "@/lib/yom-hameah-12";
+import { defaultYomHameahScores } from "@/lib/yom-hameah";
 import type { AssessmentAnswers } from "./types";
 
 export function createDefaultAssessmentAnswers(): AssessmentAnswers {
@@ -9,7 +9,7 @@ export function createDefaultAssessmentAnswers(): AssessmentAnswers {
     daparScore: null,
     medicalProfile: null,
     draftDate: "",
-    yomHameah: defaultYomHameah12Scores(),
+    yomHameah: defaultYomHameahScores(),
     yomHameahSource: "",
     combatPreference: "",
     focus: "",

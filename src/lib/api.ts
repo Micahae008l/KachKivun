@@ -239,9 +239,9 @@ export function getLatestAssessment() {
 
 export type ServiceLifeCycle = "pre" | "serving" | "veteran";
 
-import type { YomHameah as _YomHameah, YomHameah12Key as _YomHameah12Key } from "./yom-hameah-12";
+import type { YomHameah as _YomHameah, YomHameahKey as _YomHameahKey } from "./yom-hameah";
 export type YomHameah = _YomHameah;
-export type YomHameah12Key = _YomHameah12Key;
+export type YomHameahKey = _YomHameahKey;
 
 export type YomQuestionnaireEntry = { questionId: string; score: number };
 

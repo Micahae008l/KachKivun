@@ -1,5 +1,5 @@
 {
-  "_edit_me": "Same profile is sent to every model/engine. Enums: daparScore 10..90 step 10 | medicalProfile 21,45,64,72,82,97 | gender male/female | combatPreference FieldCombat,SupportHQ,TechTrack,MedicalInstruction,Mixed | focus Tech,Physical,Research,Medical | physicalActivityLevel Low,Medium,High | yomHameahSource official,self,unknown",
+  "_edit_me": "Same profile is sent to every model/engine. Enums: daparScore 10..90 step 10 | medicalProfile 21,45,64,70,72,82,97 | gender male/female | combatPreference FieldCombat,SupportHQ,TechTrack,MedicalInstruction,Mixed | focus Tech,Physical,Research,Medical | physicalActivityLevel Low,Medium,High | yomHameahSource official,self,unknown",
   "daparScore": 80,
   "medicalProfile": 97,
   "gender": "male",
@@ -16,10 +16,9 @@
     "instruction": 2,
     "interpersonalCare": 3,
     "diligencePersistence": 4,
-    "sustainedAttention": 4,
-    "speedAndAccuracy": 4,
     "managementOrganization": 3,
-    "disciplineMaturity": 4
+    "frameworkBehavior": 4,
+    "maturity": 4
   },
   "assessmentSignals": {
     "rolesInterested": [

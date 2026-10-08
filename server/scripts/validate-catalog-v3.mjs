@@ -10,10 +10,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getIdfRoleCatalogParsed } from "../utils/idfRoleCatalog.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const YOM = new Set(YOM_HAMEAH_12_KEYS);
+const YOM = new Set(YOM_HAMEAH_KEYS);
 const VALID_DAPAR = new Set([10, 20, 30, 40, 50, 60, 70, 80, 90, null]);
 const VALID_MEDICAL = new Set([21, 45, 64, 72, 82, 97, null]);
 const VALID_STATUS = new Set(["none", "ai_draft", "reviewed", "verified"]);

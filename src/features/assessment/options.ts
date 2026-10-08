@@ -48,7 +48,7 @@ export const YOM_SOURCE_OPTIONS = [
   {
     value: "unknown",
     label: "לא יודע/ת להעריך",
-    description: "לא נבקש 12 ציונים; נשמור ערכים ניטרליים שלא ישמשו כאות זכאות",
+    description: "לא נבקש 11 ציונים; נשמור ערכים ניטרליים שלא ישמשו כאות זכאות",
   },
 ] as const;
 

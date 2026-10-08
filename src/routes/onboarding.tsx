@@ -17,7 +17,7 @@ import {
   type FocusPreferenceValue,
   type FitnessPreferenceValue,
 } from "@/lib/profile-preference-data";
-import { YOM_HAMEAH_12_KEYS, migrateLegacyYomHameahTo12 } from "@/lib/yom-hameah-12";
+import { YOM_HAMEAH_KEYS, migrateLegacyYomHameah } from "@/lib/yom-hameah";
 import {
   coerceCombat,
   coerceFitness,
@@ -41,12 +41,12 @@ const MEDICAL_SCORES = [21, 45, 64, 70, 72, 82, 97] as const;
 const ease = [0.16, 1, 0.3, 1] as const;
 
 function yomHameahComplete(y: unknown): boolean {
-  return migrateLegacyYomHameahTo12(y) !== null;
+  return migrateLegacyYomHameah(y) !== null;
 }
 
 function coarseYomFromFitness(f: FitnessPreferenceValue): YomHameah {
   const n = f === "High" ? 4 : f === "Medium" ? 3 : 2;
-  return Object.fromEntries(YOM_HAMEAH_12_KEYS.map((k) => [k, n])) as YomHameah;
+  return Object.fromEntries(YOM_HAMEAH_KEYS.map((k) => [k, n])) as YomHameah;
 }
 
 const STEP_COMBAT = 0;

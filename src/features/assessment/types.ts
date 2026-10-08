@@ -3,7 +3,7 @@ import type {
   FitnessPreferenceValue,
   FocusPreferenceValue,
 } from "@/lib/profile-preference-data";
-import type { YomHameah } from "@/lib/yom-hameah-12";
+import type { YomHameah } from "@/lib/yom-hameah";
 
 export const ASSESSMENT_SCHEMA_VERSION = 2 as const;
 

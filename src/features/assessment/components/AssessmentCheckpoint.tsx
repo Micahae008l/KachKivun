@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { progressBarProps } from "@/lib/a11y";
-import { YOM_HAMEAH_12_KEYS, YOM_HAMEAH_12_LABELS_HE } from "@/lib/yom-hameah-12";
+import { YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE } from "@/lib/yom-hameah";
 import {
   COMBAT_PREFERENCE_OPTIONS,
   ENVIRONMENT_OPTIONS,
@@ -71,11 +71,7 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
       },
       {
         label: "מידע",
-        value: average([
-          answers.yomHameah.dataProcessing,
-          answers.yomHameah.sustainedAttention,
-          answers.yomHameah.speedAndAccuracy,
-        ]),
+        value: answers.yomHameah.dataProcessing,
       },
       {
         label: "צוות",
@@ -83,7 +79,7 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
       },
       {
         label: "פיקוד",
-        value: average([answers.yomHameah.command, answers.yomHameah.disciplineMaturity]),
+        value: average([answers.yomHameah.command, answers.yomHameah.frameworkBehavior]),
       },
       { label: "הדרכה", value: answers.yomHameah.instruction },
       {
@@ -91,6 +87,7 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
         value: average([
           answers.yomHameah.diligencePersistence,
           answers.yomHameah.managementOrganization,
+          answers.yomHameah.maturity,
         ]),
       },
     ],
@@ -213,9 +210,9 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
                 </ResponsiveContainer>
               </div>
               <ul className="grid grid-cols-1 gap-x-4 gap-y-2 border-t border-iron/20 pt-3 text-xs sm:grid-cols-2">
-                {YOM_HAMEAH_12_KEYS.map((key) => (
+                {YOM_HAMEAH_KEYS.map((key) => (
                   <li key={key} className="flex items-start justify-between gap-2">
-                    <span className="text-dust">{YOM_HAMEAH_12_LABELS_HE[key]}</span>
+                    <span className="text-dust">{YOM_HAMEAH_LABELS_HE[key]}</span>
                     <strong className="font-mono tabular-nums text-foreground">
                       {answers.yomHameah[key]}/5
                     </strong>
@@ -332,9 +329,9 @@ function FinalSignalsReview({
       title: "מא״ה",
       detail:
         answers.yomHameahSource === "official"
-          ? "12 ציונים רשמיים"
+          ? "11 ציונים רשמיים"
           : answers.yomHameahSource === "self"
-            ? "12 הערכות עצמיות — יסומנו בביטחון נמוך יותר"
+            ? "11 הערכות עצמיות, יסומנו בביטחון נמוך יותר"
             : "לא ידוע — ציונים ניטרליים נשמרים לתאימות בלבד ולא ישמשו כאות",
     },
     {

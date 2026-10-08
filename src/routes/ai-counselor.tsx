@@ -12,7 +12,7 @@ import { getErrorMessage } from "@/lib/api-errors";
 import { dashboardQueryOptions } from "@/lib/queries";
 import { getToken } from "@/lib/auth";
 import { AI_PROFILE_MISSING_LABELS } from "@/lib/profile-preference-data";
-import { migrateLegacyYomHameahTo12, YOM_HAMEAH_12_KEYS } from "@/lib/yom-hameah-12";
+import { migrateLegacyYomHameah, YOM_HAMEAH_KEYS } from "@/lib/yom-hameah";
 import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/ai-counselor")({
@@ -117,11 +117,11 @@ function AiCounselorPage() {
 
   const yomAverage = (() => {
     const yom = dashboard?.stats?.yomHameah
-      ? migrateLegacyYomHameahTo12(dashboard.stats.yomHameah)
+      ? migrateLegacyYomHameah(dashboard.stats.yomHameah)
       : null;
     if (!yom) return "—";
     const average =
-      YOM_HAMEAH_12_KEYS.reduce((total, key) => total + yom[key], 0) / YOM_HAMEAH_12_KEYS.length;
+      YOM_HAMEAH_KEYS.reduce((total, key) => total + yom[key], 0) / YOM_HAMEAH_KEYS.length;
     return `${average.toFixed(1)}/5`;
   })();
 

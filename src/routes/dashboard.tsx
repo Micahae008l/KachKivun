@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Target, Calendar } from "lucide-react";
 import { DashboardAccountPreferences } from "@/components/DashboardAccountPreferences";
 import { DashboardActionCard } from "@/components/DashboardActionCard";
-import { migrateLegacyYomHameahTo12, YOM_HAMEAH_12_KEYS } from "@/lib/yom-hameah-12";
+import { migrateLegacyYomHameah, YOM_HAMEAH_KEYS } from "@/lib/yom-hameah";
 import { progressBarProps } from "@/lib/a11y";
 import { DashboardSkeleton } from "@/components/skeletons/PageSkeletons";
 import { dashboardQueryOptions } from "@/lib/queries";
@@ -68,9 +68,9 @@ function statusHebrew(status: string) {
 }
 
 function yomSummary(yom: unknown) {
-  const m = migrateLegacyYomHameahTo12(yom);
+  const m = migrateLegacyYomHameah(yom);
   if (!m) return { label: "-", pct: 0 };
-  const sum = YOM_HAMEAH_12_KEYS.reduce((acc, k) => acc + m[k], 0);
+  const sum = YOM_HAMEAH_KEYS.reduce((acc, k) => acc + m[k], 0);
   const avg = sum / 12;
   return { label: `${avg.toFixed(1)}/5`, pct: Math.min(100, Math.round((avg / 5) * 100)) };
 }
@@ -265,7 +265,7 @@ function DashboardPage() {
               to="/onboarding"
               className="text-sm text-dust transition hover:text-primary hover:underline"
             >
-              עריכת מא״ה מלאה (12 ממדים) →
+              עריכת מא״ה מלאה (11 ממדים) →
             </Link>
           </motion.div>
 

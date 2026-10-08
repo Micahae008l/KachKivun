@@ -1,3 +1,4 @@
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -17,7 +18,7 @@ import { normalizeRoleV3 } from "../utils/roleCatalogV3.js";
 import { preFilterRoles } from "../utils/rolePreFilter.js";
 
 const flatYom = Object.fromEntries(
-  ["technicalActivation","spatialPerception","dataProcessing","teamwork","command","instruction","interpersonalCare","diligencePersistence","sustainedAttention","speedAndAccuracy","managementOrganization","disciplineMaturity"].map((k) => [k, 3])
+  YOM_HAMEAH_KEYS.map((k) => [k, 3])
 );
 const richYom = { ...flatYom, technicalActivation: 5, dataProcessing: 5, command: 1, instruction: 1 };
 

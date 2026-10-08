@@ -107,6 +107,10 @@ Each fires from answers already collected, shows one chart, and is sourced. All 
 
 Add to `buildSystemPromptV3` (and v2) a short "verified facts" block so the model stops inventing: service lengths above, the profile ladder incl. 70, the combat-profile trap, "8200 is never named officially; use the track names", "קב"א is not shown to most candidates", "no יציאות per role". Also fix `nextStepPrompts`: they should be questions the teen can ask מיטב or a unit rep ("מתי חלון המיונים הבא לאשכול מקצועות המחשב?"), not interview questions to the teen.
 
+## Status (end of 2026-10-08)
+
+Done: sections 1 (profile 70, מא"ה set), 2 (notice text), 3 (facts block in prompts), 4 and 5 (catalog cleanup via `server/scripts/cleanup-catalog.mjs`: 32 removed, 8 fixed, 35 added, 305 roles, 119 with official thresholds), 6 (insight cards + roadmap), 7 (prompt facts, follow-up questions), 7b (11 dimensions, קב"א removed from new data). Still open: the "exits" question (section 1, row 1: replace with בסיס סגור/פתוח), "+120 תפקידים" and "אחוזי דיוק" copy on the landing page, and the manual verifications in section 8.
+
 ## 7b. Corrections from Michael (first-hand, 2026-10-08)
 
 - **קב"א no longer exists** for candidates. Remove every קב"א mention from UI, catalog requirement strings (e.g. מדריך/ת ERP "קב"א 52 ומעלה") and prompts.

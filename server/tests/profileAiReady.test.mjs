@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 
 const neutralYom = Object.fromEntries(
-  YOM_HAMEAH_12_KEYS.map((key) => [key, 3]),
+  YOM_HAMEAH_KEYS.map((key) => [key, 3]),
 );
 
 const completePreferences = {

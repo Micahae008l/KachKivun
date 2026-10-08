@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateAssessmentCompletion } from "../validators/assessments.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 import Assessment from "../models/Assessment.js";
 
 function validBody(overrides = {}) {
@@ -15,7 +15,7 @@ function validBody(overrides = {}) {
       daparScore: 70,
       medicalProfile: 82,
       draftDate: "2027-03-15",
-      yomHameah: Object.fromEntries(YOM_HAMEAH_12_KEYS.map((key) => [key, 3])),
+      yomHameah: Object.fromEntries(YOM_HAMEAH_KEYS.map((key) => [key, 3])),
       yomHameahSource: "self",
       combatPreference: "SupportHQ",
       focus: "Research",
@@ -148,10 +148,10 @@ test("explicit unknown thresholds and מא״ה source are valid and neutralized"
   assert.equal(request.body.answers.yomHameahSource, "unknown");
   assert.deepEqual(
     Object.keys(request.body.answers.yomHameah).sort(),
-    [...YOM_HAMEAH_12_KEYS].sort(),
+    [...YOM_HAMEAH_KEYS].sort(),
   );
   assert.ok(
-    YOM_HAMEAH_12_KEYS.every((key) => request.body.answers.yomHameah[key] === 3),
+    YOM_HAMEAH_KEYS.every((key) => request.body.answers.yomHameah[key] === 3),
   );
 });
 
@@ -187,13 +187,13 @@ test("empty unknown-capable fields remain unanswered and are rejected", () => {
   }
 });
 
-test("self or official מא״ה still requires twelve valid scores", () => {
+test("self or official מא״ה still requires eleven valid scores", () => {
   for (const source of ["self", "official"]) {
     const request = {
       body: validBody({
         yomHameahSource: source,
         yomHameah: Object.fromEntries(
-          YOM_HAMEAH_12_KEYS.slice(1).map((key) => [key, 3]),
+          YOM_HAMEAH_KEYS.slice(1).map((key) => [key, 3]),
         ),
       }),
     };

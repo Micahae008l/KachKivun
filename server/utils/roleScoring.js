@@ -478,10 +478,9 @@ const DIM_LABELS_SHORT = {
   instruction: "הדרכה",
   interpersonalCare: "טיפול באדם",
   diligencePersistence: "התמדה",
-  sustainedAttention: "קשב",
-  speedAndAccuracy: "דיוק",
   managementOrganization: "ניהול וארגון",
-  disciplineMaturity: "משמעת",
+  frameworkBehavior: "התנהגות מסגרתית",
+  maturity: "בגרות",
 };
 
 /** Effective medical floor for scoring/gates. Unknown means no role-specific gate. */

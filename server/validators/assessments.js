@@ -6,7 +6,7 @@ import {
   parseString,
   requirePlainObject,
 } from "../utils/sanitize.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 import {
   ASSESSMENT_SCHEMA_VERSIONS,
   COMBAT_PREFERENCES,
@@ -95,11 +95,11 @@ function parseDateOnly(value) {
 function parseYomHameah(value) {
   const object = requirePlainObject(value, "yomHameah");
   if (!object.ok) return object;
-  const unknown = rejectUnknownFields(object.value, YOM_HAMEAH_12_KEYS, "yomHameah");
+  const unknown = rejectUnknownFields(object.value, YOM_HAMEAH_KEYS, "yomHameah");
   if (!unknown.ok) return unknown;
 
   const output = {};
-  for (const key of YOM_HAMEAH_12_KEYS) {
+  for (const key of YOM_HAMEAH_KEYS) {
     const score = parseIntInRange(object.value[key], { min: 1, max: 5, label: key });
     if (!score.ok) return score;
     output[key] = score.value;

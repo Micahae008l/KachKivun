@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getIdfRoleCatalogParsed } from "./idfRoleCatalog.js";
-import { YOM_HAMEAH_12_KEYS } from "./yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "./yomHameahKeys.js";
 import {
   EXIT_PREFERENCES,
   MOTIVATIONS,
@@ -35,29 +35,29 @@ function loadEnrichmentOverrides() {
  * improve automatically as roles get enriched — no code change needed.
  */
 
-const YOM = new Set(YOM_HAMEAH_12_KEYS);
+const YOM = new Set(YOM_HAMEAH_KEYS);
 
 /** preferenceTag → the מא"ה dimensions that role tends to exercise. */
 export const TAG_TO_DIMENSIONS = {
   coding: ["technicalActivation", "dataProcessing"],
   software: ["technicalActivation", "dataProcessing"],
-  cyber: ["technicalActivation", "dataProcessing", "disciplineMaturity"],
+  cyber: ["technicalActivation", "dataProcessing", "frameworkBehavior", "maturity"],
   ai: ["technicalActivation", "dataProcessing"],
-  data: ["dataProcessing", "sustainedAttention"],
+  data: ["dataProcessing", "diligencePersistence"],
   it: ["technicalActivation"],
   networks: ["technicalActivation"],
-  electronics: ["technicalActivation", "speedAndAccuracy"],
+  electronics: ["technicalActivation", "dataProcessing"],
   hardware: ["technicalActivation"],
   mechanics: ["technicalActivation", "spatialPerception"],
   devops: ["technicalActivation", "managementOrganization"],
-  qa: ["sustainedAttention", "speedAndAccuracy"],
-  intelligence: ["dataProcessing", "sustainedAttention", "disciplineMaturity"],
+  qa: ["diligencePersistence", "dataProcessing"],
+  intelligence: ["dataProcessing", "diligencePersistence", "maturity"],
   research: ["dataProcessing", "diligencePersistence"],
   maps: ["spatialPerception", "dataProcessing"],
-  "visual-analysis": ["sustainedAttention", "spatialPerception"],
+  "visual-analysis": ["diligencePersistence", "spatialPerception"],
   math: ["dataProcessing"],
   physics: ["dataProcessing", "technicalActivation"],
-  "attention-to-detail": ["sustainedAttention", "speedAndAccuracy"],
+  "attention-to-detail": ["diligencePersistence", "dataProcessing"],
   leadership: ["command"],
   teaching: ["instruction"],
   instruction: ["instruction"],
@@ -67,14 +67,14 @@ export const TAG_TO_DIMENSIONS = {
   hr: ["interpersonalCare", "managementOrganization"],
   interviewing: ["interpersonalCare", "dataProcessing"],
   medicine: ["interpersonalCare", "diligencePersistence"],
-  emergency: ["interpersonalCare", "speedAndAccuracy"],
-  operations: ["managementOrganization", "sustainedAttention"],
-  "war-room": ["sustainedAttention", "managementOrganization"],
+  emergency: ["interpersonalCare", "dataProcessing"],
+  operations: ["managementOrganization", "diligencePersistence"],
+  "war-room": ["diligencePersistence", "managementOrganization"],
   logistics: ["managementOrganization"],
   admin: ["managementOrganization", "dataProcessing"],
   fieldwork: ["spatialPerception"],
-  combat: ["spatialPerception", "disciplineMaturity"],
-  driving: ["spatialPerception", "speedAndAccuracy"],
+  combat: ["spatialPerception", "frameworkBehavior"],
+  driving: ["spatialPerception", "dataProcessing"],
   rescue: ["interpersonalCare", "spatialPerception"],
 };
 

@@ -8,7 +8,7 @@ import {
   parseString,
   requirePlainObject,
 } from "../utils/sanitize.js";
-import { YOM_HAMEAH_12_KEYS } from "../utils/yomHameah12Keys.js";
+import { YOM_HAMEAH_KEYS } from "../utils/yomHameahKeys.js";
 import { SERVICE_MAP } from "../utils/profileApply.js";
 
 const USER_STATUSES = ["Pre-Draft", "Active Duty", "Discharged"];
@@ -37,10 +37,10 @@ function parseYomHameah(value) {
   if (!objResult.ok) return objResult;
   const raw = objResult.value;
   for (const key of Object.keys(raw)) {
-    if (!YOM_HAMEAH_12_KEYS.includes(key)) return fail(`Unknown yom field: ${key}`);
+    if (!YOM_HAMEAH_KEYS.includes(key)) return fail(`Unknown yom field: ${key}`);
   }
   const out = {};
-  for (const key of YOM_HAMEAH_12_KEYS) {
+  for (const key of YOM_HAMEAH_KEYS) {
     if (raw[key] === undefined) return fail("yomHameah is incomplete");
     const scoreResult = parseOptionalIntInRange(raw[key], { min: 1, max: 5, label: key });
     if (!scoreResult.ok) return scoreResult;

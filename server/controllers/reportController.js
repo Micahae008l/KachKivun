@@ -7,10 +7,10 @@ import Assessment from "../models/Assessment.js";
 import { recordAiUsage } from "../utils/recordAiUsage.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import {
-  YOM_HAMEAH_12_KEYS,
-  YOM_HAMEAH_12_LABELS_HE,
-  migrateLegacyYomHameahTo12,
-} from "../utils/yomHameah12Keys.js";
+  YOM_HAMEAH_KEYS,
+  YOM_HAMEAH_LABELS_HE,
+  migrateLegacyYomHameah,
+} from "../utils/yomHameahKeys.js";
 import { getIdfRoleCatalogParsed } from "../utils/idfRoleCatalog.js";
 import { preFilterRoles } from "../utils/rolePreFilter.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
@@ -80,7 +80,7 @@ export async function generateReport(req, res) {
     const languages = fitness.languages || "";
     const notes = fitness.notes || "";
 
-    const yom = migrateLegacyYomHameahTo12(stats.yomHameah);
+    const yom = migrateLegacyYomHameah(stats.yomHameah);
     const yomKnown = preferences?.yomHameahSource !== "unknown";
     const yomForLegacyScoring = yomKnown ? yom : null;
 
@@ -126,16 +126,16 @@ export async function generateReport(req, res) {
             : "לא צוין";
 
     const yomLines = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS.map(
-          (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
+      ? YOM_HAMEAH_KEYS.map(
+          (k) => `  • ${k} (${YOM_HAMEAH_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
         ).join("\n")
       : preferences?.yomHameahSource === "unknown"
         ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
         : "  (לא הוזנו)";
 
     const yomSorted = yom && yomKnown
-      ? YOM_HAMEAH_12_KEYS
-          .map((k) => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
+      ? YOM_HAMEAH_KEYS
+          .map((k) => ({ key: k, label: YOM_HAMEAH_LABELS_HE[k] ?? k, score: yom[k] }))
           .filter((d) => typeof d.score === "number")
           .sort((a, b) => b.score - a.score)
       : [];

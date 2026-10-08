@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
 import { addMonths, aggregateYomFromAnswers, loadYomQuestionDefs } from "./yomLoad.js";
-import { isValidYomHameah12, migrateLegacyYomHameahTo12 } from "./yomHameah12Keys.js";
+import { isValidYomHameah, migrateLegacyYomHameah } from "./yomHameahKeys.js";
 
 export const SERVICE_MAP = {
   pre: "Pre-Draft",
@@ -82,10 +82,10 @@ export async function applyStatsPatch(userId, stats) {
       update.yomHameah = null;
       update.yomQuestionnaire = [];
     } else {
-      const migrated = migrateLegacyYomHameahTo12(stats.yomHameah);
-      if (isValidYomHameah12(migrated)) {
+      const migrated = migrateLegacyYomHameah(stats.yomHameah);
+      if (isValidYomHameah(migrated)) {
         update.yomHameah = migrated;
-      } else if (isValidYomHameah12(stats.yomHameah)) {
+      } else if (isValidYomHameah(stats.yomHameah)) {
         update.yomHameah = stats.yomHameah;
       }
       update.yomQuestionnaire = [];

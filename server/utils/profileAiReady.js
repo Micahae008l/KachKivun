@@ -1,4 +1,4 @@
-import { isValidYomHameah12, migrateLegacyYomHameahTo12 } from "./yomHameah12Keys.js";
+import { isValidYomHameah, migrateLegacyYomHameah } from "./yomHameahKeys.js";
 
 function assessmentAnswers(assessment) {
   const value = assessment?.answers ?? assessment;
@@ -47,6 +47,6 @@ export function computeAiProfileMissing(stats, preferences, latestAssessment = n
 }
 
 function isYomHameahComplete(y) {
-  const migrated = migrateLegacyYomHameahTo12(y);
-  return isValidYomHameah12(migrated);
+  const migrated = migrateLegacyYomHameah(y);
+  return isValidYomHameah(migrated);
 }

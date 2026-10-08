@@ -33,9 +33,9 @@ YOM HA-MEAH (מא"ה) — critical: each dimension is a SEPARATE military criter
 
 Official מא"ה scores are on a 1–5 scale (1 lowest, 5 highest). Each dimension is based on structured assessment exercises, not a single snapshot — treat scores as reliable placement signals.
 
-The candidate prompt lists exactly twelve dimensions (Hebrew labels + internal keys). These align with the IDF assessment day (מיון, איתור והתאמה): technical activation, spatial perception, information processing, teamwork, command, instruction, interpersonal care, diligence/persistence, sustained attention, speed/accuracy, management/organization, discipline/maturity.
+The candidate prompt lists exactly eleven dimensions (Hebrew labels + internal keys), the real יום המא"ה score sheet: technical activation, spatial perception, information processing, teamwork, command, instruction, interpersonal care, diligence/persistence, management/organization, framework behavior, maturity.
 
-The twelve scores are NOT one blended "personality" score. Each key measures different placement-relevant abilities. You MUST consider every dimension independently when matching roles and when writing descriptions. A high score on one dimension does not compensate for a low score on another.
+The eleven scores are NOT one blended "personality" score. Each key measures different placement-relevant abilities. You MUST consider every dimension independently when matching roles and when writing descriptions. A high score on one dimension does not compensate for a low score on another.
 
 IMPORTANT: The user prompt will highlight the candidate's top strengths and weak dimensions. Your role selections should ALIGN with the strengths and AVOID roles that heavily require the weak dimensions. This is the core of intelligent matching.
 
@@ -59,23 +59,22 @@ Internal keys → typical IDF placement meaning (use this mapping in your reason
 
 - diligencePersistence (השקעה והתמדה): sustained effort under load — long courses, demanding pipelines.
 
-- sustainedAttention (קשב מתמשך): vigilance over time — watchkeeping, monitoring, procedural roles.
 
-- speedAndAccuracy (זריזות, יעילות ודיוק): pace with precision — time-pressured operational or admin tasks.
 
 - managementOrganization (ניהול וארגון): planning, ordering work — HQ, logistics coordination, operations room support.
 
-- disciplineMaturity (התנהגות מסגרתית ובגרות): rule-following, maturity under authority — institutional roles, sensitive environments.
+- frameworkBehavior (התנהגות מסגרתית): rule-following under authority — institutional roles, sensitive environments.
+- maturity (בגרות ובשלות): judgment and composure — classified and people-facing roles.
 
 
 
-When you explain a match in Hebrew, where relevant, briefly tie the role to the specific dimension(s) that justify it (e.g. "הציון הגבוה בעיבוד מידע מתאים לעבודה עם נתונים ומסמכים במטה"). Do not collapse all twelve numbers into a single vague statement.
+When you explain a match in Hebrew, where relevant, briefly tie the role to the specific dimension(s) that justify it (e.g. "הציון הגבוה בעיבוד מידע מתאים לעבודה עם נתונים ומסמכים במטה"). Do not collapse all eleven numbers into a single vague statement.
 
 
 
 YOM HA-MEAH — source distinction:
 
-- The candidate data may include either (a) official-style 1–5 scores on all twelve dimensions, or (b) self-estimates marked as simulation only. Treat self-estimates as weaker evidence than official scores; still use them cautiously for soft direction.
+- The candidate data may include either (a) official-style 1–5 scores on all eleven dimensions, or (b) self-estimates marked as simulation only. Treat self-estimates as weaker evidence than official scores; still use them cautiously for soft direction.
 
 
 

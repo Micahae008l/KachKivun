@@ -1,4 +1,4 @@
-import { migrateLegacyYomHameahTo12 } from "@/lib/yom-hameah-12";
+import { migrateLegacyYomHameah } from "@/lib/yom-hameah";
 import { createDefaultAssessmentAnswers } from "./defaults";
 import {
   COMBAT_PREFERENCE_OPTIONS,
@@ -133,7 +133,7 @@ export function normalizeAssessmentAnswers(value: unknown): AssessmentAnswers {
   const defaults = createDefaultAssessmentAnswers();
   const combat = asRecord(source.combatDetails);
   const technical = asRecord(source.technicalDetails);
-  const migratedYom = migrateLegacyYomHameahTo12(source.yomHameah);
+  const migratedYom = migrateLegacyYomHameah(source.yomHameah);
 
   return {
     ...defaults,

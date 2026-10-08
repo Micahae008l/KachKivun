@@ -75,7 +75,7 @@
     "sports",
     "creative"
   ],
-  "roleCount": 302,
+  "roleCount": 305,
   "roles": [
     {
       "roleTitle": "מאבחן/ת מדעי ההתנהגות",
@@ -328,7 +328,51 @@
       "validationSource": "Official Mitgaisim מטיס חוץ כטמ\"ם page"
     },
     {
-      "roleTitle": "מש\"ק/ית תיאום אווירי",
+      "roleTitle": "לוחם לוחמה אלקטרונית",
+      "category": "אוויר / לוחמה אלקטרונית",
+      "combat": true,
+      "selective": true,
+      "preferenceTags": [
+        "electronics",
+        "operations",
+        "combat",
+        "fieldwork"
+      ],
+      "signals": [
+        "אוריינטציה טכנולוגית",
+        "חשיבה אנליטית",
+        "עיבוד נתונים",
+        "דינמיקה קבוצתית"
+      ],
+      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "seed_normalized",
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+    },
+    {
+      "roleTitle": "מפעיל/ת לוחמה אלקטרונית (ל\"א)",
+      "category": "אוויר / לוחמה אלקטרונית",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "electronics",
+        "operations",
+        "intelligence",
+        "attention-to-detail"
+      ],
+      "signals": [
+        "אלקטרוניקה",
+        "תפעול מערכות",
+        "עיבוד מידע",
+        "קור רוח"
+      ],
+      "bestFor": "Good fit for broad service preferences.",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes service, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+    },
+    {
+      "roleTitle": "רכז/ת שליטה קרקעית (קשל\"ט)",
       "category": "אוויר / מבצעים",
       "combat": false,
       "selective": true,
@@ -339,57 +383,33 @@
         "attention-to-detail"
       ],
       "signals": [
-        "תיאום",
-        "מרחב אווירי",
-        "חמ\"ל",
-        "דיווח"
+        "שליטה קרקעית בבסיסי חיל האוויר",
+        "בסיס סגור"
       ],
-      "bestFor": "Good fit for: aviation, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Air Force operations role family; verify exact slot"
+      "bestFor": "Good fit for: ground control coordinators at air bases",
+      "aiRecommendationHint": "Suggest when the user likes aviation, operations, war-room, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/"
     },
     {
-      "roleTitle": "רכז/ת מבצעים בחיל האוויר",
-      "category": "אוויר / מבצעים",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "aviation",
-        "operations",
-        "war-room"
-      ],
-      "signals": [
-        "חדר מבצעים",
-        "דיווחים",
-        "תמונה מבצעית",
-        "קשב"
-      ],
-      "bestFor": "Good fit for: aviation, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, operations, war-room. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force operations room role family"
-    },
-    {
-      "roleTitle": "מכונאי/ת מוטס/ת",
-      "category": "אוויר / צוות אוויר",
+      "roleTitle": "מסלול אדרים",
+      "category": "אוויר / קצונה טכנית",
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "aviation",
+        "electronics",
         "mechanics",
-        "operations"
+        "leadership",
+        "aviation"
       ],
       "signals": [
-        "צוות אוויר",
-        "טכני",
-        "קור רוח",
-        "אחריות"
+        "קצונה טכנית בחיל האוויר",
+        "תואר רב-תחומי באוניברסיטת חיפה"
       ],
-      "bestFor": "Good fit for: aviation, hands-on technical work, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, mechanics, operations. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Air Force role family; verify exact availability"
+      "bestFor": "Good fit for: technical officers with a BA for the Air Force",
+      "aiRecommendationHint": "Suggest when the user likes electronics, mechanics, leadership, aviation.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-אדרים/"
     },
     {
       "roleTitle": "מש\"ק/ית ביטחון מידע",
@@ -541,6 +561,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes data, research, math, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official/common IDF data-analysis role family; verify exact slot name in portal"
+    },
+    {
+      "roleTitle": "דאטא אנליסט/ית (אנליסט מידע מבצעי)",
+      "category": "דאטה / תוכנה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "data",
+        "math",
+        "coding",
+        "attention-to-detail"
+      ],
+      "signals": [
+        "SQL, סטטיסטיקה, BI, Python",
+        "קד\"צ 16 שבועות",
+        "בתי תוכנה"
+      ],
+      "bestFor": "Good fit for: data analysts for software houses",
+      "aiRecommendationHint": "Suggest when the user likes data, math, coding, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/דאטא-אנליסט/"
     },
     {
       "roleTitle": "מפתח/ת BI צבאי/ת",
@@ -900,27 +941,6 @@
       "validationSource": "Official IDF spokesperson/media role family; verify exact slot name in portal"
     },
     {
-      "roleTitle": "מדריך/ת ERP",
-      "category": "הדרכה",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "teaching",
-        "public-speaking",
-        "sea"
-      ],
-      "signals": [
-        "הטמעת מערכות",
-        "הדרכה טכנולוגית",
-        "מחשבים",
-        "יחסי אנוש"
-      ],
-      "bestFor": "Good fit for: teaching/instruction, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
-    },
-    {
       "roleTitle": "מדריך/ת הנדסה קרבית",
       "category": "הדרכה",
       "combat": false,
@@ -987,6 +1007,27 @@
       ],
       "bestFor": "Good fit for: teaching/instruction, combat interest, fitness, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, combat, fitness. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "seed_normalized",
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+    },
+    {
+      "roleTitle": "מדריך/ת ERP",
+      "category": "הדרכה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "teaching",
+        "public-speaking",
+        "sea"
+      ],
+      "signals": [
+        "הטמעת מערכות",
+        "הדרכה טכנולוגית",
+        "מחשבים",
+        "יחסי אנוש"
+      ],
+      "bestFor": "Good fit for: teaching/instruction, sea/navy environment",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -1123,50 +1164,6 @@
       "validationSource": "Official Mitgaisim / IDF Navy public role pages"
     },
     {
-      "roleTitle": "טכנאי/ת מערכות ימיות",
-      "category": "חיל הים / טכני",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "sea",
-        "mechanics",
-        "electronics"
-      ],
-      "signals": [
-        "מערכות ימיות",
-        "טכני",
-        "דיוק",
-        "צוות"
-      ],
-      "bestFor": "Good fit for: sea/navy environment, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official Mitgaisim / IDF Navy public role pages"
-    },
-    {
-      "roleTitle": "מכשירנית ימית",
-      "category": "חיל הים / טכני",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "sea",
-        "mechanics",
-        "electronics",
-        "religion",
-        "service"
-      ],
-      "signals": [
-        "מערכות ימיות",
-        "טכני",
-        "דיוק",
-        "עבודת צוות"
-      ],
-      "bestFor": "Good fit for: sea/navy environment, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, mechanics, electronics, religion. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
       "roleTitle": "מנוען/ית ימי/ת",
       "category": "חיל הים / טכני",
       "combat": false,
@@ -1252,36 +1249,15 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "אלחוטן/ית ימי/ת",
+      "roleTitle": "אחראי/ת תקשורת ימית מסווגת (אתי\"ם)",
       "category": "חיל הים / תקשורת",
       "combat": false,
       "selective": false,
       "preferenceTags": [
+        "networks",
         "sea",
-        "networks",
+        "attention-to-detail",
         "operations"
-      ],
-      "signals": [
-        "תקשורת",
-        "ים",
-        "קשב",
-        "משמרות"
-      ],
-      "bestFor": "Good fit for: sea/navy environment, IT/networking, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, networks, operations. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official Mitgaisim / IDF Navy public role pages"
-    },
-    {
-      "roleTitle": "אלחוטנית חוף",
-      "category": "חיל הים / תקשורת",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "networks",
-        "it",
-        "electronics",
-        "sea"
       ],
       "signals": [
         "תקשורת",
@@ -1507,111 +1483,6 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes service, operations, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official/common military emergency call-center role family"
-    },
-    {
-      "roleTitle": "אבנט כחול",
-      "category": "טכנולוגי",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "networks",
-        "it",
-        "electronics",
-        "sea"
-      ],
-      "signals": [
-        "תקשורת",
-        "רשתות נתונים",
-        "למידה טכנולוגית",
-        "מחשבים"
-      ],
-      "bestFor": "Good fit for: IT/networking, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
-    },
-    {
-      "roleTitle": "מש\"ק מט\"ל (מש\"ק טכנולוגי)",
-      "category": "טכנולוגי",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "mechanics",
-        "electronics"
-      ],
-      "signals": [
-        "טכנולוגיה",
-        "יחידות פיתוח",
-        "עיבוד מידע",
-        "למידה מהירה"
-      ],
-      "bestFor": "Good fit for: hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
-      "roleTitle": "מרום טכנולוגי",
-      "category": "טכנולוגי / לימודים",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "electronics",
-        "mechanics",
-        "software"
-      ],
-      "signals": [
-        "הנדסאים",
-        "טכנולוגיה",
-        "הכשרה",
-        "שירות מקצועי"
-      ],
-      "bestFor": "Good fit for: hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes electronics, mechanics, software. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_program_validated",
-      "validationSource": "Official/common IDF technological study track; verify current portal details"
-    },
-    {
-      "roleTitle": "תכנית סיגמא",
-      "category": "טכנולוגיה / אלקטרוניקה",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "mechanics",
-        "electronics"
-      ],
-      "signals": [
-        "אלקטרוניקה",
-        "למידה טכנולוגית",
-        "דיוק",
-        "מערכות"
-      ],
-      "bestFor": "Good fit for: hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
-      "roleTitle": "מטמיע/ת מערכות מידע",
-      "category": "טכנולוגיה / הדרכה",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "it",
-        "teaching",
-        "service",
-        "software"
-      ],
-      "signals": [
-        "הדרכה",
-        "מערכות מידע",
-        "עזרה למשתמשים",
-        "סבלנות"
-      ],
-      "bestFor": "Good fit for: teaching/instruction",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, teaching, service, software. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common IDF role family; exact title and availability should be verified in Mitgaisim portal"
     },
     {
       "roleTitle": "מיישם/ת ERP",
@@ -1997,26 +1868,6 @@
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
-      "roleTitle": "מפעיל/ת לוחמה אלקטרונית (ל\"א)",
-      "category": "לוחמה אלקטרונית",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "service",
-        "admin"
-      ],
-      "signals": [
-        "אלקטרוניקה",
-        "תפעול מערכות",
-        "עיבוד מידע",
-        "קור רוח"
-      ],
-      "bestFor": "Good fit for broad service preferences.",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes service, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
       "roleTitle": "לוחם איסוף קרבי",
       "category": "לחימה",
       "combat": true,
@@ -2267,28 +2118,6 @@
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
-      "roleTitle": "לוחם לוחמה אלקטרונית",
-      "category": "לחימה",
-      "combat": true,
-      "selective": true,
-      "preferenceTags": [
-        "sea",
-        "combat",
-        "fitness",
-        "fieldwork"
-      ],
-      "signals": [
-        "אוריינטציה טכנולוגית",
-        "חשיבה אנליטית",
-        "עיבוד נתונים",
-        "דינמיקה קבוצתית"
-      ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
-    },
-    {
       "roleTitle": "לוחם שריון",
       "category": "לחימה",
       "combat": true,
@@ -2338,6 +2167,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes math, physics, chemistry, biology. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+    },
+    {
+      "roleTitle": "לוחם אתגרים",
+      "category": "לחימה / איסוף",
+      "combat": true,
+      "selective": true,
+      "preferenceTags": [
+        "combat",
+        "intelligence",
+        "electronics",
+        "fieldwork"
+      ],
+      "signals": [
+        "לוחמי סיגינט שדה",
+        "לחימה + טכנולוגיה",
+        "פרופיל 82"
+      ],
+      "bestFor": "Good fit for: field SIGINT fighters (8200)",
+      "aiRecommendationHint": "Suggest when the user likes combat, intelligence, electronics, fieldwork. Combat role: present neutrally with the official-eligibility caveat.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/לוחם-אתגרים/"
     },
     {
       "roleTitle": "לוחם אריות הירדן",
@@ -2447,6 +2297,27 @@
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
+      "roleTitle": "לוחמות טנקים בגדודי חי\"ר גבולות",
+      "category": "לחימה / בט״ש",
+      "combat": true,
+      "selective": true,
+      "preferenceTags": [
+        "combat",
+        "mechanics",
+        "fitness",
+        "fieldwork"
+      ],
+      "signals": [
+        "טנקים בגדוד קרקל",
+        "4 חודשי רובאות + 5 שבועות מקצועות + 8 שבועות צוות",
+        "נשים בלבד"
+      ],
+      "bestFor": "Good fit for: women tank crews in border battalions",
+      "aiRecommendationHint": "Suggest when the user likes combat, mechanics, fitness, fieldwork. Combat role: present neutrally with the official-eligibility caveat.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/תפקידים/לוחמות-טנקים-בגדודי-חיר-גבולות/"
+    },
+    {
       "roleTitle": "לוחם דבור",
       "category": "לחימה / ימי",
       "combat": true,
@@ -2543,30 +2414,6 @@
       ],
       "bestFor": "Good fit for: sea/navy environment, combat interest, fitness, driving, logistics/supply",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
-    },
-    {
-      "roleTitle": "מפעיל/ת כטמ״ם",
-      "category": "לחימה / מבצעים",
-      "combat": true,
-      "selective": true,
-      "preferenceTags": [
-        "operations",
-        "war-room",
-        "attention-to-detail",
-        "aviation",
-        "drones",
-        "sea"
-      ],
-      "signals": [
-        "קואורדינציה",
-        "התמצאות במרחב",
-        "לחימה מהקרקע",
-        "אחריות"
-      ],
-      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -3202,53 +3049,6 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "מפענח/ת תצלומי אוויר",
-      "category": "מודיעין",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "intelligence",
-        "research",
-        "visual-analysis",
-        "maps",
-        "attention-to-detail",
-        "aviation",
-        "drones",
-        "sea"
-      ],
-      "signals": [
-        "הבחנה בפרטים",
-        "ראייה מרחבית",
-        "ריכוז גבוה"
-      ],
-      "bestFor": "Good fit for: research/intelligence thinking, visual detail/mapping, aviation, drones/remote systems, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, visual-analysis, maps. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
-    },
-    {
-      "roleTitle": "חוקר/ת מודיעין ממקורות גלויים",
-      "category": "מודיעין / OSINT",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "intelligence",
-        "research",
-        "writing",
-        "attention-to-detail"
-      ],
-      "signals": [
-        "חיפוש מידע",
-        "אימות מקורות",
-        "כתיבה",
-        "סקרנות"
-      ],
-      "bestFor": "Good fit for: research/intelligence thinking, writing/research",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, writing, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Intelligence research family; exact slot name varies"
-    },
-    {
       "roleTitle": "חוקר/ת מודיעין אוויר",
       "category": "מודיעין / אוויר",
       "combat": false,
@@ -3279,9 +3079,7 @@
         "intelligence",
         "research",
         "aviation",
-        "drones",
-        "religion",
-        "service"
+        "electronics"
       ],
       "signals": [
         "מודיעין אווירי",
@@ -3295,27 +3093,25 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "מפענח/ת תת קרקע",
+      "roleTitle": "מסלול מט\"מ",
       "category": "מודיעין / איסוף",
       "combat": false,
       "selective": true,
       "preferenceTags": [
         "intelligence",
-        "research",
-        "visual-analysis",
-        "maps",
-        "attention-to-detail"
+        "data",
+        "attention-to-detail",
+        "operations"
       ],
       "signals": [
-        "פענוח",
-        "עיבוד מידע",
-        "ראייה מרחבית",
-        "דיוק"
+        "הפעלת מערכות איסוף",
+        "עיבוד מידע מודיעיני",
+        "משמרות"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking, visual detail/mapping",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, visual-analysis, maps. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: SIGINT collection and processing in a central אמ\"ן unit",
+      "aiRecommendationHint": "Suggest when the user likes intelligence, data, attention-to-detail, operations.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-מטמ/"
     },
     {
       "roleTitle": "מסלול אלקטרוניקה לבוגרי י\"ב עיוני",
@@ -3360,28 +3156,6 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
-      "roleTitle": "חוקר/ת רשתות חברתיות מודיעיני/ת",
-      "category": "מודיעין / דיגיטל",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "intelligence",
-        "social-media",
-        "research",
-        "data"
-      ],
-      "signals": [
-        "רשתות חברתיות",
-        "מחקר",
-        "דאטה",
-        "הסקת מסקנות"
-      ],
-      "bestFor": "Good fit for: research/intelligence thinking, data analysis",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, social-media, research, data. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Intelligence digital research family; verify exact title"
     },
     {
       "roleTitle": "מסלול שביט",
@@ -3451,6 +3225,27 @@
       "validationSource": "Mitgaisim dev role directory snippet lists מסלול אגו\"ז"
     },
     {
+      "roleTitle": "מסלול אניגמה מחשבים",
+      "category": "מודיעין / טכנולוגי",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "software",
+        "it",
+        "qa",
+        "coding"
+      ],
+      "signals": [
+        "ידע נרחב במחשבים",
+        "פיתוח, IT ובדיקות",
+        "חניכה ביחידה"
+      ],
+      "bestFor": "Good fit for: self-taught computer people without formal CS for אמ\"ן tech units",
+      "aiRecommendationHint": "Suggest when the user likes software, it, qa, coding.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-אניגמה-מחשבים/"
+    },
+    {
       "roleTitle": "מסלול מומנט",
       "category": "מודיעין / טכנולוגי",
       "combat": false,
@@ -3477,6 +3272,48 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
+      "roleTitle": "מסלול ממ\"ש",
+      "category": "מודיעין / טכנולוגי",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "it",
+        "devops",
+        "operations",
+        "intelligence"
+      ],
+      "signals": [
+        "תפעול ופרויקטים ביחידת סייבר מובילה",
+        "טר\"צ בדרום",
+        "קבע שנה"
+      ],
+      "bestFor": "Good fit for: ops/projects in a leading אמ\"ן cyber unit",
+      "aiRecommendationHint": "Suggest when the user likes it, devops, operations, intelligence.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-ממש/"
+    },
+    {
+      "roleTitle": "מסלול רומא",
+      "category": "מודיעין / טכנולוגי",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "hardware",
+        "physics",
+        "coding",
+        "operations"
+      ],
+      "signals": [
+        "טכנולוגיות תלת-ממד לכוחות מיוחדים",
+        "פרופיל 72",
+        "שעות ארוכות"
+      ],
+      "bestFor": "Good fit for: 3D/tech support for special forces inside אמ\"ן",
+      "aiRecommendationHint": "Suggest when the user likes hardware, physics, coding, operations.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-רומא/"
+    },
+    {
       "roleTitle": "קורס מת\"ן",
       "category": "מודיעין / טכנולוגי",
       "combat": false,
@@ -3501,6 +3338,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math, physics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+    },
+    {
+      "roleTitle": "מסלול נץ",
+      "category": "מודיעין / מבצעים",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "intelligence",
+        "operations",
+        "visual-analysis",
+        "attention-to-detail"
+      ],
+      "signals": [
+        "תפקיד מבצעי ב-9900",
+        "3 חודשי הכשרה",
+        "ללא יציאה יומית"
+      ],
+      "bestFor": "Good fit for: operational visual-intelligence role",
+      "aiRecommendationHint": "Suggest when the user likes intelligence, operations, visual-analysis, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-נץ/"
     },
     {
       "roleTitle": "מסלול גוונים",
@@ -3548,26 +3406,45 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "חוקר/ת מודיעין מטרות",
+      "roleTitle": "אנליסט/ית ביטחוני/ת",
+      "category": "מודיעין / מחקר",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "research",
+        "data",
+        "attention-to-detail",
+        "law"
+      ],
+      "signals": [
+        "עבודה מול גורמי הסיווג של שב\"כ",
+        "4 חודשים בבה\"ד 15"
+      ],
+      "bestFor": "Good fit for: security vetting analysts",
+      "aiRecommendationHint": "Suggest when the user likes research, data, attention-to-detail, law.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/אנליסט-בטחוני/"
+    },
+    {
+      "roleTitle": "חוקר/ת מודיעין טכנולוגי (מסלול חומה)",
       "category": "מודיעין / מחקר",
       "combat": false,
       "selective": true,
       "preferenceTags": [
         "intelligence",
         "research",
-        "maps",
-        "attention-to-detail"
+        "cyber",
+        "electronics"
       ],
       "signals": [
-        "מחקר",
-        "מיפוי",
-        "דיוק",
-        "עיבוד מידע"
+        "מחקר סייבר וספקטרום",
+        "20 שבועות הכשרה",
+        "בסיסים פתוחים במרכז"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, maps, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Intelligence research family; exact title varies"
+      "bestFor": "Good fit for: cyber/spectrum intelligence analysts",
+      "aiRecommendationHint": "Suggest when the user likes intelligence, research, cyber, electronics.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/חוקר-מודיעין-טכנולוגי/"
     },
     {
       "roleTitle": "מש\"ק/ית מודיעין",
@@ -3591,92 +3468,48 @@
       "validationSource": "Official/common Intelligence staff role family; verify exact slot"
     },
     {
-      "roleTitle": "יום מיון למסלולי כלל חמ\"ן",
-      "category": "מודיעין / מיון",
+      "roleTitle": "מסלול גאמ״א",
+      "category": "מודיעין / סייבר",
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "intelligence",
+        "cyber",
+        "coding",
+        "software",
         "research",
-        "data",
-        "languages"
+        "intelligence"
       ],
       "signals": [
-        "מיון מודיעין",
-        "מחקר",
-        "חשיבה",
-        "סודיות"
+        "תכנות ברמה גבוהה",
+        "פיתוח סייבר",
+        "חשיבה לוגית",
+        "טכנולוגי"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking, data analysis, languages/translation",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, data, languages. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_directory_validated",
-      "validationSource": "Mitgaisim role directory lists יום מיון למסלולי כלל חמ\"ן"
+      "bestFor": "Good fit for: programming, cybersecurity, hands-on technical work",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes coding, software, cyber, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "seed_normalized",
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
-      "roleTitle": "חוקר/ת מודיעין גאוגרפי",
-      "category": "מודיעין / מיפוי",
+      "roleTitle": "מש\"ק/ית מערך (מודיעין שדה)",
+      "category": "מודיעין / שדה",
       "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "maps",
-        "visual-analysis",
-        "intelligence",
-        "research"
-      ],
-      "signals": [
-        "מפות",
-        "מרחב",
-        "פענוח",
-        "דיוק"
-      ],
-      "bestFor": "Good fit for: visual detail/mapping, research/intelligence thinking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes maps, visual-analysis, intelligence, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official visual intelligence/mapping role family"
-    },
-    {
-      "roleTitle": "ממפה/ת מבצעי/ת",
-      "category": "מודיעין / מיפוי",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "maps",
-        "visual-analysis",
-        "data",
-        "attention-to-detail"
-      ],
-      "signals": [
-        "מיפוי",
-        "מערכות מידע גיאוגרפיות",
-        "דיוק",
-        "מרחב"
-      ],
-      "bestFor": "Good fit for: visual detail/mapping, data analysis",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes maps, visual-analysis, data, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official visual intelligence/mapping role family"
-    },
-    {
-      "roleTitle": "אנליסט/ית סיגינט",
-      "category": "מודיעין / סיגינט",
-      "combat": false,
-      "selective": true,
+      "selective": false,
       "preferenceTags": [
         "intelligence",
-        "data",
-        "research",
-        "attention-to-detail"
+        "fieldwork",
+        "operations",
+        "maps"
       ],
       "signals": [
-        "עיבוד אותות/מידע",
-        "ניתוח",
-        "סודיות",
-        "דיוק"
+        "יד ימינו של קצין המודיעין בגדוד",
+        "בה\"ד 15",
+        "ללא מיון"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking, data analysis",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, data, research, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common cyber-sigint/intelligence role family; exact title varies"
+      "bestFor": "Good fit for: field intelligence NCOs attached to combat battalions",
+      "aiRecommendationHint": "Suggest when the user likes intelligence, fieldwork, operations, maps.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/משקית-מערך-בחיל-המודיעין/"
     },
     {
       "roleTitle": "האזנה, תרגום ועיבוד שפות לועזיות",
@@ -3744,25 +3577,46 @@
       "validationSource": "Mitgaisim role directory lists מסלול בכיר לדוברי השפה הערבית"
     },
     {
-      "roleTitle": "רכז/ת מודיעין",
-      "category": "מודיעין / תיאום",
+      "roleTitle": "מסלול בכיר לדוברי השפה הפרסית",
+      "category": "מודיעין / שפות",
       "combat": false,
       "selective": true,
       "preferenceTags": [
+        "languages",
         "intelligence",
         "research",
-        "admin"
+        "attention-to-detail"
       ],
       "signals": [
-        "איסוף מידע",
-        "תיאום",
-        "כתיבה",
-        "דיוק"
+        "פרסית ברמת שפת אם",
+        "האזנה ותרגום",
+        "זירת איראן"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Intelligence coordination role family; verify exact slot"
+      "bestFor": "Good fit for: native Persian speakers for intelligence collection",
+      "aiRecommendationHint": "Suggest when the user likes languages, intelligence, research, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/תפקידים/מסלול-בכיר-לדוברי-השפה-הפרסית/"
+    },
+    {
+      "roleTitle": "מסלולי ערבית (אלמוג, רשף, קדם)",
+      "category": "מודיעין / שפות",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "arabic",
+        "languages",
+        "intelligence",
+        "attention-to-detail"
+      ],
+      "signals": [
+        "5 יח\"ל ערבית",
+        "האזנה, תרגום ועיבוד",
+        "בסיסים סגורים"
+      ],
+      "bestFor": "Good fit for: students with 5 units of Arabic for the אמ\"ן operational core",
+      "aiRecommendationHint": "Suggest when the user likes arabic, languages, intelligence, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/תפקידים/מסלולי-ערבית/"
     },
     {
       "roleTitle": "מסלול שחקים",
@@ -3806,6 +3660,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, leadership, writing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_program_validated",
       "validationSource": "Official IDF Intelligence elite academic program"
+    },
+    {
+      "roleTitle": "מסלול אח\"מ פיתוח",
+      "category": "מודיעין עילית / שחקים",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "coding",
+        "software",
+        "cyber",
+        "intelligence"
+      ],
+      "signals": [
+        "פיתוח תוכנה ביחידות הסייבר של אמ\"ן",
+        "5 יח\"ל מחשבים",
+        "קבע 3 שנים"
+      ],
+      "bestFor": "Good fit for: software developers with CS background for אמ\"ן cyber units",
+      "aiRecommendationHint": "Suggest when the user likes coding, software, cyber, intelligence.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-אחמ-פיתוח/"
     },
     {
       "roleTitle": "מסלול שחקים - אח\"מ",
@@ -4166,6 +4041,47 @@
       "validationSource": "Official IDF outstanding athlete status/track"
     },
     {
+      "roleTitle": "תכנית סיגמא",
+      "category": "מסלולי הנדסאים / אלקטרוניקה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "mechanics",
+        "electronics"
+      ],
+      "signals": [
+        "אלקטרוניקה",
+        "למידה טכנולוגית",
+        "דיוק",
+        "מערכות"
+      ],
+      "bestFor": "Good fit for: hands-on technical work",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+    },
+    {
+      "roleTitle": "מרום טכנולוגי",
+      "category": "מסלולי הנדסאים / טכנולוגי",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "electronics",
+        "mechanics",
+        "software"
+      ],
+      "signals": [
+        "הנדסאים",
+        "טכנולוגיה",
+        "הכשרה",
+        "שירות מקצועי"
+      ],
+      "bestFor": "Good fit for: hands-on technical work",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes electronics, mechanics, software. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "validationLevel": "official_program_validated",
+      "validationSource": "Official/common IDF technological study track; verify current portal details"
+    },
+    {
       "roleTitle": "טכנאי/ת אוויוניקה",
       "category": "מערך טכני / אוויר",
       "combat": false,
@@ -4337,6 +4253,26 @@
       "validationSource": "Mitgaisim role directory snippet lists DEVOPS under computer/communications roles"
     },
     {
+      "roleTitle": "מסלול SRE - תקשוב",
+      "category": "מקצועות המחשב",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "devops",
+        "it",
+        "networks",
+        "software"
+      ],
+      "signals": [
+        "אמינות מערכות",
+        "צוותי פיתוח בכל הזרועות"
+      ],
+      "bestFor": "Good fit for: site reliability engineering track at בסמ\"ח",
+      "aiRecommendationHint": "Suggest when the user likes devops, it, networks, software.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-sre-תקשוב/"
+    },
+    {
       "roleTitle": "מפתח/ת אוטומציה",
       "category": "מקצועות המחשב",
       "combat": false,
@@ -4357,30 +4293,6 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes coding, software, qa, devops. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official/common IDF computer professions family; verify exact slot name in portal"
-    },
-    {
-      "roleTitle": "נתמ״מ",
-      "category": "מקצועות המחשב",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "networks",
-        "it",
-        "electronics",
-        "sea",
-        "construction",
-        "mechanics"
-      ],
-      "signals": [
-        "ניהול שרתים",
-        "תשתיות ענן",
-        "ניהול עומסים",
-        "מחשבים"
-      ],
-      "bestFor": "Good fit for: IT/networking, sea/navy environment, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
       "roleTitle": "תוכניתן/ית",
@@ -4849,8 +4761,8 @@
       "preferenceTags": [
         "cyber",
         "coding",
-        "research",
-        "sea"
+        "networks",
+        "research"
       ],
       "signals": [
         "הגנה בסייבר",
@@ -4862,6 +4774,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, coding, research, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+    },
+    {
+      "roleTitle": "מט\"ס - מפתח/ת טכנולוגיות סייבר (מצו\"ב)",
+      "category": "סייבר",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "devops",
+        "coding",
+        "cyber",
+        "software"
+      ],
+      "signals": [
+        "DevOps / DevSecOps / Platform במצו\"ב",
+        "קד\"צ 15 שבועות",
+        "צריפין"
+      ],
+      "bestFor": "Good fit for: platform/DevSecOps developers at מצו\"ב",
+      "aiRecommendationHint": "Suggest when the user likes devops, coding, cyber, software.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מטס-מפתח-טכנולוגיות-סייבר-ביחידת-מצוב/"
     },
     {
       "roleTitle": "מיישם/ת הגנת סייבר",
@@ -4884,100 +4817,6 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, it, networks, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official cyber role family; exact title varies by course/slot"
-    },
-    {
-      "roleTitle": "מנטר/ת אירועי סייבר",
-      "category": "סייבר / חמ\"ל",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "cyber",
-        "operations",
-        "war-room",
-        "attention-to-detail"
-      ],
-      "signals": [
-        "ניטור",
-        "חמ\"ל",
-        "תגובה מהירה",
-        "סודיות"
-      ],
-      "bestFor": "Good fit for: cybersecurity, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official cyber/operations role family; verify exact slot name in portal"
-    },
-    {
-      "roleTitle": "מפעיל מרכז שליטה מבצעית – חטיבת הסייבר-סיגינט",
-      "category": "סייבר / חמ\"ל",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "cyber",
-        "coding",
-        "research",
-        "admin",
-        "service",
-        "operations",
-        "war-room",
-        "attention-to-detail"
-      ],
-      "signals": [
-        "חמ\"ל",
-        "סייבר",
-        "קשב מפוצל",
-        "עיבוד מידע"
-      ],
-      "bestFor": "Good fit for: cybersecurity, programming, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, coding, research, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
-    },
-    {
-      "roleTitle": "חוקר/ת פורנזיקה דיגיטלית",
-      "category": "סייבר / חקירה",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "cyber",
-        "research",
-        "attention-to-detail",
-        "data"
-      ],
-      "signals": [
-        "חקירת אירועי סייבר",
-        "פורנזיקה",
-        "ניתוח",
-        "דיוק"
-      ],
-      "bestFor": "Good fit for: cybersecurity, data analysis",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, research, attention-to-detail, data. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_description_validated",
-      "validationSource": "Official Mitgaisim cyber defender page describes digital forensics/deep investigations"
-    },
-    {
-      "roleTitle": "מסלול גאמ״א",
-      "category": "סייבר וטכנולוגיה",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "coding",
-        "software",
-        "cyber",
-        "research",
-        "mechanics",
-        "electronics"
-      ],
-      "signals": [
-        "תכנות ברמה גבוהה",
-        "פיתוח סייבר",
-        "חשיבה לוגית",
-        "טכנולוגי"
-      ],
-      "bestFor": "Good fit for: programming, cybersecurity, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes coding, software, cyber, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
       "roleTitle": "מסלול תלפיות",
@@ -5023,6 +4862,47 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, physics, math, mechanics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_program_validated",
       "validationSource": "Official IDF academic reserve field"
+    },
+    {
+      "roleTitle": "תכנית סילון",
+      "category": "עתודה / אווירונאוטיקה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "physics",
+        "math",
+        "aviation",
+        "research"
+      ],
+      "signals": [
+        "B.Sc. אווירונאוטיקה + M.Sc.",
+        "טכניון"
+      ],
+      "bestFor": "Good fit for: elite aerospace academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes physics, math, aviation, research.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "מידעון העתודה תשפ\"ז"
+    },
+    {
+      "roleTitle": "מסלול אקדמיזציה",
+      "category": "עתודה / אקדמי",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "research",
+        "leadership",
+        "coding",
+        "math"
+      ],
+      "signals": [
+        "למי שכבר יש תואר",
+        "קמ\"א",
+        "קבע 24 חודשים"
+      ],
+      "bestFor": "Good fit for: degree holders enlisting as academic officers",
+      "aiRecommendationHint": "Suggest when the user likes research, leadership, coding, math.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/כתבות/ראשי/עתודה/מסלול-אקדמיזציה"
     },
     {
       "roleTitle": "תכנית אלונים",
@@ -5090,6 +4970,46 @@
       "validationSource": "Official IDF academic reserve field"
     },
     {
+      "roleTitle": "תכנית אביבים",
+      "category": "עתודה / הנדסה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "math",
+        "data",
+        "leadership",
+        "research"
+      ],
+      "signals": [
+        "B.Sc.+M.Sc. הנדסת תעשייה וניהול",
+        "AI וניהול מוצר"
+      ],
+      "bestFor": "Good fit for: elite IE&M academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes math, data, leadership, research.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "מידעון העתודה תשפ\"ז"
+    },
+    {
+      "roleTitle": "תכנית גבישים",
+      "category": "עתודה / הנדסה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "physics",
+        "chemistry",
+        "research",
+        "math"
+      ],
+      "signals": [
+        "B.Sc.+M.Sc. הנדסת חומרים",
+        "טכניון"
+      ],
+      "bestFor": "Good fit for: elite materials-engineering academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes physics, chemistry, research, math.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "מידעון העתודה תשפ\"ז"
+    },
+    {
       "roleTitle": "תכנית פסגות",
       "category": "עתודה / הנדסה",
       "combat": false,
@@ -5110,6 +5030,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes physics, math, electronics, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_program_validated",
       "validationSource": "Official IDF academic reserve elite engineering program"
+    },
+    {
+      "roleTitle": "תכנית רעמים",
+      "category": "עתודה / הנדסה",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "electronics",
+        "physics",
+        "math",
+        "research"
+      ],
+      "signals": [
+        "B.Sc.+M.Sc. הנדסת חשמל",
+        "RF, תקשורת, שבבים",
+        "בן-גוריון"
+      ],
+      "bestFor": "Good fit for: elite EE academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes electronics, physics, math, research.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "https://www.bgu.ac.il/articles/new-elite-academic-programs-idf/"
     },
     {
       "roleTitle": "תכנית ברקים",
@@ -5177,27 +5118,6 @@
       "validationSource": "Official IDF academic reserve program"
     },
     {
-      "roleTitle": "עתודה לפסיכולוגיה",
-      "category": "עתודה / מדעי ההתנהגות",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "psychology",
-        "research",
-        "helping-people"
-      ],
-      "signals": [
-        "פסיכולוגיה",
-        "מחקר",
-        "טיפול/אבחון",
-        "אחריות"
-      ],
-      "bestFor": "Good fit for broad service preferences.",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes psychology, research, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_program_validated",
-      "validationSource": "Official IDF academic reserve field"
-    },
-    {
       "roleTitle": "עתודה לכימיה",
       "category": "עתודה / מדעים",
       "combat": false,
@@ -5259,6 +5179,46 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes physics, math, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_program_validated",
       "validationSource": "Official IDF academic reserve field"
+    },
+    {
+      "roleTitle": "תכנית ביו",
+      "category": "עתודה / מדעים",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "biology",
+        "data",
+        "coding",
+        "research"
+      ],
+      "signals": [
+        "ביולוגיה חישובית",
+        "האוניברסיטה העברית"
+      ],
+      "bestFor": "Good fit for: elite computational-biology academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes biology, data, coding, research.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "מידעון העתודה תשפ\"ז"
+    },
+    {
+      "roleTitle": "תכנית גלקסיה",
+      "category": "עתודה / מדעים",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "physics",
+        "math",
+        "research",
+        "mechanics"
+      ],
+      "signals": [
+        "B.Sc.+M.Sc. פיזיקה",
+        "בן-גוריון"
+      ],
+      "bestFor": "Good fit for: elite physics academic reserve",
+      "aiRecommendationHint": "Suggest when the user likes physics, math, research, mechanics.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "מידעון העתודה תשפ\"ז"
     },
     {
       "roleTitle": "עתודה למדעי המחשב",
@@ -5712,6 +5672,27 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
+      "roleTitle": "תוכנית ארז",
+      "category": "קצונה / לחימה",
+      "combat": true,
+      "selective": true,
+      "preferenceTags": [
+        "combat",
+        "leadership",
+        "research",
+        "fitness"
+      ],
+      "signals": [
+        "קציני לחימה עם תואר",
+        "שנת לחימה ואז תואר כפול בת\"א",
+        "4 שנות קבע"
+      ],
+      "bestFor": "Good fit for: combat officers with an embedded BA (unit 169)",
+      "aiRecommendationHint": "Suggest when the user likes combat, leadership, research, fitness. Combat role: present neutrally with the official-eligibility caveat.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "https://www.idf.il/אתרי-יחידות/תוכנית-ארז/"
+    },
+    {
       "roleTitle": "ייעודי לקצונה בחיל המשטרה הצבאית",
       "category": "קצונה / משטרה צבאית",
       "combat": false,
@@ -5729,6 +5710,27 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+    },
+    {
+      "roleTitle": "קצונה ייעודית מבצעית בחיל התקשוב",
+      "category": "קצונה / תקשוב",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "leadership",
+        "networks",
+        "operations",
+        "it"
+      ],
+      "signals": [
+        "מסלול לקצונה מהגיוס",
+        "כ-55 שבועות",
+        "בה\"ד 1"
+      ],
+      "bestFor": "Good fit for: officer-from-enlistment track in the signal corps",
+      "aiRecommendationHint": "Suggest when the user likes leadership, networks, operations, it.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/קצונה-ייעודית-מבצעית-בחיל-התקשוב/"
     },
     {
       "roleTitle": "חזן/ית צבאי/ת",
@@ -5815,26 +5817,24 @@
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
     {
-      "roleTitle": "חובש/ת תעופתי/ת",
-      "category": "רפואה / אוויר",
+      "roleTitle": "חובש/ת קדמי/ת",
+      "category": "רפואה",
       "combat": false,
       "selective": true,
       "preferenceTags": [
         "medicine",
-        "aviation",
         "emergency",
-        "helping-people"
+        "helping-people",
+        "fieldwork"
       ],
       "signals": [
-        "רפואה",
-        "אוויר",
-        "חירום",
-        "קור רוח"
+        "קורס חובשים 3 חודשים בבה\"ד 10",
+        "מרפאות ויחידות קדמיות"
       ],
-      "bestFor": "Good fit for: medical work, aviation, emergency care",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, aviation, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common IDF medical role family; verify exact track"
+      "bestFor": "Good fit for: forward medics (non-combat enlistment)",
+      "aiRecommendationHint": "Suggest when the user likes medicine, emergency, helping-people, fieldwork.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/חובשת-קדמית/"
     },
     {
       "roleTitle": "מדריך/ת חר\"פ (חיל הרפואה)",
@@ -5880,28 +5880,6 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, teaching, emergency, public-speaking. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official medical training role family; verify exact slot"
-    },
-    {
-      "roleTitle": "חובש/ת ימי/ת",
-      "category": "רפואה / חיל הים",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "medicine",
-        "sea",
-        "emergency",
-        "helping-people"
-      ],
-      "signals": [
-        "רפואה",
-        "ים",
-        "חירום",
-        "עבודת צוות"
-      ],
-      "bestFor": "Good fit for: medical work, sea/navy environment, emergency care",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, sea, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common IDF medical role family; verify exact track"
     },
     {
       "roleTitle": "מש\"ק/ית ציוד רפואי",
@@ -6139,7 +6117,7 @@
         "attention-to-detail"
       ],
       "signals": [
-        "קשב מתמשך",
+        "קשב לפרטים",
         "שירותיות",
         "תגובה מהירה",
         "ניהול מידע"
@@ -6319,6 +6297,27 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
+      "roleTitle": "טכנאי/ת סיסטם (דיגיטל מבצעי)",
+      "category": "תקשוב",
+      "combat": false,
+      "selective": false,
+      "preferenceTags": [
+        "it",
+        "networks",
+        "fieldwork",
+        "operations"
+      ],
+      "signals": [
+        "תחזוקת מערכות דיגיטל מבצעיות",
+        "12 שבועות בבה\"ד 7",
+        "ללא מיון"
+      ],
+      "bestFor": "Good fit for: operational digital/system technicians",
+      "aiRecommendationHint": "Suggest when the user likes it, networks, fieldwork, operations.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/טכנאית-סיסטם-טכנאית-דיגיטל-מבצעי/"
+    },
+    {
       "roleTitle": "טכנאי/ת רשתות",
       "category": "תקשוב",
       "combat": false,
@@ -6411,70 +6410,6 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "מפעיל/ת תקשורת נתונים",
-      "category": "תקשוב",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "networks",
-        "it",
-        "operations"
-      ],
-      "signals": [
-        "תקשורת נתונים",
-        "רשתות",
-        "תפעול",
-        "קשב"
-      ],
-      "bestFor": "Good fit for: IT/networking, ops rooms / live coordination",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, operations. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_directory_validated",
-      "validationSource": "Mitgaisim role directory snippet lists מפעילת תקשורת נתונים"
-    },
-    {
-      "roleTitle": "טכנאי/ת תשתיות מחשוב",
-      "category": "תקשוב / IT",
-      "combat": false,
-      "selective": false,
-      "preferenceTags": [
-        "it",
-        "networks",
-        "mechanics",
-        "service"
-      ],
-      "signals": [
-        "תמיכה טכנית",
-        "תשתיות",
-        "פתרון תקלות",
-        "שירות"
-      ],
-      "bestFor": "Good fit for: IT/networking, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, networks, mechanics, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official communications/IT role family; verify exact slot name in portal"
-    },
-    {
-      "roleTitle": "מפעיל צופן פענוח רשת (צפ\"ר)",
-      "category": "תקשוב / אבטחת מידע",
-      "combat": false,
-      "selective": true,
-      "preferenceTags": [
-        "networks",
-        "cyber",
-        "attention-to-detail"
-      ],
-      "signals": [
-        "צופן",
-        "רשתות",
-        "דיוק",
-        "סודיות"
-      ],
-      "bestFor": "Good fit for: IT/networking, cybersecurity",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, cyber, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_directory_validated",
-      "validationSource": "Mitgaisim role directory snippet lists מפעיל צופן פענוח רשת (צפ\"ר)"
-    },
-    {
       "roleTitle": "מדריך/ה בחיל התקשוב",
       "category": "תקשוב / הדרכה",
       "combat": false,
@@ -6521,6 +6456,26 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes coding, software, networks, it. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+    },
+    {
+      "roleTitle": "מפעיל/ת דיגיטל מבצעי",
+      "category": "תקשוב / מבצעים",
+      "combat": false,
+      "selective": false,
+      "preferenceTags": [
+        "operations",
+        "it",
+        "war-room",
+        "fieldwork"
+      ],
+      "signals": [
+        "תפעול מערכות דיגיטל באוגדות ובפיקודים",
+        "פרופיל 64"
+      ],
+      "bestFor": "Good fit for: operational digital operators in divisions and commands",
+      "aiRecommendationHint": "Suggest when the user likes operations, it, war-room, fieldwork.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מפעילת-דיגיטל-מבצעי/"
     },
     {
       "roleTitle": "מפעיל/ת תקשוב מבצעי",
@@ -6592,6 +6547,27 @@
       "validationSource": "Official classified systems role family; verify exact slot name in portal"
     },
     {
+      "roleTitle": "פס\"י - מפתח/ת ספקטרום (פריזמה)",
+      "category": "תקשוב / ספקטרום",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "coding",
+        "electronics",
+        "physics",
+        "software"
+      ],
+      "signals": [
+        "פיתוח ספקטראלי ייעודי",
+        "C++/Python",
+        "14-19 שבועות בבסיס סגור"
+      ],
+      "bestFor": "Good fit for: spectrum software developers at פריזמה",
+      "aiRecommendationHint": "Suggest when the user likes coding, electronics, physics, software.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/פסי-פיתוח-ספקטראלי-ייעודי-מפתח-ספקטרום/"
+    },
+    {
       "roleTitle": "טכנאי/ת קשר",
       "category": "תקשוב / קשר",
       "combat": false,
@@ -6614,25 +6590,44 @@
       "validationSource": "Official/common IDF role family; exact title and availability should be verified in Mitgaisim portal"
     },
     {
-      "roleTitle": "תומך/ת Help Desk צבאי",
+      "roleTitle": "רכז/ת שירותי תקשוב",
       "category": "תקשוב / שירות",
       "combat": false,
       "selective": false,
       "preferenceTags": [
-        "it",
         "service",
-        "networks"
+        "it",
+        "admin"
       ],
       "signals": [
-        "תמיכה במשתמשים",
-        "פתרון תקלות",
-        "שירותיות",
-        "סבלנות"
+        "מוקד שירות תקשוב",
+        "CRM",
+        "ללא ידע קודם"
       ],
-      "bestFor": "Good fit for: IT/networking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, service, networks. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official/common IDF role family; exact title and availability should be verified in Mitgaisim portal"
+      "bestFor": "Good fit for: IT service-desk coordinators",
+      "aiRecommendationHint": "Suggest when the user likes service, it, admin.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/רכז-שירותי-תקשוב/"
+    },
+    {
+      "roleTitle": "מש\"ק/ית שליטה בדיגיטל",
+      "category": "תקשוב / שליטה",
+      "combat": false,
+      "selective": false,
+      "preferenceTags": [
+        "it",
+        "networks",
+        "operations",
+        "admin"
+      ],
+      "signals": [
+        "שליטה במערכות דיגיטל מחטיבה עד מטכ\"ל",
+        "7 שבועות"
+      ],
+      "bestFor": "Good fit for: digital control NCOs",
+      "aiRecommendationHint": "Suggest when the user likes it, networks, operations, admin.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/משק-שליטה-בדיגיטל/"
     },
     {
       "roleTitle": "מפעיל/ת פלטפורמות דיגיטל ניידות",
@@ -6656,47 +6651,64 @@
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
-      "roleTitle": "מנהל/ת מערכות Linux",
+      "roleTitle": "בקר/ית רשת (חושן)",
       "category": "תקשוב / תשתיות",
       "combat": false,
-      "selective": true,
+      "selective": false,
       "preferenceTags": [
-        "it",
         "networks",
-        "devops",
-        "software"
+        "operations",
+        "attention-to-detail"
       ],
       "signals": [
-        "שרתים",
-        "תשתיות",
-        "פקודות מערכת",
-        "אחריות"
+        "בקרת רשתות טלפוניה ותקשורת",
+        "צריפין"
       ],
-      "bestFor": "Good fit for: IT/networking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, networks, devops, software. For combat roles, present neutrally and include safety/official-eligibility caveat.",
-      "validationLevel": "official_family_validated",
-      "validationSource": "Official computer professions/IT family; exact title varies"
+      "bestFor": "Good fit for: network controllers in חושן battalions",
+      "aiRecommendationHint": "Suggest when the user likes networks, operations, attention-to-detail.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/בקרית-רשת/"
     },
     {
-      "roleTitle": "מנהל/ת מערכות Windows",
+      "roleTitle": "מנהל/ת DC",
       "category": "תקשוב / תשתיות",
       "combat": false,
       "selective": true,
       "preferenceTags": [
         "it",
         "networks",
+        "devops"
+      ],
+      "signals": [
+        "מרכזי נתונים בכל הזרועות",
+        "10 שבועות בבסמ\"ח"
+      ],
+      "bestFor": "Good fit for: data-centre administrators",
+      "aiRecommendationHint": "Suggest when the user likes it, networks, devops.",
+      "validationLevel": "official_public_validated",
+      "validationSource": "mitgaisim.idf.il/roles/מנהלת-dc/"
+    },
+    {
+      "roleTitle": "טכנאי/ת תשתיות מחשוב",
+      "category": "תקשוב / IT",
+      "combat": false,
+      "selective": false,
+      "preferenceTags": [
+        "it",
+        "networks",
+        "mechanics",
         "service"
       ],
       "signals": [
-        "ניהול משתמשים",
-        "שרתים",
-        "תקלות",
-        "תחזוקה"
+        "תמיכה טכנית",
+        "תשתיות",
+        "פתרון תקלות",
+        "שירות"
       ],
-      "bestFor": "Good fit for: IT/networking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, networks, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: IT/networking, hands-on technical work",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes it, networks, mechanics, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official computer professions/IT family; exact title varies"
+      "validationSource": "Official communications/IT role family; verify exact slot name in portal"
     },
     {
       "roleTitle": "מפעיל/ת מערכות מולטימדיה",

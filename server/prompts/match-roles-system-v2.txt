@@ -39,10 +39,9 @@ Internal keys → meaning:
 - instruction (הדרכה): teaching and explaining.
 - interpersonalCare (טיפול באדם): empathy, people-facing work.
 - diligencePersistence (השקעה והתמדה): sustained effort through long courses.
-- sustainedAttention (קשב מתמשך): vigilance over time.
-- speedAndAccuracy (זריזות, יעילות ודיוק): pace with precision.
 - managementOrganization (ניהול וארגון): planning and ordering work.
-- disciplineMaturity (התנהגות מסגרתית ובגרות): rule-following and maturity.
+- frameworkBehavior (התנהגות מסגרתית): rule-following in an institutional setting.
+- maturity (בגרות ובשלות): judgment and composure.
 
 OUTPUT — exactly one JSON object (UTF-8), no markdown, no code fences, nothing before or after.
 Root object has "roles": an array of exactly 5 role objects ordered #1 (best) to #5, and "personalAnswer": when the user prompt contains a "בקשה אישית", 3-5 Hebrew sentences in second person answering it directly from the verified facts and the pool data (no invented thresholds); otherwise an empty string.

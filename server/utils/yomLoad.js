@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { migrateLegacyYomHameahTo12 } from "./yomHameah12Keys.js";
+import { migrateLegacyYomHameah } from "./yomHameahKeys.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -50,7 +50,7 @@ export function aggregateYomFromAnswers(answers, defs) {
     }
   }
   if (Object.keys(yom).length !== 5) return null;
-  return migrateLegacyYomHameahTo12(yom);
+  return migrateLegacyYomHameah(yom);
 }
 
 export function addMonths(date, months) {
