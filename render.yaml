@@ -47,7 +47,7 @@ services:
       - key: GROW_WEBHOOK_KEY
         sync: false
       - key: GROW_LINK_METHODS
-        value: card,bit
+        value: card
       - key: BUSINESS_LEGAL_NAME
         sync: false
       - key: BUSINESS_PHONE
