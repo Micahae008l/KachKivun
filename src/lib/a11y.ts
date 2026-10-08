@@ -12,6 +12,9 @@ export const ARIA = {
   footer: "כותרת תחתונה",
   openMenu: "פתח תפריט",
   closeMenu: "סגור תפריט",
+  a11yMenu: "תפריט נגישות",
+  openA11yMenu: "פתח תפריט נגישות",
+  closeA11yMenu: "סגור תפריט נגישות",
   heroSlideshow: "מצגת תמונות ראשית",
   heroSlide: (index: number, total: number) => `עבור לשקופית ${index} מתוך ${total}`,
   heroSlideCurrent: (index: number, total: number) => `שקופית ${index} מתוך ${total}, נוכחית`,
@@ -23,12 +26,9 @@ export const ARIA = {
   chatLog: "הודעות התאמת תפקידים",
   chatLoading: "מחשב התאמה",
   roleResults: "תוצאות התאמת תפקידים",
-  deleteReport: (title: string) => `מחק דוח: ${title}`,
   expandRole: (title: string, expanded: boolean) =>
     expanded ? `הסתר פירוט עבור ${title}` : `הצג פירוט עבור ${title}`,
   matchPct: (pct: number) => `${pct} אחוז התאמה`,
-  reportWizardProgress: (step: number, total: number, title: string) =>
-    `שלב ${step} מתוך ${total}: ${title}`,
   progressPct: (pct: number, label: string) => `${label}: ${pct} אחוז`,
   toggleOption: (label: string, selected: boolean) =>
     `${label}, ${selected ? "נבחר" : "לא נבחר"}`,
@@ -36,7 +36,6 @@ export const ARIA = {
     `ציון ${score}, ${selected ? "נבחר" : "לא נבחר"}`,
   rangeValue: (title: string, value: number, max: number) => `${title}: ${value} מתוך ${max}`,
   accountPreferences: "העדפות חשבון",
-  reportHistory: "היסטוריית דוחות",
   matchHistory: "היסטוריית התאמות",
   deleteMatch: (title: string) => `מחק התאמה: ${title}`,
 } as const;

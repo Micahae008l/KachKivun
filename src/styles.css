@@ -78,6 +78,10 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
   body { min-height: 100vh; }
   ::selection {
     background: color-mix(in oklch, var(--primary) 28%, transparent);
@@ -218,3 +222,40 @@
 .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
 .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
 .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+
+html.a11y-text-lg { font-size: 118%; }
+html.a11y-text-xl { font-size: 135%; }
+
+html.a11y-contrast {
+  --background: oklch(0.07 0.004 260);
+  --foreground: oklch(0.98 0.004 260);
+  --card: oklch(0.11 0.005 255);
+  --card-foreground: oklch(0.98 0.004 260);
+  --primary: oklch(0.86 0.16 128);
+  --primary-foreground: oklch(0.10 0.01 260);
+  --dust: oklch(0.88 0.01 255);
+  --iron: oklch(0.55 0.01 255);
+  --border: oklch(0.62 0.01 255);
+  --muted-foreground: oklch(0.88 0.01 255);
+}
+html.a11y-contrast a { text-decoration-line: underline; text-underline-offset: 3px; }
+
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.a11y-reduce-motion) *,
+  html:not(.a11y-reduce-motion) *::before,
+  html:not(.a11y-reduce-motion) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

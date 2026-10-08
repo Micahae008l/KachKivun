@@ -80,7 +80,8 @@ function AboutPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-[1.75] text-dust">
               {SITE_NAME_HE} היא פלטפורמה ישראלית שמאגדת פרופיל, מא״ה והתאמת תפקידים במקום אחד, בלי
-              רעש, בלי מנוי, ובלי לחץ מכירות. רק נתונים, בהירות ושקיפות.
+              רעש ובלי מנוי. ההערכה ושלוש התאמות בחינם; שתי ההתאמות המובילות זמינות
+              ב־₪10 סופיים כולל מע״מ ככל שחל, פעם אחת.
             </p>
           </motion.div>
 
@@ -95,7 +96,6 @@ function AboutPage() {
           >
             <Stat value="+120" label="תפקידים במאגר" />
             <Stat value="12" label="ממדי מא״ה" />
-            <Stat value="+500" label="מתגייסים" />
             <Stat value="3 דק׳" label="זמן הרשמה" />
           </motion.div>
         </div>
@@ -126,6 +126,10 @@ function AboutPage() {
                 למתגייסים להבין מה הפרופיל שלהם אומר, בשפה פשוטה, בממשק נקי, ובלי לחץ מכירות. במקום
                 מידע מפוזר בין קבוצות וואטסאפ וטבלאות, הכל מרוכז בכלי דיגיטלי אחד שמרגיש כמו מוצר
                 אמיתי.
+              </p>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-dust">
+                ההמלצות אינן רשמיות ואינן מבטיחות זכאות, זימון למיון או שיבוץ.
+                תנאי הסף וההחלטות נקבעים רק על ידי צה״ל.
               </p>
 
               <blockquote className="mt-8 border-r-2 border-primary/60 pr-5 text-right">
@@ -192,7 +196,7 @@ function AboutPage() {
             <Pillar
               icon={<ShieldCheck className="h-5 w-5" />}
               title="פרטיות קודם"
-              desc="הנתונים שלכם משמשים להפעלת השירות בלבד. לא מוכרים רשימות תפוצה ולא מפרסמים פרופילים."
+              desc="הנתונים משמשים להפעלה, אבטחה ותשלום לפי מדיניות הפרטיות. לא מוכרים רשימות משתמשים למפרסמים."
               idx={2}
             />
           </div>
@@ -338,7 +342,8 @@ function AboutPage() {
         >
           <h2 className="text-3xl font-bold sm:text-4xl">מוכנים למצוא את הכיוון שלכם?</h2>
           <p className="mx-auto mt-4 max-w-lg text-base text-dust">
-            בחינם, בעברית, ועם פרטיות מלאה. הרשמה באימייל בלבד, בלי סיסמה.
+            הערכה אדפטיבית ושלוש התאמות אישיות בחינם. מקומות 2 ו־1 ב־₪10
+            סופיים כולל מע״מ ככל שחל, בתשלום חד־פעמי וללא מנוי.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
             <div className="flex flex-wrap items-center justify-center gap-4">
@@ -346,7 +351,7 @@ function AboutPage() {
                 to="/post-signup"
                 className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
               >
-                התחילו בחינם
+                התחילו את ההערכה בחינם
               </Link>
               <Link
                 to="/role-insights"

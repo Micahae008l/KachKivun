@@ -1,11 +1,21 @@
 import crypto from "crypto";
 import { TAG_TO_DIMENSIONS } from "./roleCatalogV3.js";
 
+export const SCORING_VERSION = "role-scoring-v3-integrity-2";
+export const SCORE_BREAKDOWN_KEYS = [
+  "preference",
+  "focus",
+  "yom",
+  "eligibility",
+  "catalogQuality",
+  "structuredAssessment",
+];
+
 /**
  * Deterministic role scoring — the "hybrid" base layer. Produces a stable 0-100
  * basePercent and a focused candidate pool BEFORE the AI ranks/explains. Same
  * profile + same catalog → identical pool + basePercents (the consistency fix).
- * The AI only nudges within ±8 and writes explanations on top.
+ * v2 permits a bounded AI nudge; v3 locks ranking and scores before AI copy.
  */
 
 // ── Scoring weights (the tuning surface). Must sum to 1.0 in each mode. ──
@@ -14,9 +24,25 @@ import { TAG_TO_DIMENSIONS } from "./roleCatalogV3.js";
 const W_NORMAL = { pref: 0.28, focus: 0.22, yom: 0.18, elig: 0.22, quality: 0.1 };
 // When מא"ה scores carry no signal (flat/duplicated), move weight off yom.
 const W_FLAT_YOM = { pref: 0.34, focus: 0.26, yom: 0.1, elig: 0.2, quality: 0.1 };
+const W_STRUCTURED = {
+  pref: 0.2,
+  focus: 0.14,
+  yom: 0.14,
+  elig: 0.2,
+  quality: 0.07,
+  assessment: 0.25,
+};
+const W_STRUCTURED_FLAT_YOM = {
+  pref: 0.23,
+  focus: 0.17,
+  yom: 0.08,
+  elig: 0.2,
+  quality: 0.07,
+  assessment: 0.25,
+};
 /** Self-estimated מא"ה: keep weights, but compress yomFit toward neutral (0.5). */
 const SELF_YOM_SIGNAL = 0.35;
-/** Default medical floor for combat roles with no enriched floor (line infantry / combat corps). */
+/** Common line-combat threshold used only for conservative profile notices. */
 export const DEFAULT_COMBAT_MEDICAL_FLOOR = 82;
 /** Absolute minimum for any combat-flagged role (e.g. combat medic). */
 export const ABSOLUTE_COMBAT_MEDICAL_MIN = 64;
@@ -43,8 +69,131 @@ const MEDICAL_STEPS = [21, 45, 64, 72, 82, 97];
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const clampInt = (x, lo, hi) => Math.max(lo, Math.min(hi, Math.round(x)));
 
+function optionalMetric(value) {
+  if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : null;
+  if (typeof value !== "string" || !value.trim() || value === "unknown") return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+}
+
+export function sanitizeScoreBreakdown(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const component = (input) => {
+    const numeric = Number(input);
+    return Number.isFinite(numeric) ? clampInt(numeric, 0, 100) : 0;
+  };
+  return {
+    preference: component(source.preference),
+    focus: component(source.focus),
+    yom: component(source.yom),
+    eligibility: component(source.eligibility),
+    catalogQuality: component(source.catalogQuality),
+    structuredAssessment: component(source.structuredAssessment),
+  };
+}
+
+function scoreBreakdownFromFits({
+  preference,
+  focus,
+  yom,
+  eligibility,
+  catalogQuality,
+  structuredAssessment,
+}) {
+  return sanitizeScoreBreakdown({
+    preference: preference * 100,
+    focus: focus * 100,
+    yom: yom * 100,
+    eligibility: eligibility * 100,
+    catalogQuality: catalogQuality * 100,
+    structuredAssessment: structuredAssessment * 100,
+  });
+}
+
 /** Physical activity preference → a 1-5 demand the user is comfortable with. */
 const PREF_LEVEL = { Low: 1, Medium: 3, High: 5 };
+const TECH_LEVEL = { none: 1, basic: 2, intermediate: 3, advanced: 4, expert: 5 };
+const STRESS_LEVEL = { low: 1, moderate: 3, high: 5 };
+const COMBAT_READINESS_LEVEL = {
+  needs_improvement: 2,
+  wants_to_improve: 3,
+  ready: 5,
+};
+const RUN_LEVEL = { over_15: 2, "13_to_15": 3, under_13: 5 };
+const PULL_UP_LEVEL = { "0_to_5": 2, "6_to_15": 4, "16_plus": 5 };
+const PUSH_UP_LEVEL = { "0_to_30": 2, "31_to_60": 4, "61_plus": 5 };
+
+const sortedUniqueStrings = (value, ignored = new Set()) =>
+  Array.isArray(value)
+    ? [...new Set(value.filter((item) => typeof item === "string" && !ignored.has(item)))].sort()
+    : [];
+
+function normalizedOptionalDetails(value, fields) {
+  if (!value || typeof value !== "object") return null;
+  const out = {};
+  let hasValue = false;
+  for (const field of fields) {
+    const item = value[field];
+    if (field === "areas") {
+      const areas = sortedUniqueStrings(item, new Set(["undecided"]));
+      if (areas.length) {
+        out.areas = areas;
+        hasValue = true;
+      }
+    } else if (typeof item === "string" && item && item !== "unknown") {
+      out[field] = item;
+      hasValue = true;
+    }
+  }
+  return hasValue ? out : null;
+}
+
+/**
+ * Canonical structured assessment signals. Array order and duplicates never
+ * affect scoring or the profile hash.
+ */
+export function normalizeAssessmentSignals(input) {
+  const source =
+    input?.answers ??
+    input?.assessmentSignals ??
+    input?.assessmentAnswers ??
+    input?.assessment ??
+    input ??
+    {};
+
+  return {
+    rolesInterested: sortedUniqueStrings(source.rolesInterested, new Set(["undecided"])),
+    rolesAvoided: sortedUniqueStrings(source.rolesAvoided),
+    exitsPreference:
+      typeof source.exitsPreference === "string" ? source.exitsPreference : "",
+    environment: typeof source.environment === "string" ? source.environment : "",
+    leadership: typeof source.leadership === "string" ? source.leadership : "",
+    stress: typeof source.stress === "string" ? source.stress : "",
+    motivations: sortedUniqueStrings(source.motivations, new Set(["unsure"])),
+    technicalDetails: normalizedOptionalDetails(source.technicalDetails, ["level", "areas"]),
+    combatDetails: normalizedOptionalDetails(source.combatDetails, [
+      "run3kmBand",
+      "pullUpsBand",
+      "pushUpsBand",
+      "readiness",
+    ]),
+  };
+}
+
+export function hasStructuredAssessmentSignals(input) {
+  const signals = normalizeAssessmentSignals(input);
+  return Boolean(
+    signals.rolesInterested.length ||
+      signals.rolesAvoided.length ||
+      (signals.exitsPreference && signals.exitsPreference !== "no_preference") ||
+      (signals.environment && signals.environment !== "no_preference") ||
+      signals.leadership ||
+      signals.stress ||
+      signals.motivations.length ||
+      signals.technicalDetails ||
+      signals.combatDetails,
+  );
+}
 
 /** True when the 12 מא"ה scores are too uniform to carry placement signal. */
 export function isFlatYom(yom) {
@@ -101,13 +250,19 @@ function yomFit(role, yom) {
 }
 
 function medicalStepMargin(medical, floor) {
+  if (medical == null) return 0.5;
   if (floor == null) return 0.6;
   if (medical < floor) return 0.15;
   return clamp01(0.5 + (medical - floor) / 60);
 }
 
 function eligibilityMargin(role, dapar, medical) {
-  const daparComp = role.daparFloor == null ? 0.6 : clamp01((dapar - role.daparFloor) / 30);
+  const daparComp =
+    dapar == null
+      ? 0.5
+      : role.daparFloor == null
+        ? 0.6
+        : clamp01((dapar - role.daparFloor) / 30);
   const medComp = medicalStepMargin(medical, effectiveMedicalFloor(role));
   let margin = 0.5 * daparComp + 0.5 * medComp;
   if (role.competitiveness === "very_high" && daparComp < 0.3) margin *= 0.85;
@@ -131,6 +286,178 @@ function qualityPrior(role) {
   }
 }
 
+function interestFit(role, signals) {
+  if (!signals.rolesInterested.length) return null;
+  const roleInterests = new Set(role.interestAreas || []);
+  if (!roleInterests.size) return null;
+  const hits = signals.rolesInterested.filter((interest) => roleInterests.has(interest)).length;
+  if (!hits) return 0.2;
+  return clamp01(0.7 + 0.3 * (hits / signals.rolesInterested.length));
+}
+
+function avoidanceFit(role, signals) {
+  if (!signals.rolesAvoided.length) return null;
+  const roleAvoidances = new Set(role.avoidanceSignals || []);
+  const hits = signals.rolesAvoided.filter((avoidance) => roleAvoidances.has(avoidance)).length;
+  return hits ? Math.max(0, 0.15 - (hits - 1) * 0.1) : 0.85;
+}
+
+function environmentFit(role, signals) {
+  const wanted = signals.environment;
+  const actual = role.environment;
+  if (!wanted || wanted === "no_preference" || !actual || actual === "unknown") return null;
+  if (wanted === actual) return 1;
+  if (wanted === "mixed" || actual === "mixed") return 0.7;
+  return 0.15;
+}
+
+function exitsFit(role, signals) {
+  const wanted = signals.exitsPreference;
+  const actual = Array.isArray(role.exitPatterns) ? role.exitPatterns : [];
+  if (!wanted || wanted === "no_preference" || !actual.length) return null;
+  return actual.includes(wanted) ? 1 : 0.2;
+}
+
+function leadershipFit(role, signals) {
+  if (!signals.leadership || signals.leadership === "open") return null;
+  const leadershipDemand = Number(role.leadershipDemand);
+  const teamworkDemand = Number(role.teamworkDemand);
+  const hasLeadership =
+    role.leadershipDemand != null && Number.isFinite(leadershipDemand);
+  const hasTeamwork = role.teamworkDemand != null && Number.isFinite(teamworkDemand);
+  if (!hasLeadership && !hasTeamwork) return null;
+
+  if (signals.leadership === "want_lead") {
+    return hasLeadership ? clamp01(leadershipDemand / 5) : null;
+  }
+  if (signals.leadership === "prefer_team") {
+    const team = hasTeamwork ? teamworkDemand / 5 : 0.5;
+    const lowCommand = hasLeadership ? 1 - Math.max(0, leadershipDemand - 3) / 2 : 0.5;
+    return clamp01(0.7 * team + 0.3 * lowCommand);
+  }
+  return null;
+}
+
+function stressFit(role, signals) {
+  const wanted = STRESS_LEVEL[signals.stress];
+  const demand = Number(role.stressDemand);
+  if (!wanted || role.stressDemand == null || !Number.isFinite(demand)) return null;
+  return clamp01(1 - Math.abs(demand - wanted) / 4);
+}
+
+function motivationFit(role, signals) {
+  if (!signals.motivations.length) return null;
+  const roleMotivations = new Set(role.motivationSignals || []);
+  if (!roleMotivations.size) return null;
+  const hits = signals.motivations.filter((motivation) =>
+    roleMotivations.has(motivation),
+  ).length;
+  return hits ? clamp01(0.55 + 0.45 * (hits / signals.motivations.length)) : 0.25;
+}
+
+function technicalFit(role, signals) {
+  const details = signals.technicalDetails;
+  if (!details) return null;
+  const demand = Number(role.technicalLevelDemand);
+  const roleAreas = new Set(role.technicalAreas || []);
+  const hasDemand =
+    role.technicalLevelDemand != null && Number.isFinite(demand);
+  if (!hasDemand && !roleAreas.size) return null;
+
+  const level = TECH_LEVEL[details.level];
+  const levelFit = hasDemand && level
+    ? clamp01(1 - Math.max(0, demand - level) / 4)
+    : 0.5;
+  const areas = details.areas || [];
+  const areaFit = areas.length && roleAreas.size
+    ? areas.some((area) => roleAreas.has(area))
+      ? 1
+      : 0.2
+    : 0.5;
+  return clamp01(0.55 * levelFit + 0.45 * areaFit);
+}
+
+function combatDetailsFit(role, signals) {
+  const details = signals.combatDetails;
+  if (!role.combat || !details) return null;
+
+  const fitnessValues = [
+    RUN_LEVEL[details.run3kmBand],
+    PULL_UP_LEVEL[details.pullUpsBand],
+    PUSH_UP_LEVEL[details.pushUpsBand],
+  ].filter(Number.isFinite);
+  const fitnessLevel = fitnessValues.length
+    ? fitnessValues.reduce((sum, value) => sum + value, 0) / fitnessValues.length
+    : null;
+  const readinessLevel = COMBAT_READINESS_LEVEL[details.readiness] ?? null;
+  const parts = [];
+
+  if (
+    fitnessLevel != null &&
+    role.combatFitnessDemand != null &&
+    Number.isFinite(Number(role.combatFitnessDemand))
+  ) {
+    parts.push(
+      clamp01(1 - Math.max(0, Number(role.combatFitnessDemand) - fitnessLevel) / 4),
+    );
+  }
+  if (
+    readinessLevel != null &&
+    role.combatReadinessDemand != null &&
+    Number.isFinite(Number(role.combatReadinessDemand))
+  ) {
+    parts.push(
+      clamp01(1 - Math.max(0, Number(role.combatReadinessDemand) - readinessLevel) / 4),
+    );
+  }
+  if (!parts.length) return null;
+  return parts.reduce((sum, value) => sum + value, 0) / parts.length;
+}
+
+/**
+ * Structured assessment fit, computed only from signals for which role data is
+ * known. Unknown environment/exits/etc. therefore remain neutral.
+ */
+export function structuredAssessmentFit(role, input) {
+  const signals = normalizeAssessmentSignals(input);
+  const components = {
+    interests: interestFit(role, signals),
+    avoidances: avoidanceFit(role, signals),
+    environment: environmentFit(role, signals),
+    exits: exitsFit(role, signals),
+    leadership: leadershipFit(role, signals),
+    stress: stressFit(role, signals),
+    motivations: motivationFit(role, signals),
+    technical: technicalFit(role, signals),
+    combat: combatDetailsFit(role, signals),
+  };
+  const weights = {
+    interests: 0.26,
+    avoidances: 0.2,
+    environment: 0.1,
+    exits: 0.06,
+    leadership: 0.1,
+    stress: 0.1,
+    motivations: 0.08,
+    technical: 0.06,
+    combat: 0.04,
+  };
+
+  let total = 0;
+  let weight = 0;
+  for (const [key, value] of Object.entries(components)) {
+    if (value == null || !Number.isFinite(value)) continue;
+    total += value * weights[key];
+    weight += weights[key];
+  }
+
+  return {
+    fit: weight ? clamp01(total / weight) : 0.5,
+    components,
+    signals,
+  };
+}
+
 const DIM_LABELS_SHORT = {
   technicalActivation: "הפעלה טכנית",
   spatialPerception: "תפיסה מרחבית",
@@ -146,54 +473,65 @@ const DIM_LABELS_SHORT = {
   disciplineMaturity: "משמעת",
 };
 
-/** Effective medical floor for scoring/gates. Combat defaults to 82 when unset. */
+/** Effective medical floor for scoring/gates. Unknown means no role-specific gate. */
 export function effectiveMedicalFloor(role) {
-  if (role.medicalFloor != null) return role.medicalFloor;
-  if (role.combat) return DEFAULT_COMBAT_MEDICAL_FLOOR;
-  return null;
+  return role.medicalFloor != null ? role.medicalFloor : null;
 }
 
 /**
  * @param {object} role  - a v3-normalized role
- * @param {object} profile - { daparScore, medicalProfile, combatPreference, focus, physicalActivityLevel, yom, yomFlat?, yomSource? }
+ * @param {object} profile - Base profile plus optional assessmentSignals/assessment answers.
  * @returns {{ eligible, hardFailReasons, base01, basePercent, subscores, breakdownHe }}
  */
 export function scoreRole(role, profile) {
-  const dapar = Number(profile.daparScore) || 0;
-  const medical = Number(profile.medicalProfile) || 0;
-  const flat = profile.yomFlat ?? isFlatYom(profile.yom);
+  const dapar = optionalMetric(profile.daparScore);
+  const medical = optionalMetric(profile.medicalProfile);
+  const unknownYom = profile.yomSource === "unknown";
+  const flat = unknownYom || (profile.yomFlat ?? isFlatYom(profile.yom));
   const selfYom = profile.yomSource === "self";
-  const W = flat ? W_FLAT_YOM : W_NORMAL;
+  const assessmentSignals = normalizeAssessmentSignals(profile);
+  const hasStructured = hasStructuredAssessmentSignals(assessmentSignals);
+  const W = hasStructured
+    ? flat
+      ? W_STRUCTURED_FLAT_YOM
+      : W_STRUCTURED
+    : flat
+      ? W_FLAT_YOM
+      : W_NORMAL;
 
   const hardFailReasons = [];
   const medFloor = effectiveMedicalFloor(role);
+  const floorsTrusted =
+    role.enrichment?.status === "reviewed" ||
+    role.enrichment?.status === "verified";
+  let softMult = 1;
 
-  // Combat eligibility is a hard gate, not a soft score nudge.
-  // Absolute floor 64 (combat medic etc.); role floor defaults to 82 for line combat.
-  if (role.combat && medical < ABSOLUTE_COMBAT_MEDICAL_MIN) {
+  // The general combat minimum is a hard gate. Role-specific floors only become
+  // hard eligibility when reviewed/verified; inferred and draft data stay soft.
+  if (medical != null && role.combat && medical < ABSOLUTE_COMBAT_MEDICAL_MIN) {
     hardFailReasons.push("פרופיל רפואי נמוך מדי לתפקיד קרבי");
-  } else if (role.combat && medFloor != null && medical < medFloor) {
-    hardFailReasons.push(`פרופיל רפואי מתחת לסף (${medFloor})`);
+  } else if (medical != null && role.combat && medFloor != null && medical < medFloor) {
+    if (floorsTrusted) hardFailReasons.push(`פרופיל רפואי מתחת לסף (${medFloor})`);
+    else softMult *= SOFT_FLOOR_MULT;
   }
 
-  // Gender gate (skipped when gender unknown, to not break existing profiles).
-  // Line-infantry combat is male_only, so females are gated there; the 82-profile
-  // requirement for female-open (mixed) combat is carried by each role's medicalFloor,
-  // not a blanket rule that would wrongly block combat medics/drivers at profile 64.
+  // Gender is a hard gate only when the catalog/reviewed enrichment explicitly
+  // narrows eligibility. Unknown role data is normalized to "all".
   if (profile.gender && role.genderEligibility && role.genderEligibility !== "all") {
     const wanted = profile.gender === "female" ? "female_only" : "male_only";
     if (role.genderEligibility !== wanted) hardFailReasons.push("התפקיד אינו פתוח למגדר הנבחר");
   }
 
-  // Non-combat floors: hard only when human-reviewed; otherwise soft penalty.
-  // Combat medical floors already hard-gated above (including the 82 default).
-  const floorsTrusted = role.enrichment?.status === "reviewed" || role.enrichment?.status === "verified";
-  let softMult = 1;
-  if (role.daparFloor != null && dapar < role.daparFloor) {
-    if (floorsTrusted || role.combat) hardFailReasons.push(`דפ"ר מתחת לסף (${role.daparFloor})`);
+  if (dapar != null && role.daparFloor != null && dapar < role.daparFloor) {
+    if (floorsTrusted) hardFailReasons.push(`דפ"ר מתחת לסף (${role.daparFloor})`);
     else softMult *= SOFT_FLOOR_MULT;
   }
-  if (!role.combat && role.medicalFloor != null && medical < role.medicalFloor) {
+  if (
+    medical != null &&
+    !role.combat &&
+    role.medicalFloor != null &&
+    medical < role.medicalFloor
+  ) {
     if (floorsTrusted) hardFailReasons.push(`פרופיל רפואי מתחת לסף (${role.medicalFloor})`);
     else softMult *= SOFT_FLOOR_MULT;
   }
@@ -201,45 +539,87 @@ export function scoreRole(role, profile) {
   const prefFit = 0.6 * combatMatch(role.combat, profile.combatPreference) + 0.4 * physMatch(role.physicalDemand, profile.physicalActivityLevel);
   const ff = focusFit(role, profile.focus);
   let yf = yomFit(role, profile.yom);
-  if (selfYom) yf = 0.5 + (yf - 0.5) * SELF_YOM_SIGNAL;
+  if (unknownYom) yf = 0.5;
+  else if (selfYom) yf = 0.5 + (yf - 0.5) * SELF_YOM_SIGNAL;
   const em = eligibilityMargin(role, dapar, medical);
   const qp = qualityPrior(role);
+  const structured = structuredAssessmentFit(role, assessmentSignals);
+  const scoreBreakdown = scoreBreakdownFromFits({
+    preference: prefFit,
+    focus: ff,
+    yom: yf,
+    eligibility: em,
+    catalogQuality: qp,
+    structuredAssessment: structured.fit,
+  });
 
-  let base01 = W.pref * prefFit + W.focus * ff + W.yom * yf + W.elig * em + W.quality * qp;
+  let base01 =
+    W.pref * prefFit +
+    W.focus * ff +
+    W.yom * yf +
+    W.elig * em +
+    W.quality * qp +
+    (W.assessment || 0) * structured.fit;
   base01 = clamp01(base01 * softMult);
   const basePercent = BASE_MIN + Math.round(BASE_SPAN * base01);
 
   // A compact Hebrew rationale line for the AI prompt (not user-facing).
   const topDim = (role.keyDimensions || [])[0];
-  const dimNote = topDim && Number.isFinite(profile.yom?.[topDim])
+  const dimNote = !unknownYom && topDim && Number.isFinite(profile.yom?.[topDim])
     ? ` · ${DIM_LABELS_SHORT[topDim] || topDim} ${profile.yom[topDim]}/5`
     : "";
-  const breakdownHe = `בסיס ${basePercent}% · העדפה ${(prefFit * 100) | 0} · מיקוד ${(ff * 100) | 0} · מא"ה ${(yf * 100) | 0}${dimNote}`;
+  const assessmentNote = hasStructured
+    ? ` · שאלון ${(structured.fit * 100) | 0}`
+    : "";
+  const yomLabel = unknownYom ? "מא״ה לא ידוע (ניטרלי)" : `מא"ה ${scoreBreakdown.yom}`;
+  const breakdownHe = `בסיס ${basePercent}% · העדפה ${scoreBreakdown.preference} · מיקוד ${scoreBreakdown.focus} · ${yomLabel}${assessmentNote}${dimNote}`;
 
   return {
     eligible: hardFailReasons.length === 0,
     hardFailReasons,
     base01,
     basePercent,
-    subscores: { prefFit, focusFit: ff, yomFit: yf, eligibilityMargin: em, qualityPrior: qp },
+    scoreBreakdown,
+    subscores: {
+      prefFit,
+      focusFit: ff,
+      yomFit: yf,
+      eligibilityMargin: em,
+      qualityPrior: qp,
+      assessmentFit: structured.fit,
+      assessmentComponents: structured.components,
+    },
     breakdownHe,
   };
 }
 
 /** Honest Hebrew heads-up about what the profile does/doesn't open. "" if nothing notable. */
 export function buildProfileNotice(profile) {
-  const medical = Number(profile.medicalProfile) || 0;
+  const dapar = optionalMetric(profile.daparScore);
+  const medical = optionalMetric(profile.medicalProfile);
   const notes = [];
+  if (dapar == null || medical == null || profile.yomSource === "unknown") {
+    const missing = [
+      dapar == null ? "דפ״ר" : "",
+      medical == null ? "פרופיל רפואי" : "",
+      profile.yomSource === "unknown" ? "ציוני מא״ה" : "",
+    ].filter(Boolean);
+    notes.push(
+      `חשוב: לא ניתן לאמת זכאות מלאה משום ש${missing.join(", ")} לא ידועים. הנתונים החסרים אינם נחשבים כאפס ואינם מפעילים חסימת סף, אך ההמלצות אינן הוכחת זכאות ויש לאמת כל תנאי מול צה״ל.`,
+    );
+  }
   if (medical && medical < ABSOLUTE_COMBAT_MEDICAL_MIN) {
     notes.push(`עם פרופיל רפואי ${medical}, תפקידי לחימה סגורים בפניכם — ההמלצות מתמקדות בתפקידים עורפיים ותומכי-לחימה.`);
   } else if (medical && medical < DEFAULT_COMBAT_MEDICAL_FLOOR) {
     notes.push(`עם פרופיל רפואי ${medical}, רוב תפקידי הלחימה (כולל הנדסה קרבית וחי״ר) דורשים פרופיל 82 — ההמלצות מתמקדות בתפקידים שאינם לחימה מלאה, ובמסלולים קרביים שפתוחים לפרופיל שלכם (אם יש).`);
   }
   if (profile.gender === "female") {
-    notes.push("שירות קרבי לנשים הוא התנדבותי ומוגבל בעיקר ליחידות מעורבות (דורש פרופיל 82 ומעלה).");
+    notes.push("תנאי ההתנדבות והזכאות למסלולי לחימה לנשים משתנים בין מסלולים ויש לאמת אותם בערוצים הרשמיים.");
   }
   if (profile.yomSource === "self") {
     notes.push("ציוני המא״ה שהוזנו הם הערכה עצמית — הם משפיעים פחות על הדירוג מנתונים רשמיים.");
+  } else if (profile.yomSource === "unknown") {
+    notes.push("ציוני המא״ה הניטרליים הם מצייני מקום בלבד ואינם משפיעים על הדירוג כאות אישי.");
   }
   return notes.join(" ");
 }
@@ -267,7 +647,14 @@ export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCatego
   for (const role of roles) {
     const s = scoreRole(role, ctx);
     if (!s.eligible) continue;
-    scored.push({ ...role, _score: s.base01, basePercent: s.basePercent, breakdownHe: s.breakdownHe, _subscores: s.subscores });
+    scored.push({
+      ...role,
+      _score: s.base01,
+      basePercent: s.basePercent,
+      breakdownHe: s.breakdownHe,
+      scoreBreakdown: s.scoreBreakdown,
+      _subscores: s.subscores,
+    });
   }
   scored.sort((a, b) => b._score - a._score || String(a.roleTitle).localeCompare(String(b.roleTitle), "he"));
 
@@ -298,6 +685,46 @@ export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCatego
   return pool;
 }
 
+function compareStableText(a, b) {
+  const left = String(a || "").normalize("NFKC");
+  const right = String(b || "").normalize("NFKC");
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+/**
+ * v3 canonical ranking. Every eligible catalog role is scored, then the exact
+ * top N are selected without diversity caps or any AI adjustment.
+ */
+export function rankRolesV3(roles, profile, { limit = 5 } = {}) {
+  const yomFlat = isFlatYom(profile.yom);
+  const context = { ...profile, yomFlat };
+  const scored = [];
+
+  for (let index = 0; index < (roles || []).length; index++) {
+    const role = roles[index];
+    const score = scoreRole(role, context);
+    if (!score.eligible) continue;
+    scored.push({
+      ...role,
+      _catalogIndex: index,
+      _score: score.base01,
+      basePercent: score.basePercent,
+      breakdownHe: score.breakdownHe,
+      scoreBreakdown: score.scoreBreakdown,
+      _subscores: score.subscores,
+    });
+  }
+
+  scored.sort(
+    (a, b) =>
+      b._score - a._score ||
+      compareStableText(a.roleTitle, b.roleTitle) ||
+      a._catalogIndex - b._catalogIndex,
+  );
+
+  return scored.slice(0, Math.max(0, limit)).map(({ _catalogIndex, ...role }) => role);
+}
+
 /** Stable seed for OpenAI from any string. */
 export function seedFromString(str) {
   const h = crypto.createHash("sha256").update(String(str)).digest();
@@ -307,10 +734,21 @@ export function seedFromString(str) {
 /**
  * Canonical hash of everything that affects a match result — same hash ⇒ cache hit.
  */
-export function computeProfileHash(profile, catalogVersion, promptVersion) {
+export function computeProfileHash(
+  profile,
+  catalogVersion,
+  promptVersion,
+  engineVersion = process.env.AI_MATCH_ENGINE || "v3",
+) {
   const canonical = {
-    dapar: Number(profile.daparScore) || 0,
-    medical: Number(profile.medicalProfile) || 0,
+    dapar:
+      profile.daparScore === "unknown"
+        ? "unknown"
+        : optionalMetric(profile.daparScore),
+    medical:
+      profile.medicalProfile === "unknown"
+        ? "unknown"
+        : optionalMetric(profile.medicalProfile),
     gender: profile.gender || "",
     combat: profile.combatPreference || "",
     focus: profile.focus || "",
@@ -319,11 +757,11 @@ export function computeProfileHash(profile, catalogVersion, promptVersion) {
     yom: profile.yom
       ? Object.keys(profile.yom).sort().map((k) => `${k}:${profile.yom[k]}`).join(",")
       : "",
+    assessment: normalizeAssessmentSignals(profile),
     catalog: catalogVersion || "",
     prompt: promptVersion || "",
-    engine: process.env.AI_MATCH_ENGINE || "v2",
-    // Bump when gate/weight logic changes so old cached matches are not served.
-    scoringRev: "combat-floor-82-yom-downweight-v1",
+    engine: engineVersion,
+    scoring: SCORING_VERSION,
   };
   return crypto.createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
 }

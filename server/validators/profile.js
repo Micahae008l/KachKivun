@@ -29,7 +29,7 @@ const SCHEDULES = ["Yomiyot", "Hamshushim", "Any"];
 const FOCUS_OPTS = ["Tech", "Physical", "Research", "Medical", "Any"];
 const LOCATIONS = ["Close to home", "Anywhere"];
 const FITNESS_LEVELS = ["Low", "Medium", "High", "Unspecified"];
-const YOM_SOURCES = ["official", "self", "unspecified"];
+const YOM_SOURCES = ["official", "self", "unknown", "unspecified"];
 
 /** @returns {{ ok: true, value: Record<string, unknown> } | { ok: false, error: string, code?: string }} */
 function parseYomHameah(value) {

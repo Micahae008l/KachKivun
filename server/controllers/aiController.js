@@ -5,8 +5,8 @@ import OpenAI from "openai";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import Assessment from "../models/Assessment.js";
 import { recordAiUsage } from "../utils/recordAiUsage.js";
-import { getCallCapStatusForUserId } from "../utils/aiCallCap.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import {
   YOM_HAMEAH_12_KEYS,
@@ -16,9 +16,23 @@ import {
 import { getIdfRoleCatalogParsed } from "../utils/idfRoleCatalog.js";
 import { preFilterRoles } from "../utils/rolePreFilter.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
-import { buildCandidatePool, blendPercent, seedFromString, computeProfileHash, buildProfileNotice } from "../utils/roleScoring.js";
+import {
+  SCORING_VERSION,
+  buildCandidatePool,
+  blendPercent,
+  seedFromString,
+  computeProfileHash,
+  buildProfileNotice,
+  normalizeAssessmentSignals,
+  rankRolesV3,
+  sanitizeScoreBreakdown,
+} from "../utils/roleScoring.js";
+import { finalizeRolesV3 } from "../utils/roleRecommendationV3.js";
 import AiMatchResult from "../models/AiMatchResult.js";
 import MatchGeneration from "../models/MatchGeneration.js";
+import RoleRecommendation from "../models/RoleRecommendation.js";
+import { getRecommendationAccessForUser } from "../utils/recommendationAccess.js";
+import { serializeRecommendation } from "../utils/recommendationSerializer.js";
 import { sendServerError } from "../utils/httpError.js";
 
 
@@ -71,6 +85,36 @@ ${JSON.stringify(
 )}`
     : "";
   return BASE_SYSTEM_PROMPT_V2 + catalogSection;
+}
+
+function buildSystemPromptV3(rankedRoles) {
+  return `אתה עורך תוכן ליועץ תפקידים בצה"ל. מנוע דטרמיניסטי כבר קבע את חמשת התפקידים, הסדר והציונים.
+
+כללי חוזה:
+- החזר JSON בלבד עם מפתח roles ובו בדיוק חמש רשומות.
+- החזר כל roleTitle בדיוק כפי שנמסר, ללא החלפה, השמטה או שינוי סדר.
+- אל תחזיר matchPercentage או adjustment. אינך רשאי לשנות ציון או דירוג.
+- לכל תפקיד כתוב רק summary בעברית ו-description בעברית.
+- הוסף nextStepPrompts עם 1 עד 3 שאלות המשך קצרות בעברית.
+- אל תחזיר tags, category, requirements, dayToDay, locations, serviceLength, rank או נתוני זכאות; כל המטא-דאטה מגיע מהמנוע הדטרמיניסטי בלבד.
+- אין להמציא תנאי סף. הצג את הזכאות ככפופה לאימות בערוצים הרשמיים.
+
+התפקידים הנעולים בסדר הקנוני:
+${JSON.stringify(
+  (rankedRoles || []).map((role, index) => ({
+    rank: index + 1,
+    roleTitle: role.roleTitle,
+    category: role.category,
+    combat: role.combat,
+    dayToDay: role.dayToDay || undefined,
+    requirements: role.requirements?.length ? role.requirements : undefined,
+    keyDimensions: role.keyDimensions,
+    breakdownHe: role.breakdownHe,
+  })),
+)}
+
+מבנה כל רשומה:
+{"roleTitle":"שם מדויק","summary":"משפט קצר","description":"2-3 משפטים","nextStepPrompts":["שאלת המשך"]}`;
 }
 
 /**
@@ -149,9 +193,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const AI_MODEL = process.env.AI_MATCH_MODEL || "gpt-4o";
 const AI_TEMPERATURE = parseFloat(process.env.AI_MATCH_TEMPERATURE) || 0.2;
 
-// Hybrid engine flag. Default "v1" = existing behavior (safe deploy); set AI_MATCH_ENGINE=v2 to activate.
-const MATCH_ENGINE = (process.env.AI_MATCH_ENGINE || "v1").toLowerCase();
-const MATCH_PROMPT_VERSION = "match-v2-2026-08-medical-gates";
+const configuredMatchEngine = (process.env.AI_MATCH_ENGINE || "v3").toLowerCase();
+const MATCH_ENGINE = ["v1", "v2", "v3"].includes(configuredMatchEngine)
+  ? configuredMatchEngine
+  : "v3";
+const MATCH_PROMPT_VERSION =
+  MATCH_ENGINE === "v3"
+    ? "match-v3-2026-09-integrity-copy-2"
+    : "match-v2-2026-08-medical-gates";
 
 /**
  * v2: convert the model's {roleTitle, adjustment, ...} into final RoleMatch objects.
@@ -180,6 +229,9 @@ function finalizeRolesV2(rawRoles, pool) {
     return {
       roleTitle: poolRole?.roleTitle || roleTitle,
       matchPercentage: blendPercent(basePercent, r.adjustment),
+      scoreBreakdown: poolRole?.scoreBreakdown
+        ? sanitizeScoreBreakdown(poolRole.scoreBreakdown)
+        : null,
       summary,
       description,
       tags: Array.isArray(r.tags) ? r.tags.map((t) => String(t).trim()).filter(Boolean).slice(0, 6) : [],
@@ -195,20 +247,125 @@ function finalizeRolesV2(rawRoles, pool) {
   return out;
 }
 
+function snapshotThreshold(value) {
+  if (value === "unknown") return "unknown";
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function profileSnapshot(profile) {
+  return {
+    daparScore: snapshotThreshold(profile.daparScore),
+    medicalProfile: snapshotThreshold(profile.medicalProfile),
+    gender: profile.gender || "",
+    combatPreference: profile.combatPreference || "",
+    focus: profile.focus || "",
+    physicalActivityLevel: profile.physicalActivityLevel || "",
+    yomSource: profile.yomSource || "",
+    yom: profile.yom ? { ...profile.yom } : null,
+    assessmentSignals: normalizeAssessmentSignals(profile),
+  };
+}
+
+function completeStoredRoles(roles) {
+  if (!Array.isArray(roles) || roles.length < 5) return null;
+  const normalized = roles.slice(0, 5).map((role, index) => ({
+    rank: index + 1,
+    roleTitle: String(role?.roleTitle || "").trim(),
+    matchPercentage: Math.max(
+      0,
+      Math.min(100, Math.round(Number(role?.matchPercentage) || 0)),
+    ),
+    scoreBreakdown:
+      role?.scoreBreakdown && typeof role.scoreBreakdown === "object"
+        ? sanitizeScoreBreakdown(role.scoreBreakdown)
+        : null,
+    summary: String(role?.summary || "").trim(),
+    description: String(role?.description || "").trim(),
+    tags: Array.isArray(role?.tags) ? role.tags : [],
+    nextStepPrompts: Array.isArray(role?.nextStepPrompts)
+      ? role.nextStepPrompts
+      : [],
+    category: String(role?.category || "").trim(),
+    combat: Boolean(role?.combat),
+    dayToDay: String(role?.dayToDay || "").trim(),
+    requirements: Array.isArray(role?.requirements) ? role.requirements : [],
+    locations: Array.isArray(role?.locations) ? role.locations : [],
+    serviceLengthLabel: String(role?.serviceLengthLabel || "").trim(),
+  }));
+  return normalized.every((role) => role.roleTitle && role.scoreBreakdown)
+    ? normalized
+    : null;
+}
+
+async function persistRecommendation({
+  userId,
+  profileHash,
+  assessmentId,
+  profile,
+  roles,
+  catalogVersion,
+  promptVersion,
+  engineVersion,
+  notice,
+  scoringVersion = SCORING_VERSION,
+}) {
+  const storedRoles = completeStoredRoles(roles);
+  if (!storedRoles) {
+    throw new Error("A durable recommendation requires five complete ranked roles");
+  }
+
+  const update = {
+    assessmentId: assessmentId || null,
+    profileSnapshot: profileSnapshot(profile),
+    engineVersion,
+    scoringVersion,
+    catalogVersion,
+    promptVersion,
+    roles: storedRoles,
+    notice: String(notice || ""),
+  };
+
+  try {
+    return await RoleRecommendation.findOneAndUpdate(
+      { userId, profileHash },
+      { $set: update, $setOnInsert: { userId, profileHash } },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).lean();
+  } catch (error) {
+    if (error?.code !== 11000) throw error;
+    return RoleRecommendation.findOne({ userId, profileHash }).lean();
+  }
+}
+
 export async function matchRoles(req, res) {
   const userId = req.userId;
   let userEmail = "";
   let filteredRoleCount = 0;
+  let deferredSuccessUsage = null;
+  let failureUsageRecorded = false;
   const startedAt = Date.now();
 
   try {
-    const user = await User.findById(userId).select("email");
+    const [user, stats, preferences, latestAssessment] = await Promise.all([
+      User.findById(userId).select("email role"),
+      MilitaryStats.findOne({ userId }),
+      Preferences.findOne({ userId }),
+      Assessment.findOne({ userId })
+        .sort({ completedAt: -1, _id: -1 })
+        .lean(),
+    ]);
     userEmail = user?.email || "";
 
-    const stats = await MilitaryStats.findOne({ userId });
-    const preferences = await Preferences.findOne({ userId });
-
-    const { ready, missing } = computeAiProfileMissing(stats, preferences);
+    const { ready, missing } = computeAiProfileMissing(
+      stats,
+      preferences,
+      latestAssessment,
+    );
     if (!ready) {
       return res.status(400).json({
         error:
@@ -219,31 +376,49 @@ export async function matchRoles(req, res) {
 
     // Migrate yom hameah to 12-key format
     const yom = migrateLegacyYomHameahTo12(stats.yomHameah);
+    const yomForLegacyScoring =
+      preferences?.yomHameahSource === "unknown" ? null : yom;
 
-    // Build the candidate pool. v2 = deterministic hybrid scoring (pool of 15);
-    // v1 = legacy pre-filter (top 40). Kept behind AI_MATCH_ENGINE for instant rollback.
+    const assessmentSignals = normalizeAssessmentSignals(latestAssessment?.answers);
     const profileForMatch = {
-      daparScore: stats.daparScore,
-      medicalProfile: stats.medicalProfile,
+      daparScore:
+        stats.daparScore ??
+        (latestAssessment?.answers?.daparScore === "unknown" ? "unknown" : null),
+      medicalProfile:
+        stats.medicalProfile ??
+        (latestAssessment?.answers?.medicalProfile === "unknown" ? "unknown" : null),
       gender: stats.gender,
       combatPreference: preferences?.combatPreference,
       focus: preferences?.focus,
       physicalActivityLevel: preferences?.physicalActivityLevel,
       yom,
       yomSource: preferences?.yomHameahSource || null,
+      assessmentSignals,
     };
     const profileNotice = buildProfileNotice(profileForMatch);
+    const catalogV3 = getIdfRoleCatalogV3();
+    const catalogVersion = catalogV3?.schemaVersion || "idf-role-catalog-unknown";
 
     // Cache: identical profile + catalog + prompt + engine → return the saved
     // result instantly. Logged as cache_hit (not success) so it costs nothing
-    // and does not consume one of the free uses.
+    // and does not consume the internal generation allowance.
     const profileHash = computeProfileHash(
       profileForMatch,
-      getIdfRoleCatalogV3()?.schemaVersion,
-      MATCH_PROMPT_VERSION
+      catalogVersion,
+      MATCH_PROMPT_VERSION,
+      MATCH_ENGINE,
     );
-    const cachedMatch = await AiMatchResult.findOne({ userId, profileHash, endpoint: "match-roles" }).lean();
-    if (cachedMatch?.roles?.length) {
+    const [durableMatch, cachedMatch] = await Promise.all([
+      RoleRecommendation.findOne({ userId, profileHash }).lean(),
+      AiMatchResult.findOne({
+        userId,
+        profileHash,
+        endpoint: "match-roles",
+      }).lean(),
+    ]);
+    const durableComplete = durableMatch?.roles?.length === 5;
+    const legacyComplete = cachedMatch?.roles?.length >= 5;
+    if (durableComplete || legacyComplete) {
       await recordAiUsage({
         userId,
         userEmail,
@@ -256,23 +431,77 @@ export async function matchRoles(req, res) {
         status: "cache_hit",
         filteredRoleCount: 0,
       });
-      const aiCalls = await getCallCapStatusForUserId(userId).catch(() => null);
+      let recommendation = durableComplete ? durableMatch : null;
+      if (!recommendation && completeStoredRoles(cachedMatch.roles)) {
+        recommendation = await persistRecommendation({
+          userId,
+          profileHash,
+          assessmentId: latestAssessment?._id,
+          profile: profileForMatch,
+          roles: cachedMatch.roles,
+          catalogVersion,
+          promptVersion: MATCH_PROMPT_VERSION,
+          engineVersion: cachedMatch.engineVersion || MATCH_ENGINE,
+          scoringVersion: cachedMatch.scoringVersion || SCORING_VERSION,
+          notice: profileNotice,
+        }).catch((error) => {
+          console.error(
+            "[ai/match-roles] legacy cache migration failed:",
+            error?.message,
+          );
+          return null;
+        });
+      }
+      const access = await getRecommendationAccessForUser(userId, {
+        userRole: user?.role,
+      });
       console.log(`[ai/match-roles] cache hit for user ${userId}`);
-      return res.json({ roles: cachedMatch.roles, aiCalls, notice: profileNotice, cached: true });
+      const serialized = serializeRecommendation(
+        recommendation || { ...cachedMatch, notice: profileNotice },
+        access,
+      );
+      return res.json({ ...serialized, cached: true });
+    }
+
+    if (req.callCapStatus?.ok === false || req.tokenCapStatus?.ok === false) {
+      return res.status(429).json({
+        error: "לא ניתן ליצור התאמה חדשה כרגע. אפשר עדיין לפתוח התאמות שכבר נשמרו.",
+        code: "AI_GENERATION_LIMIT_REACHED",
+      });
     }
 
     let filteredRoles;
     let candidatePool = null;
-    if (MATCH_ENGINE === "v2") {
-      const catV3 = getIdfRoleCatalogV3();
-      candidatePool = buildCandidatePool(catV3?.roles || [], profileForMatch, { poolSize: 15 });
+    if (MATCH_ENGINE === "v3") {
+      candidatePool = rankRolesV3(catalogV3?.roles || [], profileForMatch, {
+        limit: 5,
+      });
+      if (candidatePool.length !== 5) {
+        return res.status(503).json({
+          error: "לא נמצאו מספיק תפקידים זכאים ליצירת חמש המלצות.",
+        });
+      }
+      filteredRoles = candidatePool;
+      filteredRoleCount = candidatePool.length;
+      console.log(
+        `[ai/match-roles] engine=v3 deterministic-top=${candidatePool.length} for user ${userId}`,
+      );
+    } else if (MATCH_ENGINE === "v2") {
+      candidatePool = buildCandidatePool(catalogV3?.roles || [], profileForMatch, {
+        poolSize: 15,
+      });
       filteredRoles = candidatePool;
       filteredRoleCount = candidatePool.length;
       console.log(`[ai/match-roles] engine=v2 pool=${candidatePool.length} for user ${userId}`);
     } else {
       const catalog = getIdfRoleCatalogParsed();
       const allRoles = catalog?.roles || [];
-      filteredRoles = preFilterRoles(allRoles, stats, preferences, yom);
+      filteredRoles = preFilterRoles(
+        allRoles,
+        profileForMatch,
+        preferences,
+        yomForLegacyScoring,
+      );
       filteredRoleCount = filteredRoles.length;
       console.log(`[ai/match-roles] engine=v1 pre-filtered ${allRoles.length} → ${filteredRoles.length} for user ${userId}`);
     }
@@ -287,16 +516,30 @@ export async function matchRoles(req, res) {
         ? "רשמי (מאה/מכון ממיין)"
         : preferences?.yomHameahSource === "self"
           ? "הערכה עצמית לסימולציה בלבד"
-          : "לא צוין מקור";
+          : preferences?.yomHameahSource === "unknown"
+            ? "לא ידוע — ציונים ניטרליים הם מצייני מקום בלבד"
+            : "לא צוין מקור";
 
-    const yomLines = yom
+    const daparLabel =
+      typeof profileForMatch.daparScore === "number"
+        ? String(profileForMatch.daparScore)
+        : "לא ידוע";
+    const medicalLabel =
+      typeof profileForMatch.medicalProfile === "number"
+        ? String(profileForMatch.medicalProfile)
+        : "לא ידוע";
+    const yomKnown = preferences?.yomHameahSource !== "unknown";
+
+    const yomLines = yom && yomKnown
       ? YOM_HAMEAH_12_KEYS.map(
           (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
         ).join("\n")
-      : "  (לא הוזנו ציוני מאה)";
+      : preferences?.yomHameahSource === "unknown"
+        ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
+        : "  (לא הוזנו ציוני מאה)";
 
     // Compute yom peaks and lows for the AI to focus on
-    const yomSorted = yom
+    const yomSorted = yom && yomKnown
       ? YOM_HAMEAH_12_KEYS
           .map(k => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
           .filter(d => typeof d.score === "number")
@@ -305,23 +548,44 @@ export async function matchRoles(req, res) {
     const topDims = yomSorted.filter(d => d.score >= 4).slice(0, 5);
     const lowDims = yomSorted.filter(d => d.score <= 2);
 
-    const strengthsLine = topDims.length
-      ? `חוזקות בולטות: ${topDims.map(d => `${d.label} (${d.score})`).join(", ")}`
-      : "אין ציונים בולטים גבוהים";
-    const weaknessLine = lowDims.length
-      ? `ממדים נמוכים: ${lowDims.map(d => `${d.label} (${d.score})`).join(", ")}`
-      : "אין ציונים בולטים נמוכים";
+    const strengthsLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חוזקות"
+      : topDims.length
+        ? `חוזקות בולטות: ${topDims.map(d => `${d.label} (${d.score})`).join(", ")}`
+        : "אין ציונים בולטים גבוהים";
+    const weaknessLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חולשות"
+      : lowDims.length
+        ? `ממדים נמוכים: ${lowDims.map(d => `${d.label} (${d.score})`).join(", ")}`
+        : "אין ציונים בולטים נמוכים";
 
-    const userPrompt = MATCH_ENGINE === "v2" ? `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
+    const userPrompt = MATCH_ENGINE === "v3"
+      ? `ענה לפי כללי המערכת ב-JSON בלבד. כתוב הסברים ושאלות המשך לחמשת התפקידים שכבר דורגו, בלי לבחור תפקידים ובלי לשנות סדר או ציון.
+
+נתוני פרופיל:
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
+- מקור ציוני מא"ה: ${yomSrc}
+- ציוני מא"ה:
+${yomLines}
+- ${strengthsLine}
+- ${weaknessLine}
+- העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
+- מיקוד: ${preferences?.focus || "כללי"}
+- פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+- אותות שאלון מובנים: ${JSON.stringify(assessmentSignals)}
+
+החזר copy בלבד לכל חמשת השמות המדויקים שסופקו בהוראות המערכת.`
+      : MATCH_ENGINE === "v2" ? `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
 
 מהמאגר המדורג מראש שבהוראות המערכת, בחר את 5 התפקידים הטובים ביותר עבור המועמד, דרג מ-#1 (החזק ביותר) ל-#5, והחזר adjustment (מ-8- עד 8+) לכל תפקיד. אל תחזיר matchPercentage — המערכת מחשבת אותו מ-basePercent ומה-adjustment שלך.
 
-חוזה ההסבר (חובה בכל description): צטט את דפ"ר ${stats.daparScore}, את הפרופיל הרפואי ${stats.medicalProfile}, ממד מא"ה אחד עם הציון שלו, ולפחות עובדה אחת מתוך שדה dayToDay של התפקיד.
+חוזה ההסבר (חובה בכל description): התייחס בכנות לדפ"ר ${daparLabel} ולפרופיל הרפואי ${medicalLabel}; אם נתון אינו ידוע, אסור להסיק ממנו זכאות. צטט ממד מא"ה רק אם המקור ידוע, ולפחות עובדה אחת מתוך שדה dayToDay של התפקיד.
 
 ## פרופיל מועמד
 
-- דפ"ר: ${stats.daparScore}
-- פרופיל רפואי: ${stats.medicalProfile}
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
 - מקור ציוני מאה: ${yomSrc}
 - ציוני מאה (כל 12 ממדים):
 ${yomLines}${legacyQ}
@@ -339,9 +603,9 @@ ${yomLines}${legacyQ}
 
 לפני שתבחר תפקידים, חשוב שלב-אחר-שלב:
 
-1. מה הדפ״ר (${stats.daparScore}) מאפשר ומגביל? דפ״ר גבוה (65+) פותח מסלולים טכנולוגיים, מודיעיניים וקצונה. דפ״ר נמוך יותר מכוון לתפקידי שטח, תמיכה ולוגיסטיקה.
+1. מה הדפ״ר (${daparLabel}) מאפשר ומגביל? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
 
-2. מה הפרופיל הרפואי (${stats.medicalProfile}) מאפשר? 97=קרבי מלא, 82=רוב קרבי, 72=חלק מקרבי, 64=מוגבל, 45/21=עורפי בלבד.
+2. מה הפרופיל הרפואי (${medicalLabel}) מאפשר? אם הוא לא ידוע, אל תסיק מגבלה או זכאות.
 
 3. מה החוזקות הבולטות במא״ה? ${strengthsLine}. התאימו תפקידים שמנצלים חוזקות אלה.
 
@@ -354,17 +618,17 @@ ${yomLines}${legacyQ}
 ## חובה בכל תיאור
 
 בשדה description של כל תפקיד חייבים להופיע במפורש:
-(1) לפחות משפט שמצטט את דפ״ר ${stats.daparScore} ומסביר מה מאפשר/מגביל.
-(2) לפחות משפט שמצטט את פרופיל רפואי ${stats.medicalProfile} ומסביר זכאות.
-(3) לפחות התייחסות לממד אחד ספציפי מהמא״ה שמתאים לתפקיד.
+(1) לפחות משפט שמתייחס לדפ״ר ${daparLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
+(2) לפחות משפט שמתייחס לפרופיל רפואי ${medicalLabel}; אם אינו ידוע, מציין שלא ניתן לאמת זכאות.
+(3) התייחסות לממד מא״ה רק אם המקור ידוע; אחרת ציין שהמדדים לא ידועים.
 (4) הסבר קצר מה עושים ביומיום בתפקיד.
 
 matchPercentage: סדרו מ-#1 (הגבוה ביותר) ל-#5 (הנמוך). #1 יהיה 85-95 רק אם ההתאמה מצוינת. טווחים: 85-95 (מצוין), 72-84 (חזק), 58-71 (סביר).
 
 ## פרופיל מועמד
 
-- דפ"ר: ${stats.daparScore}
-- פרופיל רפואי: ${stats.medicalProfile}
+- דפ"ר: ${daparLabel}
+- פרופיל רפואי: ${medicalLabel}
 - מקור ציוני מאה: ${yomSrc}
 - ציוני מאה (כל 12 ממדים):
 ${yomLines}${legacyQ}
@@ -378,45 +642,56 @@ ${yomLines}${legacyQ}
 
 המלץ על 5 תפקידי צה"ל. שמות ותיאורים — בעברית בלבד.`;
 
+    const isV3 = MATCH_ENGINE === "v3";
     const isV2 = MATCH_ENGINE === "v2";
     const openaiParams = {
       model: AI_MODEL,
       messages: [
-        { role: "system", content: isV2 ? buildSystemPromptV2(candidatePool) : buildSystemPrompt(filteredRoles) },
+        {
+          role: "system",
+          content: isV3
+            ? buildSystemPromptV3(candidatePool)
+            : isV2
+              ? buildSystemPromptV2(candidatePool)
+              : buildSystemPrompt(filteredRoles),
+        },
         { role: "user", content: userPrompt },
       ],
       max_tokens: 8000,
       response_format: { type: "json_object" },
-      temperature: isV2 ? 0.1 : AI_TEMPERATURE,
+      temperature: isV3 || isV2 ? 0.1 : AI_TEMPERATURE,
     };
-    if (isV2) {
+    if (isV3 || isV2) {
       // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
-      openaiParams.seed = seedFromString(
-        computeProfileHash(profileForMatch, getIdfRoleCatalogV3()?.schemaVersion, MATCH_PROMPT_VERSION)
-      );
-    }
-    const completion = await openai.chat.completions.create(openaiParams);
-
-    const durationMs = Date.now() - startedAt;
-    const usage = completion.usage ?? {};
-    const modelUsed = completion.model || AI_MODEL;
-    const promptTokens = usage.prompt_tokens ?? 0;
-    const completionTokens = usage.completion_tokens ?? 0;
-    const totalTokens = usage.total_tokens ?? promptTokens + completionTokens;
-
-    const choice = completion.choices[0];
-    const content = choice?.message?.content?.trim() ?? "";
-    const finishReason = choice?.finish_reason ?? null;
-
-    if (finishReason === "length") {
-      console.warn("[ai/match-roles] finish_reason=length (possible truncation)");
+      openaiParams.seed = seedFromString(profileHash);
     }
 
-    const roles = parseRolesArray(content);
+    let roles = [];
+    try {
+      const completion = await openai.chat.completions.create(openaiParams);
+      const durationMs = Date.now() - startedAt;
+      const usage = completion.usage ?? {};
+      const modelUsed = completion.model || AI_MODEL;
+      const promptTokens = usage.prompt_tokens ?? 0;
+      const completionTokens = usage.completion_tokens ?? 0;
+      const totalTokens = usage.total_tokens ?? promptTokens + completionTokens;
+      const choice = completion.choices[0];
+      const content = choice?.message?.content?.trim() ?? "";
+      const finishReason = choice?.finish_reason ?? null;
+      const parsedRoles = parseRolesArray(content);
+      const copyComplete = Array.isArray(parsedRoles) && parsedRoles.length === 5;
 
-    if (!Array.isArray(roles) || roles.length === 0) {
-      console.error("[ai/match-roles] Unparseable or empty roles. Raw (first 400 chars):", content.slice(0, 400));
-      await recordAiUsage({
+      if (finishReason === "length") {
+        console.warn("[ai/match-roles] finish_reason=length (possible truncation)");
+      }
+      if (!copyComplete) {
+        console.error(
+          "[ai/match-roles] Incomplete AI role copy. Raw (first 400 chars):",
+          content.slice(0, 400),
+        );
+      }
+
+      const usageEntry = {
         userId,
         userEmail,
         endpoint: "match-roles",
@@ -425,34 +700,56 @@ ${yomLines}${legacyQ}
         completionTokens,
         totalTokens,
         durationMs,
-        status: "parse_error",
+        status: copyComplete ? "success" : "parse_error",
         finishReason,
         openaiRequestId: completion.id ?? null,
         filteredRoleCount,
-        errorMessage: "Unparseable or empty roles",
+        errorMessage: copyComplete ? null : "AI omitted or malformed one or more roles",
+      };
+      if (copyComplete) {
+        deferredSuccessUsage = usageEntry;
+      } else {
+        await recordAiUsage(usageEntry);
+        failureUsageRecorded = true;
+      }
+
+      if (!Array.isArray(parsedRoles) || parsedRoles.length === 0) {
+        if (!isV3) {
+          return res.status(502).json({
+            error: "AI returned invalid response format. Please try again.",
+          });
+        }
+        roles = [];
+      } else {
+        roles = parsedRoles;
+      }
+    } catch (error) {
+      if (!isV3) throw error;
+      console.error(
+        "[ai/match-roles v3] AI copy unavailable; using deterministic fallbacks:",
+        error?.message,
+      );
+      await recordAiUsage({
+        userId,
+        userEmail,
+        endpoint: "match-roles",
+        model: AI_MODEL,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+        durationMs: Date.now() - startedAt,
+        status: "api_error",
+        filteredRoleCount,
+        errorMessage: error?.message || "AI copy unavailable",
       });
-      return res.status(502).json({
-        error: "AI returned invalid response format. Please try again.",
-      });
+      failureUsageRecorded = true;
+      roles = [];
     }
 
-    await recordAiUsage({
-      userId,
-      userEmail,
-      endpoint: "match-roles",
-      model: modelUsed,
-      promptTokens,
-      completionTokens,
-      totalTokens,
-      durationMs,
-      status: "success",
-      finishReason,
-      openaiRequestId: completion.id ?? null,
-      filteredRoleCount,
-    });
-
     let normalized;
-    if (MATCH_ENGINE === "v2") {
+    if (isV3) {
+      normalized = finalizeRolesV3(roles, candidatePool || [], profileForMatch);
+    } else if (isV2) {
       // Percentage = deterministic basePercent + clamped AI adjustment; strict descending.
       normalized = finalizeRolesV2(roles, candidatePool || []);
     } else {
@@ -475,6 +772,25 @@ ${yomLines}${legacyQ}
       });
     }
 
+    const recommendation = await persistRecommendation({
+      userId,
+      profileHash,
+      assessmentId: latestAssessment?._id,
+      profile: profileForMatch,
+      roles: normalized,
+      catalogVersion,
+      promptVersion: MATCH_PROMPT_VERSION,
+      engineVersion: MATCH_ENGINE,
+      notice: profileNotice,
+    });
+    if (!recommendation || recommendation.roles?.length !== 5) {
+      throw new Error("Durable role recommendation persistence was incomplete");
+    }
+    if (deferredSuccessUsage) {
+      await recordAiUsage(deferredSuccessUsage);
+      deferredSuccessUsage = null;
+    }
+
     // Persist to cache so an identical re-run is free and byte-identical.
     await AiMatchResult.findOneAndUpdate(
       { userId, profileHash },
@@ -493,24 +809,34 @@ ${yomLines}${legacyQ}
       topMatch: top?.matchPercentage ?? null,
     }).catch((e) => console.error("[ai/match-roles] history write failed:", e?.message));
 
-    // Recompute after logging so the client shows the up-to-date remaining count.
-    const aiCalls = await getCallCapStatusForUserId(userId).catch(() => null);
-
-    res.json({ roles: normalized, aiCalls, notice: profileNotice });
-  } catch (err) {
-    await recordAiUsage({
-      userId,
-      userEmail,
-      endpoint: "match-roles",
-      model: AI_MODEL,
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0,
-      durationMs: Date.now() - startedAt,
-      status: "api_error",
-      filteredRoleCount,
-      errorMessage: err?.message || "Unknown error",
+    const access = await getRecommendationAccessForUser(userId, {
+      userRole: user?.role,
     });
+    const serialized = serializeRecommendation(recommendation, access);
+
+    res.json(serialized);
+  } catch (err) {
+    if (deferredSuccessUsage) {
+      await recordAiUsage({
+        ...deferredSuccessUsage,
+        status: "persistence_error",
+        errorMessage: err?.message || "Durable recommendation persistence failed",
+      });
+    } else if (!failureUsageRecorded) {
+      await recordAiUsage({
+        userId,
+        userEmail,
+        endpoint: "match-roles",
+        model: AI_MODEL,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+        durationMs: Date.now() - startedAt,
+        status: "api_error",
+        filteredRoleCount,
+        errorMessage: err?.message || "Unknown error",
+      });
+    }
     if (err?.status === 401) {
       return res.status(503).json({ error: "OpenAI API key is invalid or missing." });
     }

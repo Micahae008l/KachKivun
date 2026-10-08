@@ -30,6 +30,44 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: API_PUBLIC_URL
+        sync: false
+      - key: PERSONALIZED_FUNNEL_V2
+        value: "true"
+      - key: PAYWALL_ENABLED
+        value: "false"
+      - key: PAYWALL_LAUNCH_AT
+        sync: false
+      - key: PAYMENTS_PROVIDER
+        value: grow_link
+      - key: GROW_PAYMENT_LINK_URL
+        sync: false
+      - key: GROW_LINK_WEBHOOK_SECRET
+        sync: false
+      - key: GROW_WEBHOOK_KEY
+        sync: false
+      - key: GROW_LINK_METHODS
+        value: card,bit
+      - key: BUSINESS_LEGAL_NAME
+        sync: false
+      - key: BUSINESS_PHONE
+        sync: false
+      - key: BUSINESS_ADDRESS
+        sync: false
+      - key: BUSINESS_CONTACT_EMAIL
+        sync: false
+      - key: CANCELLATION_URL
+        sync: false
+      - key: GROW_CALLBACK_AUTH_CONFIRMED
+        value: "false"
+      - key: GROW_DOMAIN_REVIEW_APPROVED
+        value: "false"
+      - key: ISRAELI_LEGAL_REVIEW_CONFIRMED
+        value: "false"
+      - key: PAYMENT_WEBHOOK_RATE_LIMIT_MAX
+        value: "600"
+      - key: PAYMENT_WEBHOOK_RATE_LIMIT_WINDOW_MS
+        value: "900000"
       - key: ADMIN_EMAIL
         sync: false
       - key: SMTP_HOST

@@ -12,19 +12,27 @@ export function FormField({ label, error, children, className = "" }: Props) {
   const id = useId();
   const errorId = `${id}-error`;
 
+  const childProps = isValidElement(children)
+    ? (children.props as { id?: string; className?: string })
+    : null;
   const control =
-    isValidElement(children) && (children.props as { id?: string }).id == null
-      ? cloneElement(children as ReactElement<{ id?: string; className?: string }>, {
-          id,
-          "aria-invalid": error ? true : undefined,
-          "aria-describedby": error ? errorId : undefined,
-          className: [
-            (children.props as { className?: string }).className,
-            error ? "input-field--invalid" : "",
-          ]
-            .filter(Boolean)
-            .join(" "),
-        })
+    isValidElement(children) && childProps?.id == null
+      ? cloneElement(
+          children as ReactElement<{
+            id?: string;
+            className?: string;
+            "aria-invalid"?: boolean;
+            "aria-describedby"?: string;
+          }>,
+          {
+            id,
+            "aria-invalid": error ? true : undefined,
+            "aria-describedby": error ? errorId : undefined,
+            className: [childProps?.className, error ? "input-field--invalid" : ""]
+              .filter(Boolean)
+              .join(" "),
+          },
+        )
       : children;
 
   return (

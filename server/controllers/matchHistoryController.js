@@ -1,48 +1,62 @@
 import MatchGeneration from "../models/MatchGeneration.js";
 import AiMatchResult from "../models/AiMatchResult.js";
+import RoleRecommendation from "../models/RoleRecommendation.js";
+import { getRecommendationAccessForUser } from "../utils/recommendationAccess.js";
+import {
+  serializeRecommendationDetail,
+  serializeRecommendationSummary,
+} from "../utils/recommendationSerializer.js";
 import { sendServerError } from "../utils/httpError.js";
 
+function timestamp(doc) {
+  const value = new Date(doc?.createdAt || doc?.updatedAt || 0).getTime();
+  return Number.isFinite(value) ? value : 0;
+}
 
-function summarize(doc) {
-  const roles = Array.isArray(doc.roles) ? doc.roles : [];
-  const top = roles[0];
-  return {
-    id: String(doc._id),
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
-    engineVersion: doc.engineVersion || "",
-    topRole: doc.topRole || top?.roleTitle || "",
-    topMatch: doc.topMatch ?? top?.matchPercentage ?? null,
-    roleCount: roles.length,
-    roleTitles: roles.slice(0, 5).map((r) => r.roleTitle).filter(Boolean),
-  };
+function mergeHistorySources(recommendations, generations, cached) {
+  const output = [];
+  const seenProfiles = new Set();
+
+  for (const doc of recommendations) {
+    output.push(doc);
+    if (doc.profileHash) seenProfiles.add(String(doc.profileHash));
+  }
+  for (const doc of [...generations, ...cached]) {
+    const hash = doc.profileHash ? String(doc.profileHash) : "";
+    if (hash && seenProfiles.has(hash)) continue;
+    output.push(doc);
+    if (hash) seenProfiles.add(hash);
+  }
+
+  return output.sort((a, b) => timestamp(b) - timestamp(a)).slice(0, 30);
+}
+
+export function buildMatchHistoryDeletionFilter(userId, id, profileHash) {
+  const hash = String(profileHash || "").trim();
+  return hash ? { userId, profileHash: hash } : { userId, _id: id };
 }
 
 /** List recent match generations for the signed-in user. */
 export async function listMatchHistory(req, res) {
   try {
     const userId = req.userId;
-    let docs = await MatchGeneration.find({ userId }).sort({ createdAt: -1 }).limit(30).lean();
-
-    // Backfill view from cache docs if the user has older AiMatchResult rows only.
-    if (docs.length === 0) {
-      const cached = await AiMatchResult.find({ userId, endpoint: "match-roles" })
+    const [recommendations, generations, cached, access] = await Promise.all([
+      RoleRecommendation.find({ userId }).sort({ createdAt: -1 }).limit(30).lean(),
+      MatchGeneration.find({ userId }).sort({ createdAt: -1 }).limit(30).lean(),
+      AiMatchResult.find({ userId, endpoint: "match-roles" })
         .sort({ updatedAt: -1 })
         .limit(20)
-        .lean();
-      docs = cached.map((c) => ({
-        _id: c._id,
-        createdAt: c.createdAt || c.updatedAt,
-        updatedAt: c.updatedAt,
-        engineVersion: c.engineVersion,
-        roles: c.roles,
-        topRole: c.roles?.[0]?.roleTitle || "",
-        topMatch: c.roles?.[0]?.matchPercentage ?? null,
-        _fromCache: true,
-      }));
-    }
+        .lean(),
+      getRecommendationAccessForUser(userId),
+    ]);
+    const docs = mergeHistorySources(recommendations, generations, cached);
 
-    res.json({ generations: docs.map(summarize) });
+    res.json({
+      generations: docs.map((doc) =>
+        serializeRecommendationSummary(doc, access),
+      ),
+      access,
+    });
   } catch (err) {
     return sendServerError(res, err, "[ai/match-history/list]");
   }
@@ -53,18 +67,20 @@ export async function getMatchHistory(req, res) {
   try {
     const userId = req.userId;
     const id = String(req.params.id || "").trim();
-    let doc = await MatchGeneration.findOne({ _id: id, userId }).lean();
+    let doc = await RoleRecommendation.findOne({ _id: id, userId }).lean();
+    if (!doc) {
+      doc = await MatchGeneration.findOne({ _id: id, userId }).lean();
+    }
     if (!doc) {
       doc = await AiMatchResult.findOne({ _id: id, userId }).lean();
     }
     if (!doc?.roles?.length) {
       return res.status(404).json({ error: "ההפעלה לא נמצאה", code: "NOT_FOUND" });
     }
+    const access = await getRecommendationAccessForUser(userId);
     res.json({
-      generation: {
-        ...summarize(doc),
-        roles: doc.roles,
-      },
+      generation: serializeRecommendationDetail(doc, access),
+      access,
     });
   } catch (err) {
     return sendServerError(res, err, "[ai/match-history/get]");
@@ -75,11 +91,24 @@ export async function deleteMatchHistory(req, res) {
   try {
     const userId = req.userId;
     const id = String(req.params.id || "").trim();
-    const deleted = await MatchGeneration.findOneAndDelete({ _id: id, userId });
-    if (!deleted) {
-      const cached = await AiMatchResult.findOneAndDelete({ _id: id, userId });
-      if (!cached) return res.status(404).json({ error: "ההפעלה לא נמצאה" });
-    }
+    const [recommendation, generation, cached] = await Promise.all([
+      RoleRecommendation.findOne({ _id: id, userId }).select("profileHash").lean(),
+      MatchGeneration.findOne({ _id: id, userId }).select("profileHash").lean(),
+      AiMatchResult.findOne({ _id: id, userId }).select("profileHash").lean(),
+    ]);
+    const source = recommendation || generation || cached;
+    if (!source) return res.status(404).json({ error: "ההפעלה לא נמצאה" });
+
+    const sharedFilter = buildMatchHistoryDeletionFilter(
+      userId,
+      id,
+      source.profileHash,
+    );
+    await Promise.all([
+      RoleRecommendation.deleteMany(sharedFilter),
+      MatchGeneration.deleteMany(sharedFilter),
+      AiMatchResult.deleteMany(sharedFilter),
+    ]);
     res.json({ message: "נמחק מההיסטוריה", id });
   } catch (err) {
     return sendServerError(res, err, "[ai/match-history/delete]");

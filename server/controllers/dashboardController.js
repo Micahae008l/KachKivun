@@ -1,9 +1,9 @@
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import Assessment from "../models/Assessment.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import { getTokenCapStatusForUserId } from "../utils/tokenCap.js";
-import { getCallCapStatusForUserId } from "../utils/aiCallCap.js";
 import { sendServerError } from "../utils/httpError.js";
 
 
@@ -16,14 +16,18 @@ export async function getStats(req, res) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const stats = await MilitaryStats.findOne({ userId });
-    const preferences = await Preferences.findOne({ userId });
-
-    const { ready: aiReady, missing: aiProfileMissing } = computeAiProfileMissing(stats, preferences);
-    const [aiTokens, aiCalls] = await Promise.all([
-      getTokenCapStatusForUserId(userId),
-      getCallCapStatusForUserId(userId),
+    const [stats, preferences, latestAssessment] = await Promise.all([
+      MilitaryStats.findOne({ userId }),
+      Preferences.findOne({ userId }),
+      Assessment.findOne({ userId }).sort({ completedAt: -1, _id: -1 }).lean(),
     ]);
+
+    const { ready: aiReady, missing: aiProfileMissing } = computeAiProfileMissing(
+      stats,
+      preferences,
+      latestAssessment,
+    );
+    const aiTokens = await getTokenCapStatusForUserId(userId);
 
     let daysRemaining = null;
     const now = new Date();
@@ -50,7 +54,6 @@ export async function getStats(req, res) {
       aiReady,
       aiProfileMissing,
       aiTokens,
-      aiCalls,
     });
   } catch (err) {
     return sendServerError(res, err);

@@ -16,12 +16,13 @@ type LoadingShellProps = {
   label: string;
   children: ReactNode;
   className?: string;
+  dir?: "rtl" | "ltr";
 };
 
 /** Wraps skeleton layouts with accessible busy state. */
-export function SkeletonShell({ label, children, className = "" }: LoadingShellProps) {
+export function SkeletonShell({ label, children, className = "", dir }: LoadingShellProps) {
   return (
-    <div className={className} role="status" aria-busy="true" aria-label={label}>
+    <div className={className} dir={dir} role="status" aria-busy="true" aria-label={label}>
       <span className="sr-only">{label}</span>
       {children}
     </div>

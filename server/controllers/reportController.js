@@ -1,7 +1,9 @@
+/** Retired. Do not remount: full-report generation would bypass the top-two paywall. */
 import OpenAI from "openai";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import Assessment from "../models/Assessment.js";
 import { recordAiUsage } from "../utils/recordAiUsage.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import {
@@ -37,7 +39,7 @@ const REPORT_V2_OVERRIDE = `
 - קיבלת מאגר תפקידים שדורג מראש, עם basePercent לכל תפקיד. בחר 10 תפקידים מהמאגר בלבד.
 - לכל תפקיד החזר "adjustment" (מספר שלם בין 8- ל-8+) במקום matchPercentage. אל תחזיר matchPercentage כלל.
 - אל תמלא serviceLength ו-location — המערכת ממלאת אותם מהקטלוג. השאר מחרוזת ריקה.
-- כל description ו-fitReason חייבים לצטט: דפ"ר, פרופיל רפואי, ממד מא"ה אחד עם הציון שלו, ולפחות עובדה אחת מתוך dayToDay של התפקיד. אסור מילוי גנרי.`;
+- כל description ו-fitReason חייבים להתייחס לדפ"ר ולפרופיל הרפואי ולצטט ממד מא"ה רק כשהנתונים ידועים. נתון לא ידוע אינו אפס ואינו הוכחת זכאות. הוסף לפחות עובדה אחת מתוך dayToDay של התפקיד. אסור מילוי גנרי.`;
 
 export async function generateReport(req, res) {
   const userId = req.userId;
@@ -50,10 +52,17 @@ export async function generateReport(req, res) {
     userEmail = user?.email || "";
     const userName = user?.preferredName?.trim() || userEmail.split("@")[0] || "משתמש";
 
-    const stats = await MilitaryStats.findOne({ userId });
-    const preferences = await Preferences.findOne({ userId });
+    const [stats, preferences, latestAssessment] = await Promise.all([
+      MilitaryStats.findOne({ userId }),
+      Preferences.findOne({ userId }),
+      Assessment.findOne({ userId }).sort({ completedAt: -1, _id: -1 }).lean(),
+    ]);
 
-    const { ready, missing } = computeAiProfileMissing(stats, preferences);
+    const { ready, missing } = computeAiProfileMissing(
+      stats,
+      preferences,
+      latestAssessment,
+    );
     if (!ready) {
       return res.status(400).json({
         error: "השלימו את הפרופיל לפני יצירת דוח מלא.",
@@ -72,10 +81,16 @@ export async function generateReport(req, res) {
     const notes = fitness.notes || "";
 
     const yom = migrateLegacyYomHameahTo12(stats.yomHameah);
+    const yomKnown = preferences?.yomHameahSource !== "unknown";
+    const yomForLegacyScoring = yomKnown ? yom : null;
 
     const profileForMatch = {
-      daparScore: stats.daparScore,
-      medicalProfile: stats.medicalProfile,
+      daparScore:
+        stats.daparScore ??
+        (latestAssessment?.answers?.daparScore === "unknown" ? "unknown" : null),
+      medicalProfile:
+        stats.medicalProfile ??
+        (latestAssessment?.answers?.medicalProfile === "unknown" ? "unknown" : null),
       gender: stats.gender,
       combatPreference: preferences?.combatPreference,
       focus: preferences?.focus,
@@ -92,7 +107,12 @@ export async function generateReport(req, res) {
     } else {
       const catalog = getIdfRoleCatalogParsed();
       const allRoles = catalog?.roles || [];
-      filteredRoles = preFilterRoles(allRoles, stats, preferences, yom);
+      filteredRoles = preFilterRoles(
+        allRoles,
+        profileForMatch,
+        preferences,
+        yomForLegacyScoring,
+      );
     }
     filteredRoleCount = filteredRoles.length;
 
@@ -101,15 +121,19 @@ export async function generateReport(req, res) {
         ? "רשמי (מאה/מכון ממיין)"
         : preferences?.yomHameahSource === "self"
           ? "הערכה עצמית"
-          : "לא צוין";
+          : preferences?.yomHameahSource === "unknown"
+            ? "לא ידוע — ציונים ניטרליים הם מצייני מקום בלבד"
+            : "לא צוין";
 
-    const yomLines = yom
+    const yomLines = yom && yomKnown
       ? YOM_HAMEAH_12_KEYS.map(
           (k) => `  • ${k} (${YOM_HAMEAH_12_LABELS_HE[k] ?? k}): ${typeof yom[k] === "number" ? yom[k] : "—"}/5`
         ).join("\n")
-      : "  (לא הוזנו)";
+      : preferences?.yomHameahSource === "unknown"
+        ? "  (לא ידוע; ציוני 3 ניטרליים נשמרו לתאימות ואסור להסיק מהם חוזקות או זכאות)"
+        : "  (לא הוזנו)";
 
-    const yomSorted = yom
+    const yomSorted = yom && yomKnown
       ? YOM_HAMEAH_12_KEYS
           .map((k) => ({ key: k, label: YOM_HAMEAH_12_LABELS_HE[k] ?? k, score: yom[k] }))
           .filter((d) => typeof d.score === "number")
@@ -117,12 +141,24 @@ export async function generateReport(req, res) {
       : [];
     const topDims = yomSorted.filter((d) => d.score >= 4).slice(0, 5);
     const lowDims = yomSorted.filter((d) => d.score <= 2);
-    const strengthsLine = topDims.length
-      ? topDims.map((d) => `${d.label} (${d.score})`).join(", ")
-      : "אין ציונים בולטים גבוהים";
-    const weaknessLine = lowDims.length
-      ? lowDims.map((d) => `${d.label} (${d.score})`).join(", ")
-      : "אין ציונים בולטים נמוכים";
+    const strengthsLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חוזקות"
+      : topDims.length
+        ? topDims.map((d) => `${d.label} (${d.score})`).join(", ")
+        : "אין ציונים בולטים גבוהים";
+    const weaknessLine = !yomKnown
+      ? "ציוני מא״ה אינם ידועים — אין להסיק מהם חולשות"
+      : lowDims.length
+        ? lowDims.map((d) => `${d.label} (${d.score})`).join(", ")
+        : "אין ציונים בולטים נמוכים";
+    const daparLabel =
+      typeof profileForMatch.daparScore === "number"
+        ? String(profileForMatch.daparScore)
+        : "לא ידוע";
+    const medicalLabel =
+      typeof profileForMatch.medicalProfile === "number"
+        ? String(profileForMatch.medicalProfile)
+        : "לא ידוע";
 
     const fitnessSection = [
       run3km ? `ריצת 3 ק"מ: ${run3km}` : null,
@@ -194,8 +230,8 @@ export async function generateReport(req, res) {
     const userPrompt = `## פרופיל מועמד
 
 שם: ${userName}
-דפ"ר: ${stats.daparScore}
-פרופיל רפואי: ${stats.medicalProfile}
+דפ"ר: ${daparLabel}
+פרופיל רפואי: ${medicalLabel}
 מקור ציוני מאה: ${yomSrc}
 ציוני מאה (12 ממדים):
 ${yomLines}

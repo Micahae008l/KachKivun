@@ -87,7 +87,7 @@ export function MatchHistoryPanel({ onSelect, activeId }: Props) {
         </p>
       ) : generations.length === 0 ? (
         <p className="text-right text-sm text-dust">
-          עדיין אין התאמות שמורות. לחצו «התאמת תפקידים» כדי ליצור את הראשונה — אחר כך תוכלו לפתוח אותן כאן.
+          עדיין אין התאמות שמורות. ההתאמה הראשונה תישמר כאן אוטומטית כשהיא תהיה מוכנה.
         </p>
       ) : (
         <ul className="space-y-2">

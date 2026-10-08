@@ -1,22 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-import {
-  ChevronLeft,
-  BarChart3,
-  Brain,
-  Target,
-  Lock,
-  Shield,
-  Gift,
-  ArrowUpLeft,
-} from "lucide-react";
+import { ChevronLeft, BarChart3, Brain, Target, Lock, Shield, ArrowUpLeft } from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto, idfPhotoAt, type IdfPhoto } from "@/lib/idf-images";
-import { getDashboardStats } from "@/lib/api";
+import { getDashboardStats, getPaymentOffer } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { formatPaymentPrice } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
 
@@ -76,6 +69,16 @@ function HomePrimaryCta({ className }: { className: string }) {
 }
 
 function HomePage() {
+  const { data: offer } = useQuery({
+    queryKey: ["payment-offer"],
+    queryFn: getPaymentOffer,
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const paywallEnabled = offer?.enabled === true;
+  const betaOpen = offer?.enabled === false;
+  const price = offer ? formatPaymentPrice(offer.product) : "";
+
   return (
     <div className="topo-lines">
       {/* ── Hero: asymmetric 5/7 split ── */}
@@ -110,12 +113,13 @@ function HomePage() {
               <span className="text-primary">בתכנון.</span>
             </motion.h1>
 
-            <motion.p
-              variants={fadeUp}
-              className="mt-6 max-w-md text-base leading-[1.7] text-dust"
-            >
+            <motion.p variants={fadeUp} className="mt-6 max-w-md text-base leading-[1.7] text-dust">
               {SITE_NAME_HE} מרכזת את כל מה שצריך לדעת לפני ובמהלך השירות בצה&quot;ל.
-              נתונים אישיים, ציונים, מסלול תפקיד, ויועץ AI. במקום אחד, בעברית, בחינם.
+              {paywallEnabled
+                ? ` ההערכה האדפטיבית ושלוש התאמות תפקיד אישיות בחינם. חשיפת מקומות 2 ו־1 עולה ${price} סופיים, כולל מע״מ ככל שחל, פעם אחת וללא מנוי.`
+                : betaOpen
+                  ? " בתקופת הבטא ההערכה האדפטיבית וכל חמש התאמות התפקיד פתוחות בחינם."
+                  : " ההערכה האישית מדרגת חמש התאמות תפקיד; פרטי הגישה יוצגו לפי מצב השירות."}
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-3">
@@ -131,7 +135,11 @@ function HomePage() {
               </div>
               <p className="flex items-center gap-1.5 text-xs text-dust/70">
                 <Lock className="h-3 w-3" />
-                מתחילים מיד, בלי הרשמה. חשבון נדרש רק כדי לשמור את התוצאות.
+                {paywallEnabled
+                  ? "מתחילים מיד בלי הרשמה. המחיר כולל מע״מ ככל שחל; חשבון נדרש לשמירת התוצאות."
+                  : betaOpen
+                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות; חשבון נדרש לשמירת התוצאות."
+                    : "מתחילים מיד בלי הרשמה; חשבון נדרש לשמירת התוצאות."}
               </p>
             </motion.div>
 
@@ -154,7 +162,6 @@ function HomePage() {
             </div>
           </motion.div>
         </div>
-
       </section>
 
       <div className="section-divider" />
@@ -170,9 +177,7 @@ function HomePage() {
             className="mb-14 max-w-xl text-right"
           >
             <p className="font-mono text-xs tracking-widest text-primary uppercase mb-3">כלים</p>
-            <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
-              שלושה כלים, מסך אחד
-            </h2>
+            <h2 className="text-3xl font-bold leading-tight sm:text-4xl">שלושה כלים, מסך אחד</h2>
             <p className="mt-3 text-base text-dust leading-relaxed">
               כל מה שצריך כדי להתכונן לשירות, מרוכז ונגיש.
             </p>
@@ -182,7 +187,7 @@ function HomePage() {
             <CapabilityCard
               icon={<BarChart3 className="h-5 w-5" />}
               title="מעקב נתונים"
-              description='דפ״ר, פרופיל רפואי, ויום המאה. הכל במסך אחד עם ספירה לאחור חיה.'
+              description="דפ״ר, פרופיל רפואי, ויום המאה. הכל במסך אחד עם ספירה לאחור חיה."
               photo={idfPhotoAt(0)}
               idx={0}
             />
@@ -234,19 +239,25 @@ function HomePage() {
               transition={{ duration: 0.4, delay: 0.1, ease }}
               className="text-right"
             >
-              <p className="font-mono text-xs tracking-widest text-olive uppercase mb-3">איך זה עובד</p>
+              <p className="font-mono text-xs tracking-widest text-olive uppercase mb-3">
+                איך זה עובד
+              </p>
               <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
                 מהנתונים שלכם לתפקיד שמתאים
               </h2>
               <p className="mt-4 max-w-lg text-base leading-[1.7] text-dust">
-                מילאתם דפ״ר, פרופיל רפואי, וציוני מא״ה. המערכת מצליבה את הנתונים
-                מול מאגר של מאות תפקידים בצה״ל ומחזירה חמש המלצות מפורטות, מנומקות,
-                עם אחוזי התאמה.
+                מילאתם דפ״ר, פרופיל רפואי, וציוני מא״ה. המערכת מצליבה את הנתונים מול מאגר התפקידים
+                ומדרגת חמש המלצות.{" "}
+                {paywallEnabled
+                  ? `מקומות 5–3 מוצגים בחינם; מקומות 2 ו־1 נפתחים ב־${price} בתשלום חד־פעמי וללא מנוי.`
+                  : betaOpen
+                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות בחינם."
+                    : "פרטי הגישה לכל חמש ההתאמות יוצגו לפי מצב השירות."}
               </p>
 
               <div className="mt-10 grid grid-cols-1 gap-4 border-t border-iron/30 pt-8 sm:grid-cols-3 sm:gap-6">
                 <StepBlock num="01" title="הרשמה" desc="חשבון חינמי תוך 3 דקות" idx={0} />
-                <StepBlock num="02" title="נתונים" desc='דפ״ר, רפואי, מא״ה והעדפות' idx={1} />
+                <StepBlock num="02" title="נתונים" desc="דפ״ר, רפואי, מא״ה והעדפות" idx={1} />
                 <StepBlock num="03" title="תובנות" desc="התאמה + המלצות AI" idx={2} />
               </div>
             </motion.div>
@@ -269,9 +280,30 @@ function HomePage() {
             למה לסמוך עלינו
           </motion.p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <TrustBlock icon={<Lock className="h-5 w-5" />} title="כניסה בלי סיסמה" desc="נכנסים עם קוד חד־פעמי לאימייל, אז אין סיסמה שיכולה לדלוף. וכל התעבורה באתר מוצפנת." idx={0} />
-            <TrustBlock icon={<Shield className="h-5 w-5" />} title="לא מוכרים את המידע" desc="לא מוכרים ולא מעבירים למפרסמים. המידע משמש רק כדי לבנות לכם התאמה, ואפשר לבקש למחוק אותו בכל רגע." idx={1} />
-            <TrustBlock icon={<Gift className="h-5 w-5" />} title="חינם לשימוש" desc="ללא תשלום, ללא מנוי, ללא פרסומות. כלי הכנה לשירות שפתוח לכולם." idx={2} />
+            <TrustBlock
+              icon={<Lock className="h-5 w-5" />}
+              title="כניסה בלי סיסמה"
+              desc="נכנסים עם קוד חד־פעמי לאימייל, אז אין סיסמה שיכולה לדלוף. וכל התעבורה באתר מוצפנת."
+              idx={0}
+            />
+            <TrustBlock
+              icon={<Shield className="h-5 w-5" />}
+              title="לא מוכרים את המידע"
+              desc="לא מוכרים ולא מעבירים למפרסמים. המידע משמש רק כדי לבנות לכם התאמה, ואפשר לבקש למחוק אותו בכל רגע."
+              idx={1}
+            />
+            <TrustBlock
+              icon={<Target className="h-5 w-5" />}
+              title={paywallEnabled ? "מחיר שקוף" : betaOpen ? "בטא פתוחה" : "גישה שקופה"}
+              desc={
+                paywallEnabled
+                  ? `ההערכה ושלוש התאמות בחינם; מקומות 2 ו־1 ב־${price} סופיים כולל מע״מ ככל שחל, ללא מנוי.`
+                  : betaOpen
+                    ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
+                    : "פרטי הגישה מוצגים לפי מצב השירות בזמן אמת."
+              }
+              idx={2}
+            />
           </div>
         </div>
       </section>
@@ -298,16 +330,19 @@ function HomePage() {
           </div>
           <div className="order-1 lg:order-2 max-w-xl text-right">
             <h2 className="text-3xl font-bold sm:text-4xl">
-              השירות שלכם,{" "}
-              <span className="text-primary">בראש שקט.</span>
+              השירות שלכם, <span className="text-primary">בראש שקט.</span>
             </h2>
             <p className="mt-4 text-base text-dust">
-              בחינם, בעברית, ובלי למכור את המידע שלכם.
+              {paywallEnabled
+                ? `ההערכה ושלוש התאמות בחינם. פתיחת שתי המובילות ב־${price} סופיים כולל מע״מ ככל שחל, פעם אחת וללא מנוי.`
+                : betaOpen
+                  ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
+                  : "התחילו בהערכה האישית; פרטי הגישה יוצגו לפי מצב השירות."}
             </p>
             <HomePrimaryCta className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
             <p className="mt-3 flex items-center gap-1.5 text-xs text-dust/70">
               <Lock className="h-3 w-3" />
-              הרשמה באימייל בלבד, ללא סיסמה
+              המלצות לא רשמיות — אין הבטחת זכאות, מיון או שיבוץ בצה״ל
             </p>
           </div>
         </motion.div>
@@ -352,7 +387,9 @@ function DataPoint({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-right" ref={ref}>
       <p className="font-mono text-2xl font-bold tabular-nums text-foreground">
-        {prefix}{display}{suffix}
+        {prefix}
+        {display}
+        {suffix}
       </p>
       <p className="mt-0.5 text-xs text-dust">{label}</p>
     </div>
@@ -397,7 +434,17 @@ function CapabilityCard({
   );
 }
 
-function StepBlock({ num, title, desc, idx }: { num: string; title: string; desc: string; idx: number }) {
+function StepBlock({
+  num,
+  title,
+  desc,
+  idx,
+}: {
+  num: string;
+  title: string;
+  desc: string;
+  idx: number;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -413,7 +460,17 @@ function StepBlock({ num, title, desc, idx }: { num: string; title: string; desc
   );
 }
 
-function TrustBlock({ icon, title, desc, idx = 0 }: { icon: React.ReactNode; title: string; desc: string; idx?: number }) {
+function TrustBlock({
+  icon,
+  title,
+  desc,
+  idx = 0,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  idx?: number;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}

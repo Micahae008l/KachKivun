@@ -3,33 +3,18 @@ import { assertWithinCallCap } from "../utils/aiCallCap.js";
 import { sendServerError } from "../utils/httpError.js";
 
 
-/** Blocks AI routes when the user has exhausted their lifetime AI-call or token cap. */
+/**
+ * Resolve internal abuse/cost limits before the controller. The controller
+ * enforces them only after its zero-cost cache lookup, so cached results remain
+ * available without exposing allowance counters to the client.
+ */
 export async function enforceTokenCap(req, res, next) {
   try {
-    // Lifetime call cap (the user-visible "5 free uses") is checked first.
-    const callResult = await assertWithinCallCap(req.userId);
-    if (!callResult.ok) {
-      return res.status(429).json({
-        error: callResult.message,
-        code: "AI_CALL_CAP_EXCEEDED",
-        used: callResult.used,
-        cap: callResult.cap,
-        remaining: callResult.remaining,
-      });
-    }
-
-    const result = await assertWithinTokenCap(req.userId);
-    if (!result.ok) {
-      return res.status(429).json({
-        error: result.message,
-        code: "TOKEN_CAP_EXCEEDED",
-        used: result.used,
-        cap: result.cap,
-        remaining: result.remaining,
-      });
-    }
-
-    req.tokenCapStatus = result;
+    const [tokenResult, callResult] = await Promise.all([
+      assertWithinTokenCap(req.userId),
+      assertWithinCallCap(req.userId),
+    ]);
+    req.tokenCapStatus = tokenResult;
     req.callCapStatus = callResult;
     next();
   } catch (err) {
