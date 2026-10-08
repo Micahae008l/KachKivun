@@ -4,7 +4,7 @@ import AiUsageLog from "../models/AiUsageLog.js";
 
 const DEFAULT_CALL_CAP = 5;
 
-/** Lifetime AI-call cap from env (AI_CALL_CAP); falls back to 5. 0 = block all, negative/invalid = default. */
+/** Internal lifetime generation ceiling. Cached recommendation reads do not consume it. */
 export function getDefaultCallCap() {
   const raw = process.env.AI_CALL_CAP;
   if (raw == null || String(raw).trim() === "") return DEFAULT_CALL_CAP;
@@ -18,7 +18,7 @@ export function resolveCallCap(user) {
   return getDefaultCallCap();
 }
 
-/** Count successful match-roles runs only (the user-visible "free uses"). Reports use token cap separately. */
+/** Count successful, non-cached match generations only. */
 export async function getUserCallCount(userId) {
   const oid = new mongoose.Types.ObjectId(String(userId));
   const n = await AiUsageLog.countDocuments({
@@ -63,6 +63,6 @@ export async function assertWithinCallCap(userId) {
   return {
     ok: false,
     ...status,
-    message: `השתמשתם בכל ${status.cap} השימושים החינמיים ביועץ ה-AI. בקרוב יתאפשר לפתוח שימושים נוספים.`,
+    message: "לא ניתן ליצור התאמה חדשה כרגע.",
   };
 }

@@ -44,7 +44,7 @@ const preferencesSchema = new mongoose.Schema(
     },
     yomHameahSource: {
       type: String,
-      enum: ["official", "self", "unspecified"],
+      enum: ["official", "self", "unknown", "unspecified"],
       default: "unspecified",
     },
   },

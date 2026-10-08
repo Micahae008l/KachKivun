@@ -15,7 +15,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    trackError(error.message, info.componentStack?.slice(0, 300) ?? "ErrorBoundary");
+    trackError(error.message, "error_boundary");
     console.error("[ErrorBoundary]", error, info);
   }
 

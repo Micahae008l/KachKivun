@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import Assessment from "../models/Assessment.js";
 import EmailOtp from "../models/EmailOtp.js";
 import AiUsageLog from "../models/AiUsageLog.js";
 import RefreshToken from "../models/RefreshToken.js";
@@ -136,9 +137,13 @@ export async function listUsers(req, res) {
     ]);
 
     const userIds = users.map((u) => u._id);
-    const [statsList, prefsList, usageByUser] = await Promise.all([
+    const [statsList, prefsList, assessmentList, usageByUser] = await Promise.all([
       MilitaryStats.find({ userId: { $in: userIds } }).lean(),
       Preferences.find({ userId: { $in: userIds } }).lean(),
+      Assessment.find({ userId: { $in: userIds } })
+        .sort({ completedAt: -1, _id: -1 })
+        .select("userId answers.daparScore answers.medicalProfile answers.yomHameahSource")
+        .lean(),
       AiUsageLog.aggregate([
         { $match: { userId: { $in: userIds } } },
         {
@@ -155,6 +160,11 @@ export async function listUsers(req, res) {
 
     const statsMap = new Map(statsList.map((s) => [String(s.userId), s]));
     const prefsMap = new Map(prefsList.map((p) => [String(p.userId), p]));
+    const assessmentMap = new Map();
+    for (const assessment of assessmentList) {
+      const id = String(assessment.userId);
+      if (!assessmentMap.has(id)) assessmentMap.set(id, assessment);
+    }
     const usageMap = new Map(usageByUser.map((u) => [String(u._id), u]));
 
     const rows = users.map((u) => {
@@ -164,6 +174,7 @@ export async function listUsers(req, res) {
       const { ready: aiReady, missing: aiProfileMissing } = computeAiProfileMissing(
         stats,
         preferences,
+        assessmentMap.get(id) ?? null,
       );
       const usage = usageMap.get(id);
       const usedTokens = usage?.totalTokens ?? 0;

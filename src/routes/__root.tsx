@@ -12,9 +12,9 @@ import {
 import { QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { warmApi, bootstrapAuth, logoutRequest } from "@/lib/api";
 import { getToken, isStoredAdmin, setStoredRole, subscribeAuth } from "@/lib/auth";
-import { dashboardQueryOptions, prefetchAuthedData, sessionQueryOptions } from "@/lib/queries";
+import { prefetchAuthedData, sessionQueryOptions } from "@/lib/queries";
 import { Toaster } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import appCss from "../styles.css?url";
@@ -23,9 +23,16 @@ import { KachKivunLogo } from "@/components/KachKivunLogo";
 import { SITE_DESCRIPTION, SITE_NAME_HE } from "@/lib/brand";
 import { MATCH_TOOL_SHORT } from "@/lib/voice";
 import { ARIA, MAIN_CONTENT_ID, MOBILE_NAV_ID } from "@/lib/a11y";
+import {
+  A11Y_BOOT_SCRIPT,
+  A11Y_PREFS_EVENT,
+  readA11yPrefs,
+  type A11yPrefs,
+} from "@/lib/a11y-prefs";
+import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { getPlausibleDomain, getPlausibleScriptUrl, trackError } from "@/lib/analytics";
+import { trackError } from "@/lib/analytics";
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,
@@ -76,16 +83,11 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
-  const plausibleSrc = getPlausibleScriptUrl();
-  const plausibleDomain = getPlausibleDomain();
-
   return (
     <html lang="he" dir="rtl">
       <head>
         <HeadContent />
-        {plausibleSrc && plausibleDomain && (
-          <script defer data-domain={plausibleDomain} src={plausibleSrc} />
-        )}
+        <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-dvh font-sans antialiased text-foreground">
         {children}
@@ -96,6 +98,17 @@ function RootDocument({ children }: { children: ReactNode }) {
 }
 
 function RootLayout() {
+  const [manualReduceMotion, setManualReduceMotion] = useState(false);
+
+  useEffect(() => {
+    setManualReduceMotion(readA11yPrefs().reduceMotion);
+    function onPrefsChange(event: Event) {
+      setManualReduceMotion((event as CustomEvent<A11yPrefs>).detail.reduceMotion);
+    }
+    window.addEventListener(A11Y_PREFS_EVENT, onPrefsChange);
+    return () => window.removeEventListener(A11Y_PREFS_EVENT, onPrefsChange);
+  }, []);
+
   // Start waking the API immediately. On the free Render plan a sleeping instance
   // takes ~50s, and without this the visitor's first call is the OTP request.
   useEffect(() => {
@@ -104,11 +117,11 @@ function RootLayout() {
 
   useEffect(() => {
     function onError(event: ErrorEvent) {
-      trackError(event.message, event.filename ?? "global");
+      trackError(event.message, "global");
     }
     function onUnhandledRejection(event: PromiseRejectionEvent) {
       const msg = event.reason instanceof Error ? event.reason.message : String(event.reason);
-      trackError(msg, "unhandledrejection");
+      trackError(msg, "unhandled_rejection");
     }
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onUnhandledRejection);
@@ -119,12 +132,14 @@ function RootLayout() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <RootLayoutInner />
-        <Toaster richColors position="top-center" />
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <MotionConfig reducedMotion={manualReduceMotion ? "always" : "user"}>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <RootLayoutInner />
+          <Toaster richColors position="top-center" />
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </MotionConfig>
   );
 }
 
@@ -177,14 +192,17 @@ function RootLayoutInner() {
 
   if (!authReady) {
     return (
-      <main
-        id={MAIN_CONTENT_ID}
-        className="flex min-h-dvh items-center justify-center"
-        aria-busy="true"
-        aria-label={ARIA.main}
-      >
-        <span className="text-sm text-dust">טוען…</span>
-      </main>
+      <>
+        <main
+          id={MAIN_CONTENT_ID}
+          className="flex min-h-dvh items-center justify-center"
+          aria-busy="true"
+          aria-label={ARIA.main}
+        >
+          <span className="text-sm text-dust">טוען…</span>
+        </main>
+        <AccessibilityMenu />
+      </>
     );
   }
 
@@ -202,6 +220,7 @@ function RootLayoutInner() {
       <main id={MAIN_CONTENT_ID} className="animate-fade-in" aria-label={ARIA.main} tabIndex={-1}>
         <Outlet />
       </main>
+      <AccessibilityMenu />
       {!isBareShell && (
         <footer className="border-t border-iron/30 mt-20" aria-label={ARIA.footer}>
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 text-xs text-dust/60 sm:flex-row sm:justify-between sm:px-6 sm:py-8">
@@ -223,6 +242,15 @@ function RootLayoutInner() {
               </Link>
               <Link to="/terms" className="transition hover:text-foreground">
                 תנאי שימוש
+              </Link>
+              <Link
+                to="/cancellation"
+                className="font-semibold text-primary/80 transition hover:text-primary"
+              >
+                ביטול עסקה והחזרים
+              </Link>
+              <Link to="/accessibility" className="transition hover:text-foreground">
+                נגישות
               </Link>
             </div>
             <span className="text-dust/50">
@@ -254,10 +282,6 @@ function SiteHeader({
 }) {
   const { data: session } = useQuery(sessionQueryOptions(tokenPresent));
   const token = tokenPresent ? getToken() : null;
-  const { data: dash } = useQuery({
-    ...dashboardQueryOptions(token),
-    enabled: authed && !!token,
-  });
 
   useEffect(() => {
     if (session?.role) setStoredRole(session.role);
@@ -268,8 +292,7 @@ function SiteHeader({
   const NAV_ITEMS = useMemo(() => (authed ? [...NAV_AUTHED] : []), [authed]);
 
   const profileName =
-    session?.preferredName?.trim() ||
-    (session?.email ? session.email.split("@")[0] : undefined);
+    session?.preferredName?.trim() || (session?.email ? session.email.split("@")[0] : undefined);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -318,12 +341,7 @@ function SiteHeader({
           ) : null}
 
           {authed ? (
-            <ProfileMenu
-              displayName={profileName}
-              isAdmin={isAdmin}
-              onLogout={onLogout}
-              aiCalls={dash?.aiCalls}
-            />
+            <ProfileMenu displayName={profileName} isAdmin={isAdmin} onLogout={onLogout} />
           ) : (
             <Link
               to="/post-signup"
@@ -353,11 +371,7 @@ function SiteHeader({
               )}
             </button>
           ) : (
-            <Link
-              to="/post-signup"
-              hash="login"
-              className="btn-primary px-3 py-1.5 text-xs"
-            >
+            <Link to="/post-signup" hash="login" className="btn-primary px-3 py-1.5 text-xs">
               התחברו
             </Link>
           )}
@@ -398,10 +412,13 @@ function SiteHeader({
                   isAdmin={isAdmin}
                   onLogout={onLogout}
                   onNavigate={() => setMobileOpen(false)}
-                  aiCalls={dash?.aiCalls}
                 />
               ) : (
-                <Link to="/post-signup" hash="login" className="px-2 py-2.5 text-sm font-semibold text-primary">
+                <Link
+                  to="/post-signup"
+                  hash="login"
+                  className="px-2 py-2.5 text-sm font-semibold text-primary"
+                >
                   התחברו
                 </Link>
               )}
@@ -418,9 +435,7 @@ function NotFoundPage() {
     <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
       <p className="font-mono text-6xl font-black tabular-nums text-primary">404</p>
       <h1 className="mt-4 text-xl font-bold text-foreground">העמוד לא נמצא</h1>
-      <p className="mt-2 text-sm text-dust">
-        הכתובת לא קיימת או שהעמוד הוסר.
-      </p>
+      <p className="mt-2 text-sm text-dust">הכתובת לא קיימת או שהעמוד הוסר.</p>
       <Link to="/" className="btn-primary mt-8 px-6 py-2.5">
         חזרה לדף הראשי
       </Link>

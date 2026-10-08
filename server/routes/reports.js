@@ -1,3 +1,4 @@
+/** Retired. Do not remount: the AI counselor is the only personalized result product. */
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth.js";
 import { validateRequest } from "../middleware/validateRequest.js";

@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, LayoutDashboard, LogOut, Pencil, Shield, Sparkles, User } from "lucide-react";
-import type { AiCallCapStatus } from "@/lib/api";
+import { ChevronDown, LayoutDashboard, LogOut, Pencil, ReceiptText, Shield, Sparkles, User } from "lucide-react";
 
 type Props = {
   displayName?: string;
@@ -10,8 +9,6 @@ type Props = {
   /** Compact trigger for mobile drawer sections */
   variant?: "dropdown" | "list";
   onNavigate?: () => void;
-  /** Free match-tool uses left (hidden when unlimited / missing) */
-  aiCalls?: AiCallCapStatus | null;
 };
 
 export function ProfileMenu({
@@ -20,7 +17,6 @@ export function ProfileMenu({
   onLogout,
   variant = "dropdown",
   onNavigate,
-  aiCalls,
 }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -48,39 +44,16 @@ export function ProfileMenu({
     onNavigate?.();
   }
 
-  const showCalls = Boolean(aiCalls && !aiCalls.unlimited && aiCalls.cap != null);
-  const remaining = aiCalls?.remaining ?? 0;
-  const cap = aiCalls?.cap ?? 0;
-  const depleted = remaining === 0;
-
-  const usesRow = showCalls ? (
-    <Link
-      to="/ai-counselor"
-      onClick={close}
-      className={`mx-1.5 mb-1 flex items-center justify-between gap-2 rounded-md border px-2.5 py-2 transition ${
-        depleted
-          ? "border-destructive/40 bg-destructive/10 hover:bg-destructive/15"
-          : "border-primary/35 bg-primary/10 hover:bg-primary/15"
-      }`}
-      aria-label={`נותרו ${remaining} מתוך ${cap} שימושים חינמיים להתאמת תפקידים`}
-    >
-      <span className="flex items-center gap-1.5 text-xs text-dust">
-        <Sparkles className={`h-3.5 w-3.5 shrink-0 ${depleted ? "text-destructive" : "text-primary"}`} aria-hidden />
-        שימושים חינמיים
-      </span>
-      <span
-        className={`font-mono text-sm font-bold tabular-nums ${
-          depleted ? "text-destructive" : "text-primary"
-        }`}
-      >
-        {remaining}/{cap}
-      </span>
-    </Link>
-  ) : null;
-
   const items = (
     <>
-      {usesRow}
+      <Link
+        to="/ai-counselor"
+        onClick={close}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-foreground transition hover:bg-iron/10"
+      >
+        <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        היועץ האישי
+      </Link>
       <Link
         to="/dashboard"
         onClick={close}
@@ -98,6 +71,14 @@ export function ProfileMenu({
       >
         <Pencil className="h-4 w-4 shrink-0 text-dust" aria-hidden />
         עריכת פרופיל
+      </Link>
+      <Link
+        to="/cancellation"
+        onClick={close}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-foreground transition hover:bg-iron/10"
+      >
+        <ReceiptText className="h-4 w-4 shrink-0 text-dust" aria-hidden />
+        תשלומים וביטולים
       </Link>
       {isAdmin ? (
         <Link

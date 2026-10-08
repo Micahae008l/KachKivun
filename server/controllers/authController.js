@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import MilitaryStats from "../models/MilitaryStats.js";
 import Preferences from "../models/Preferences.js";
+import Assessment from "../models/Assessment.js";
 import EmailOtp from "../models/EmailOtp.js";
 import RefreshToken from "../models/RefreshToken.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
@@ -80,10 +81,17 @@ async function existingUserBlocksSignup(email) {
   const user = await User.findOne({ email }).select("_id preferredName");
   if (!user) return false;
 
-  const stats = await MilitaryStats.findOne({ userId: user._id });
-  const preferences = await Preferences.findOne({ userId: user._id });
+  const [stats, preferences, latestAssessment] = await Promise.all([
+    MilitaryStats.findOne({ userId: user._id }),
+    Preferences.findOne({ userId: user._id }),
+    Assessment.findOne({ userId: user._id }).sort({ completedAt: -1, _id: -1 }).lean(),
+  ]);
   const preferred = String(user.preferredName || "").trim();
-  const { ready: profileFieldsReady } = computeAiProfileMissing(stats, preferences);
+  const { ready: profileFieldsReady } = computeAiProfileMissing(
+    stats,
+    preferences,
+    latestAssessment,
+  );
   return preferred.length > 0 && profileFieldsReady;
 }
 
@@ -319,10 +327,17 @@ export async function verifyOtp(req, res) {
     );
     await ensureUserScaffold(user._id);
 
-    const stats = await MilitaryStats.findOne({ userId: user._id });
-    const preferences = await Preferences.findOne({ userId: user._id });
+    const [stats, preferences, latestAssessment] = await Promise.all([
+      MilitaryStats.findOne({ userId: user._id }),
+      Preferences.findOne({ userId: user._id }),
+      Assessment.findOne({ userId: user._id }).sort({ completedAt: -1, _id: -1 }).lean(),
+    ]);
     const preferred = String(user.preferredName || "").trim();
-    const { ready: profileFieldsReady } = computeAiProfileMissing(stats, preferences);
+    const { ready: profileFieldsReady } = computeAiProfileMissing(
+      stats,
+      preferences,
+      latestAssessment,
+    );
     const profileComplete = preferred.length > 0 && profileFieldsReady;
 
     await setRefreshCookieForUser(req, res, user._id);

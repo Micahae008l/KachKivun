@@ -17,12 +17,17 @@ import { Route as PostSignupRouteImport } from './routes/post-signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CancellationRouteImport } from './routes/cancellation'
 import { Route as AiSecretaryRouteImport } from './routes/ai-secretary'
 import { Route as AiCounselorRouteImport } from './routes/ai-counselor'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReportReportIdRouteImport } from './routes/report.$reportId'
+import { Route as PaymentReturnRouteImport } from './routes/payment.return'
+import { Route as CheckoutShareTokenRouteImport } from './routes/checkout_.$shareToken'
 import { Route as AdminSecurityRouteImport } from './routes/admin_.security'
 
 const TermsRoute = TermsRouteImport.update({
@@ -65,6 +70,16 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationRoute = CancellationRouteImport.update({
+  id: '/cancellation',
+  path: '/cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AiSecretaryRoute = AiSecretaryRouteImport.update({
   id: '/ai-secretary',
   path: '/ai-secretary',
@@ -78,6 +93,11 @@ const AiCounselorRoute = AiCounselorRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessibilityRoute = AccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -95,6 +115,16 @@ const ReportReportIdRoute = ReportReportIdRouteImport.update({
   path: '/$reportId',
   getParentRoute: () => ReportRoute,
 } as any)
+const PaymentReturnRoute = PaymentReturnRouteImport.update({
+  id: '/payment/return',
+  path: '/payment/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutShareTokenRoute = CheckoutShareTokenRouteImport.update({
+  id: '/checkout_/$shareToken',
+  path: '/checkout/$shareToken',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSecurityRoute = AdminSecurityRouteImport.update({
   id: '/admin_/security',
   path: '/admin/security',
@@ -104,9 +134,12 @@ const AdminSecurityRoute = AdminSecurityRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/cancellation': typeof CancellationRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -116,14 +149,19 @@ export interface FileRoutesByFullPath {
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin/security': typeof AdminSecurityRoute
+  '/checkout/$shareToken': typeof CheckoutShareTokenRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/cancellation': typeof CancellationRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -133,15 +171,20 @@ export interface FileRoutesByTo {
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin/security': typeof AdminSecurityRoute
+  '/checkout/$shareToken': typeof CheckoutShareTokenRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/accessibility': typeof AccessibilityRoute
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/cancellation': typeof CancellationRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -151,6 +194,8 @@ export interface FileRoutesById {
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin_/security': typeof AdminSecurityRoute
+  '/checkout_/$shareToken': typeof CheckoutShareTokenRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
 }
 export interface FileRouteTypes {
@@ -158,9 +203,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/accessibility'
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/cancellation'
+    | '/checkout'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -170,14 +218,19 @@ export interface FileRouteTypes {
     | '/role-insights'
     | '/terms'
     | '/admin/security'
+    | '/checkout/$shareToken'
+    | '/payment/return'
     | '/report/$reportId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/accessibility'
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/cancellation'
+    | '/checkout'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -187,14 +240,19 @@ export interface FileRouteTypes {
     | '/role-insights'
     | '/terms'
     | '/admin/security'
+    | '/checkout/$shareToken'
+    | '/payment/return'
     | '/report/$reportId'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/accessibility'
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/cancellation'
+    | '/checkout'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -204,15 +262,20 @@ export interface FileRouteTypes {
     | '/role-insights'
     | '/terms'
     | '/admin_/security'
+    | '/checkout_/$shareToken'
+    | '/payment/return'
     | '/report/$reportId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AccessibilityRoute: typeof AccessibilityRoute
   AdminRoute: typeof AdminRoute
   AiCounselorRoute: typeof AiCounselorRoute
   AiSecretaryRoute: typeof AiSecretaryRoute
+  CancellationRoute: typeof CancellationRoute
+  CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -222,6 +285,8 @@ export interface RootRouteChildren {
   RoleInsightsRoute: typeof RoleInsightsRoute
   TermsRoute: typeof TermsRoute
   AdminSecurityRoute: typeof AdminSecurityRoute
+  CheckoutShareTokenRoute: typeof CheckoutShareTokenRoute
+  PaymentReturnRoute: typeof PaymentReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -282,6 +347,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation': {
+      id: '/cancellation'
+      path: '/cancellation'
+      fullPath: '/cancellation'
+      preLoaderRoute: typeof CancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ai-secretary': {
       id: '/ai-secretary'
       path: '/ai-secretary'
@@ -301,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accessibility': {
+      id: '/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof AccessibilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -323,6 +409,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/report/$reportId'
       preLoaderRoute: typeof ReportReportIdRouteImport
       parentRoute: typeof ReportRoute
+    }
+    '/payment/return': {
+      id: '/payment/return'
+      path: '/payment/return'
+      fullPath: '/payment/return'
+      preLoaderRoute: typeof PaymentReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout_/$shareToken': {
+      id: '/checkout_/$shareToken'
+      path: '/checkout/$shareToken'
+      fullPath: '/checkout/$shareToken'
+      preLoaderRoute: typeof CheckoutShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin_/security': {
       id: '/admin_/security'
@@ -348,9 +448,12 @@ const ReportRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AccessibilityRoute: AccessibilityRoute,
   AdminRoute: AdminRoute,
   AiCounselorRoute: AiCounselorRoute,
   AiSecretaryRoute: AiSecretaryRoute,
+  CancellationRoute: CancellationRoute,
+  CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -360,6 +463,8 @@ const rootRouteChildren: RootRouteChildren = {
   RoleInsightsRoute: RoleInsightsRoute,
   TermsRoute: TermsRoute,
   AdminSecurityRoute: AdminSecurityRoute,
+  CheckoutShareTokenRoute: CheckoutShareTokenRoute,
+  PaymentReturnRoute: PaymentReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

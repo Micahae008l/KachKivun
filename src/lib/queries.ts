@@ -5,12 +5,10 @@ import {
   getAdminUsers,
   getBlockedIps,
   getDashboardStats,
-  getReportHistory,
   getSecurityEvents,
   getSecurityOverview,
   getSession,
   listMatchHistory,
-  listReportHistory,
   type SecurityEventsFilters,
 } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
@@ -20,9 +18,7 @@ const MIN = 60_000;
 export const STALE = {
   session: 10 * MIN,
   dashboard: 5 * MIN,
-  reportHistory: 3 * MIN,
   matchHistory: 2 * MIN,
-  reportDetail: 10 * MIN,
   admin: 2 * MIN,
   security: 30_000,
 } as const;
@@ -43,28 +39,12 @@ export const dashboardQueryOptions = (token: string | null) =>
     staleTime: STALE.dashboard,
   });
 
-export const reportHistoryQueryOptions = (token: string | null) =>
-  queryOptions({
-    queryKey: queryKeys.reportHistory(token),
-    queryFn: listReportHistory,
-    enabled: !!token,
-    staleTime: STALE.reportHistory,
-  });
-
 export const matchHistoryQueryOptions = (token: string | null) =>
   queryOptions({
     queryKey: queryKeys.matchHistory(token),
     queryFn: listMatchHistory,
     enabled: !!token,
     staleTime: STALE.matchHistory,
-  });
-
-export const reportHistoryDetailQueryOptions = (reportId: string, token: string | null) =>
-  queryOptions({
-    queryKey: queryKeys.reportHistoryDetail(reportId, token),
-    queryFn: () => getReportHistory(reportId),
-    enabled: !!token && !!reportId,
-    staleTime: STALE.reportDetail,
   });
 
 export const adminMeQueryOptions = (token: string | null) =>
@@ -123,5 +103,4 @@ export function prefetchAuthedData(
   if (!token) return;
   void queryClient.prefetchQuery(sessionQueryOptions(true));
   void queryClient.prefetchQuery(dashboardQueryOptions(token));
-  void queryClient.prefetchQuery(reportHistoryQueryOptions(token));
 }

@@ -122,7 +122,7 @@ const SCHEDULES = new Set(["Yomiyot", "Hamshushim", "Any"]);
 const FOCUS_OPTS = new Set(["Tech", "Physical", "Research", "Medical", "Any"]);
 const LOCATIONS = new Set(["Close to home", "Anywhere"]);
 const FITNESS_LEVELS = new Set(["Low", "Medium", "High", "Unspecified"]);
-const YOM_SOURCES = new Set(["official", "self", "unspecified"]);
+const YOM_SOURCES = new Set(["official", "self", "unknown", "unspecified"]);
 
 export async function applyPreferencesPatch(userId, preferences) {
   if (!preferences || typeof preferences !== "object") return;

@@ -1,3 +1,10 @@
+import {
+  isPaywallEnabled,
+  normalizeGrowEnvironment,
+  normalizePaymentsProvider,
+  validatePaymentEnvironment,
+} from "../services/payments/config.js";
+
 function trimEnv(name) {
   return String(process.env[name] || "").trim();
 }
@@ -34,8 +41,22 @@ export function requireStrongJwtSecret() {
   }
 }
 
+export function productionEnvironmentErrors(env = process.env) {
+  const enabledLiveGrow =
+    isPaywallEnabled(env.PAYWALL_ENABLED) &&
+    normalizePaymentsProvider(env.PAYMENTS_PROVIDER) === "grow" &&
+    normalizeGrowEnvironment(env.GROW_ENV) === "production";
+  if (env.NODE_ENV !== "production" && !enabledLiveGrow) return [];
+  return validatePaymentEnvironment(env);
+}
+
 /** In production, require vars needed for a secure public deploy. */
 export function requireProductionEnv() {
+  const paymentErrors = productionEnvironmentErrors();
+  if (paymentErrors.length > 0) {
+    console.error(`[api] FATAL: invalid payment environment: ${paymentErrors.join("; ")}`);
+    process.exit(1);
+  }
   if (process.env.NODE_ENV !== "production") return;
 
   requireEnv(["JWT_SECRET", "MONGODB_URI", "OPENAI_API_KEY"]);
@@ -51,4 +72,5 @@ export function requireProductionEnv() {
       "[api] ALLOWED_HOSTS unset — API accepts any Host header. Set ALLOWED_HOSTS=api.kachkivun.com to reject direct Render/IP hostnames.",
     );
   }
+
 }

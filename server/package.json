@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "node --watch --watch-preserve-output index.js",
     "start": "node index.js",
-    "promote-admin": "node scripts/promote-admin.js"
+    "test": "node --test tests/*.test.mjs",
+    "promote-admin": "node scripts/promote-admin.js",
+    "grandfather-paywall": "node scripts/grandfather-paywall-users.mjs",
+    "check:production": "node scripts/check-production-readiness.mjs"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -16,6 +19,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "multer": "^2.4.0",
     "nodemailer": "^8.0.7",
     "openai": "^4.77.0",
     "pdfkit": "^0.18.0"

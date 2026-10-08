@@ -1,11 +1,31 @@
 import { isValidYomHameah12, migrateLegacyYomHameahTo12 } from "./yomHameah12Keys.js";
 
-/** Fields required before AI role matching can run meaningfully. */
-export function computeAiProfileMissing(stats, preferences) {
-  const missing = [];
+function assessmentAnswers(assessment) {
+  const value = assessment?.answers ?? assessment;
+  return value && typeof value === "object" ? value : {};
+}
 
-  if (!stats?.daparScore) missing.push("daparScore");
-  if (!stats?.medicalProfile) missing.push("medicalProfile");
+function hasKnownThreshold(value) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/** Fields required before AI role matching can run meaningfully. */
+export function computeAiProfileMissing(stats, preferences, latestAssessment = null) {
+  const missing = [];
+  const answers = assessmentAnswers(latestAssessment);
+
+  if (!hasKnownThreshold(stats?.daparScore) && answers.daparScore !== "unknown") {
+    missing.push("daparScore");
+  }
+  if (!hasKnownThreshold(stats?.medicalProfile) && answers.medicalProfile !== "unknown") {
+    missing.push("medicalProfile");
+  }
+
+  const preferenceSource = preferences?.yomHameahSource;
+  const explicitUnknownYom =
+    preferenceSource === "unknown" && answers.yomHameahSource === "unknown";
+  const knownYomSource = preferenceSource === "official" || preferenceSource === "self";
+  if (!knownYomSource && !explicitUnknownYom) missing.push("yomHameahSource");
   if (!isYomHameahComplete(stats?.yomHameah)) missing.push("yomHameah");
 
   if (!stats?.draftDate || Number.isNaN(new Date(stats.draftDate).getTime())) {

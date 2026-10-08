@@ -3,6 +3,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { getIdfRoleCatalogParsed } from "./idfRoleCatalog.js";
 import { YOM_HAMEAH_12_KEYS } from "./yomHameah12Keys.js";
+import {
+  EXIT_PREFERENCES,
+  MOTIVATIONS,
+  ROLE_AVOIDANCES,
+  ROLE_INTERESTS,
+  TECHNICAL_AREAS,
+} from "./assessmentValues.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -79,6 +86,42 @@ const PEOPLE_TAGS = new Set([
   "helping-people", "welfare", "psychology", "hr", "interviewing",
   "medicine", "emergency", "teaching", "instruction",
 ]);
+const FIELD_TAGS = new Set([
+  "combat", "fieldwork", "fitness", "rescue", "construction", "driving",
+]);
+const OFFICE_TAGS = new Set([
+  "coding", "software", "cyber", "data", "ai", "research", "admin", "hr",
+  "psychology", "interviewing", "writing", "content", "design",
+]);
+const HIGH_STRESS_TAGS = new Set(["combat", "emergency", "war-room", "operations", "rescue"]);
+const VALID_ROLE_INTERESTS = new Set(ROLE_INTERESTS.filter((value) => value !== "undecided"));
+const VALID_ROLE_AVOIDANCES = new Set(ROLE_AVOIDANCES);
+const VALID_EXIT_PATTERNS = new Set(EXIT_PREFERENCES.filter((value) => value !== "no_preference"));
+const VALID_MOTIVATIONS = new Set(MOTIVATIONS.filter((value) => value !== "unsure"));
+const VALID_TECHNICAL_AREAS = new Set(TECHNICAL_AREAS.filter((value) => value !== "undecided"));
+
+const INTEREST_TAGS = {
+  cyber: new Set(["cyber"]),
+  combat: new Set(["combat", "fitness", "fieldwork"]),
+  intelligence: new Set(["intelligence", "research", "languages", "arabic", "maps", "visual-analysis"]),
+  technology_engineering: new Set([
+    "coding", "software", "qa", "devops", "networks", "it", "data", "ai",
+    "electronics", "hardware", "mechanics", "physics",
+  ]),
+  medical: new Set(["medicine", "emergency", "dentistry", "lab", "biology", "helping-people"]),
+  air_force: new Set(["aviation", "drones"]),
+  navy: new Set(["sea"]),
+  instruction_education: new Set(["teaching", "instruction", "public-speaking"]),
+  logistics: new Set(["logistics", "driving", "admin", "budget"]),
+};
+
+const TECHNICAL_AREA_TAGS = {
+  programming: new Set(["coding", "software", "devops", "qa"]),
+  cybersecurity: new Set(["cyber"]),
+  networks: new Set(["networks", "it"]),
+  data_ai: new Set(["data", "ai"]),
+  hardware_electronics: new Set(["hardware", "electronics", "mechanics"]),
+};
 
 function clampInt(n, lo, hi, fallback) {
   const v = Number(n);
@@ -108,13 +151,105 @@ function derivePeopleIntensity(tags = []) {
   return clampInt(1 + hits * 1.5, 1, 5, 2);
 }
 
-// ponytail: naive gender heuristic — combat is male-only unless it's a known
-// mixed/female-open unit. Explicit genderEligibility in the enrichment overrides
-// (from the web-validation pass) is the upgrade path for per-role accuracy.
-const MIXED_OR_FEMALE_COMBAT_RE =
-  /קרקל|ברדלס|לביאי|אריות הירדן|פנתר|מעורב|הגנת הגבולות|הגנ"ם|תותחן|חובש/;
-function deriveGenderEligibility(role) {
-  if (role.combat && !MIXED_OR_FEMALE_COMBAT_RE.test(role.roleTitle || "")) return "male_only";
+function normalizedEnumArray(value, allowed) {
+  const values = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? [value]
+      : [];
+  return [...new Set(values.filter((item) => allowed.has(item)))].sort();
+}
+
+function deriveInterestAreas(tags) {
+  const tagSet = new Set(tags);
+  return Object.entries(INTEREST_TAGS)
+    .filter(([, mappedTags]) => [...mappedTags].some((tag) => tagSet.has(tag)))
+    .map(([interest]) => interest)
+    .filter((interest) => VALID_ROLE_INTERESTS.has(interest))
+    .sort();
+}
+
+function deriveTechnicalAreas(tags) {
+  const tagSet = new Set(tags);
+  return Object.entries(TECHNICAL_AREA_TAGS)
+    .filter(([, mappedTags]) => [...mappedTags].some((tag) => tagSet.has(tag)))
+    .map(([area]) => area)
+    .filter((area) => VALID_TECHNICAL_AREAS.has(area))
+    .sort();
+}
+
+function deriveEnvironment(role, tags, physicalDemand) {
+  if (["office", "field", "mixed"].includes(role.environment)) return role.environment;
+  if (["office", "field", "mixed"].includes(role.workEnvironment)) return role.workEnvironment;
+
+  const hasFieldSignal =
+    Boolean(role.combat) ||
+    physicalDemand >= 4 ||
+    tags.some((tag) => FIELD_TAGS.has(tag));
+  const hasOfficeSignal = tags.some((tag) => OFFICE_TAGS.has(tag));
+  if (hasFieldSignal && hasOfficeSignal) return "mixed";
+  if (hasFieldSignal) return "field";
+  if (hasOfficeSignal && physicalDemand <= 2) return "office";
+  return "unknown";
+}
+
+function deriveAvoidanceSignals(role, tags, physicalDemand, environment) {
+  const signals = new Set(
+    normalizedEnumArray(role.avoidanceSignals, VALID_ROLE_AVOIDANCES),
+  );
+  const title = String(role.roleTitle || "");
+
+  if (environment === "office") signals.add("office_only");
+  if (physicalDemand >= 4) signals.add("too_physical");
+  if (/(?:טבח|מטבח|אחזקה|תחזוקה)/.test(title)) signals.add("kitchen_maintenance");
+  if (role.hasNightDuty === true || role.nightDuty === true) signals.add("guard_duty_nights");
+  if (role.closedBase === true || role.remotePosting === true) signals.add("far_from_home");
+  if (Number(role.monotonyLevel) >= 4) signals.add("monotonous");
+
+  return [...signals].filter((signal) => VALID_ROLE_AVOIDANCES.has(signal)).sort();
+}
+
+function deriveMotivationSignals(role, tags, keyDimensions) {
+  const explicit = normalizedEnumArray(role.motivationSignals, VALID_MOTIVATIONS);
+  if (explicit.length) return explicit;
+
+  const tagSet = new Set(tags);
+  const signals = new Set();
+  if (
+    ["helping-people", "welfare", "medicine", "emergency", "rescue"].some((tag) =>
+      tagSet.has(tag),
+    )
+  ) {
+    signals.add("contribution");
+  }
+  if (
+    role.combat ||
+    role.selective ||
+    ["cyber", "research", "intelligence"].some((tag) => tagSet.has(tag))
+  ) {
+    signals.add("challenge");
+  }
+  if (
+    ["coding", "software", "cyber", "data", "ai", "electronics", "hardware", "medicine"].some(
+      (tag) => tagSet.has(tag),
+    )
+  ) {
+    signals.add("career");
+  }
+  if (role.combat || keyDimensions.includes("teamwork")) signals.add("friends_experience");
+  if (
+    tagSet.has("leadership") ||
+    tagSet.has("teaching") ||
+    keyDimensions.includes("command")
+  ) {
+    signals.add("personal_growth");
+  }
+  return [...signals].filter((signal) => VALID_MOTIVATIONS.has(signal)).sort();
+}
+
+// Unknown eligibility must never become a hard gate. Only explicit catalog or
+// reviewed enrichment data may narrow gender eligibility.
+function deriveGenderEligibility() {
   return "all";
 }
 
@@ -137,16 +272,48 @@ export function normalizeRoleV3(role) {
   const keyDimensions = Array.isArray(role.keyDimensions)
     ? role.keyDimensions.filter((d) => YOM.has(d)).slice(0, 4)
     : [];
+  const normalizedKeyDimensions = keyDimensions.length
+    ? keyDimensions
+    : deriveKeyDimensions(tags);
+  const physicalDemand = clampInt(role.physicalDemand, 1, 5, role.combat ? 4 : 2);
+  const techIntensity = clampInt(role.techIntensity, 1, 5, deriveTechIntensity(tags));
+  const peopleIntensity = clampInt(role.peopleIntensity, 1, 5, derivePeopleIntensity(tags));
+  const environment = deriveEnvironment(role, tags, physicalDemand);
+  const interestAreas =
+    normalizedEnumArray(role.interestAreas, VALID_ROLE_INTERESTS).length > 0
+      ? normalizedEnumArray(role.interestAreas, VALID_ROLE_INTERESTS)
+      : deriveInterestAreas(tags);
+  const technicalAreas =
+    normalizedEnumArray(role.technicalAreas, VALID_TECHNICAL_AREAS).length > 0
+      ? normalizedEnumArray(role.technicalAreas, VALID_TECHNICAL_AREAS)
+      : deriveTechnicalAreas(tags);
+  const hasTechnicalSignal = technicalAreas.length > 0 || techIntensity >= 4;
+  const leadershipDemand =
+    role.leadershipDemand != null && Number.isFinite(Number(role.leadershipDemand))
+    ? clampInt(role.leadershipDemand, 1, 5, null)
+    : tags.includes("leadership") || normalizedKeyDimensions.includes("command")
+      ? 4
+      : null;
+  const teamworkDemand =
+    role.teamworkDemand != null && Number.isFinite(Number(role.teamworkDemand))
+    ? clampInt(role.teamworkDemand, 1, 5, null)
+    : normalizedKeyDimensions.includes("teamwork") || role.combat
+      ? 4
+      : null;
+  const stressDemand =
+    role.stressDemand != null && Number.isFinite(Number(role.stressDemand))
+    ? clampInt(role.stressDemand, 1, 5, null)
+    : role.combat
+      ? 5
+      : tags.some((tag) => HIGH_STRESS_TAGS.has(tag))
+        ? 4
+        : null;
 
   return {
     ...role,
     // eligibility floors — null means "unknown, no hard gate"
     daparFloor: VALID_DAPAR.has(role.daparFloor) ? role.daparFloor : null,
-    medicalFloor: VALID_MEDICAL.has(role.medicalFloor)
-      ? role.medicalFloor
-      : role.combat
-        ? 82
-        : null,
+    medicalFloor: VALID_MEDICAL.has(role.medicalFloor) ? role.medicalFloor : null,
     // service + location (empty until enriched; report Phase-4 kill-switch reads these)
     serviceLengthMonths: Number.isFinite(role.serviceLengthMonths) ? role.serviceLengthMonths : null,
     serviceLengthLabel: typeof role.serviceLengthLabel === "string" ? role.serviceLengthLabel : "",
@@ -154,13 +321,36 @@ export function normalizeRoleV3(role) {
     dayToDay: typeof role.dayToDay === "string" ? role.dayToDay : "",
     requirements: Array.isArray(role.requirements) ? role.requirements : [],
     // intensities — derived from tags/flags when not enriched
-    physicalDemand: clampInt(role.physicalDemand, 1, 5, role.combat ? 4 : 2),
-    techIntensity: clampInt(role.techIntensity, 1, 5, deriveTechIntensity(tags)),
-    peopleIntensity: clampInt(role.peopleIntensity, 1, 5, derivePeopleIntensity(tags)),
+    physicalDemand,
+    techIntensity,
+    peopleIntensity,
     competitiveness: pickEnum(role.competitiveness, VALID_COMPETITIVENESS, role.selective ? "high" : "medium"),
     genderEligibility: pickEnum(role.genderEligibility, VALID_GENDER_ELIG, deriveGenderEligibility(role)),
-    keyDimensions: keyDimensions.length ? keyDimensions : deriveKeyDimensions(tags),
+    keyDimensions: normalizedKeyDimensions,
     popularity: pickEnum(role.popularity, VALID_POPULARITY, "known"),
+    // Structured assessment affinities. Unknown operational data stays unknown
+    // so it scores neutrally; none of these derived fields are eligibility gates.
+    interestAreas,
+    avoidanceSignals: deriveAvoidanceSignals(role, tags, physicalDemand, environment),
+    environment,
+    exitPatterns: normalizedEnumArray(
+      role.exitPatterns || role.exitsPatterns || role.exits,
+      VALID_EXIT_PATTERNS,
+    ),
+    leadershipDemand,
+    teamworkDemand,
+    stressDemand,
+    motivationSignals: deriveMotivationSignals(role, tags, normalizedKeyDimensions),
+    technicalAreas,
+    technicalLevelDemand: hasTechnicalSignal
+      ? clampInt(role.technicalLevelDemand, 1, 5, techIntensity)
+      : null,
+    combatFitnessDemand: role.combat
+      ? clampInt(role.combatFitnessDemand, 1, 5, physicalDemand)
+      : null,
+    combatReadinessDemand: role.combat
+      ? clampInt(role.combatReadinessDemand, 1, 5, 4)
+      : null,
     enrichment: {
       status: pickEnum(enrichment.status, VALID_ENRICH_STATUS, "none"),
       confidence: enrichment.confidence || "low",

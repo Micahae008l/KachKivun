@@ -65,6 +65,10 @@ Save this as `MONGODB_URI` — you will paste it into Render in step 2.
 
 6. **Custom domain on Render:** Service → **Settings** → **Custom Domains** → add `api.mike.haddad.co.il`. Render shows a **CNAME** target (e.g. `kachkivun-api.onrender.com`).
 
+Payment remains fail-safe disabled in `render.yaml`. Do not enable it as part of a normal deploy.
+Follow `docs/PAYWALL_ROLLOUT.md`, including legal/Grow review, real merchant details,
+the dry-run grandfather migration, and production readiness check, before any live charge.
+
 ---
 
 ## Step 3 — DNS for API (you, at your domain host)

@@ -14,12 +14,34 @@ export const apiLimiter = rateLimit({
   max: parsePositiveInt(process.env.API_RATE_LIMIT_MAX, 100),
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === "GET" && (req.path === "/health" || req.originalUrl === "/api/health"),
+  skip: (req) =>
+    req.method === "GET" && (req.path === "/health" || req.originalUrl === "/api/health"),
   handler: (req, res, _next, options) => {
     logSecurityEvent("rate_limit_api", req, { statusCode: options.statusCode });
     res.status(options.statusCode).json({
       error: "יותר מדי בקשות. נסו שוב בעוד כמה דקות.",
       code: "RATE_LIMIT_API",
+    });
+  },
+});
+
+/**
+ * Grow retries callbacks for delivery assurance. Keep this isolated from the
+ * general API budget so webhook retries cannot starve authenticated traffic.
+ */
+export const growWebhookLimiter = rateLimit({
+  windowMs: parsePositiveInt(process.env.PAYMENT_WEBHOOK_RATE_LIMIT_WINDOW_MS, FIFTEEN_MINUTES_MS),
+  max: parsePositiveInt(process.env.PAYMENT_WEBHOOK_RATE_LIMIT_MAX, 600),
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, _next, options) => {
+    logSecurityEvent("rate_limit_api", req, {
+      statusCode: options.statusCode,
+      message: "grow webhook limiter",
+    });
+    res.status(options.statusCode).json({
+      error: "Too many callback attempts",
+      code: "RATE_LIMIT_PAYMENT_WEBHOOK",
     });
   },
 });

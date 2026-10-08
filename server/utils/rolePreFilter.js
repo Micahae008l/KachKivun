@@ -27,6 +27,9 @@ export function preFilterRoles(roles, stats, prefs, yom) {
   const combat = prefs?.combatPreference;
   const focus = prefs?.focus;
   const physical = prefs?.physicalActivityLevel;
+  const hasDapar = typeof daparScore === "number" && Number.isFinite(daparScore);
+  const hasMedical =
+    typeof medicalProfile === "number" && Number.isFinite(medicalProfile);
 
   const focusTags = new Set(FOCUS_TO_TAGS[focus] || []);
   const wantsCombat = COMBAT_PREF_WANTS_COMBAT.has(combat);
@@ -39,7 +42,7 @@ export function preFilterRoles(roles, stats, prefs, yom) {
     let eligible = true;
 
     // Hard medical filter: unenriched combat = profile 82+ (line combat / combat corps)
-    if (role.combat && medicalProfile < 82) {
+    if (hasMedical && role.combat && medicalProfile < 82) {
       eligible = false;
     }
 
@@ -60,11 +63,11 @@ export function preFilterRoles(roles, stats, prefs, yom) {
     score += tagHits * 6;
 
     // DAPAR alignment
-    const highDapar = daparScore >= 65;
+    const highDapar = hasDapar && daparScore >= 65;
     const techTags = tags.some(t => ["coding", "software", "cyber", "ai", "data", "intelligence", "research"].includes(t));
     if (highDapar && techTags) score += 8;
     if (highDapar && role.selective) score += 4;
-    if (!highDapar && techTags && role.selective) score -= 8;
+    if (hasDapar && !highDapar && techTags && role.selective) score -= 8;
 
     // Physical activity alignment
     if (physical === "High" && role.combat) score += 5;

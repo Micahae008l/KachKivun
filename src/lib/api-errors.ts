@@ -8,7 +8,6 @@ const CODE_MESSAGES: Record<string, string> = {
   OTP_EXPIRED: "הקוד פג תוקף. לחצו «שלחו קוד חדש».",
   OTP_MAX_ATTEMPTS: "יותר מדי ניסיונות. שלחו קוד חדש.",
   OTP_RESEND_COOLDOWN: "אפשר לשלוח קוד חדש בעוד כמה שניות.",
-  AI_CALL_CAP_EXCEEDED: "השתמשתם בכל השימושים החינמיים להתאמת תפקידים.",
   REVIEW_PENDING: "כבר יש ביקורת ממתינה לאישור על התפקיד הזה.",
   TOKEN_CAP_EXCEEDED: "הגעתם למכסת הטוקנים. פנו למנהל המערכת.",
   EMAIL_DELIVERY_FAILED: "לא הצלחנו לשלוח אימייל. נסו שוב בעוד רגע.",

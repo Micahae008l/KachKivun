@@ -1,4 +1,5 @@
 import { clearToken, getToken, setStoredRole, setToken } from "./auth";
+import type { AssessmentCompletionPayload, SavedAssessment } from "@/features/assessment/types";
 
 function apiBase(): string {
   const raw = import.meta.env.VITE_API_URL as string | undefined;
@@ -218,6 +219,24 @@ export function verifyOtp(email: string, code: string, options?: { intent?: Auth
   });
 }
 
+export type AssessmentCompletionResponse = {
+  assessmentId: string;
+  schemaVersion: number;
+  completedAt: string;
+  transactionMode: "transaction" | "standalone-fallback";
+};
+
+export function completeAssessment(payload: AssessmentCompletionPayload) {
+  return apiFetch<AssessmentCompletionResponse>("/api/assessments/complete", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getLatestAssessment() {
+  return apiFetch<{ assessment: SavedAssessment | null }>("/api/assessments/latest");
+}
+
 export type ServiceLifeCycle = "pre" | "serving" | "veteran";
 
 import type { YomHameah as _YomHameah, YomHameah12Key as _YomHameah12Key } from "./yom-hameah-12";
@@ -237,7 +256,7 @@ export type RegisterProfilePayload = {
   medicalProfile?: number | null;
   yomHameah?: YomHameah | null;
   yomQuestionnaire?: YomQuestionnaireEntry[];
-  yomHameahSource?: "official" | "self";
+  yomHameahSource?: "official" | "self" | "unknown";
   preferences?: Partial<{
     combatPreference: string;
     schedule: string;
@@ -288,10 +307,7 @@ export function completeScoreOnboarding(payload: ScoreOnboardingPayload) {
 
   return updateProfile(body).catch(async (err) => {
     // Old API builds reject gender under stats — don't block signup.
-    if (
-      err instanceof ApiError &&
-      /unknown (stats )?field:\s*gender/i.test(err.message || "")
-    ) {
+    if (err instanceof ApiError && /unknown (stats )?field:\s*gender/i.test(err.message || "")) {
       const { gender: _ignored, ...statsWithoutGender } = body.stats ?? {};
       return updateProfile({ ...body, stats: statsWithoutGender });
     }
@@ -328,9 +344,6 @@ export type AiTokenCapStatus = {
   capped: boolean;
 };
 
-/** Lifetime AI-call allowance ("X of 5 free uses"). Same shape as the token cap. */
-export type AiCallCapStatus = AiTokenCapStatus;
-
 export type DashboardResponse = {
   user: {
     email: string;
@@ -345,7 +358,6 @@ export type DashboardResponse = {
   aiReady?: boolean;
   aiProfileMissing?: string[];
   aiTokens?: AiTokenCapStatus;
-  aiCalls?: AiCallCapStatus;
 };
 
 export function getDashboardStats() {
@@ -387,17 +399,261 @@ export function updateProfile(body: ProfileUpdateBody) {
   });
 }
 
-export type RoleMatch = {
-  roleTitle: string;
-  matchPercentage: number;
-  /** One-line headline — from AI or derived from description */
-  summary?: string;
-  description: string;
-  tags: string[];
+// ── Payments (checkout UI is implemented separately) ───────────────────────
+
+export type PaymentMethod = "apple_pay" | "bit" | "google_pay" | "card";
+export type PaymentOrderStatus =
+  | "created"
+  | "pending"
+  | "processing"
+  | "paid"
+  | "failed"
+  | "refund_requested"
+  | "refunded"
+  | "expired";
+
+export type PaymentProduct = {
+  productKey: "ai_counselor_top_two";
+  displayName: string;
+  amountMinor: number;
+  currency: "ILS";
+  permanent: true;
+  futureRecalculationsIncluded: true;
+  vatIncludedWhereApplicable: true;
+  billingType: "one_time";
 };
 
+export type PaymentMerchant = {
+  legalName?: string;
+  phone?: string;
+  address?: string;
+  contactEmail?: string;
+  cancellationUrl?: string;
+};
+
+export type PaymentOffer = {
+  enabled: boolean;
+  personalizedFunnelV2: boolean;
+  product: PaymentProduct;
+  paymentMethods: PaymentMethod[];
+  processor: "Grow" | "Mock (development only)";
+  receiptsProvided: boolean;
+  /** Grow's own page collects payer name, phone and method (payment-link mode). */
+  hostedPayerDetails?: boolean;
+  merchant: PaymentMerchant;
+};
+
+export type PaymentOrderDto = {
+  id: string;
+  product: PaymentProduct;
+  status: PaymentOrderStatus;
+  provider: "grow" | "grow_link" | "mock";
+  /** Payment-link mode: the code the payer types on Grow's page. */
+  claimCode?: string;
+  /** Payment-link mode, first response only: where to check the result. */
+  returnUrl?: string;
+  paymentMethod: PaymentMethod | null;
+  confirmations: {
+    termsAndCancellationAccepted: boolean;
+    adultPayerConfirmed: boolean;
+  };
+  checkoutUrl?: string;
+  requiresMockConfirmation?: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+  paidAt: string | null;
+  refundRequestedAt: string | null;
+  refundedAt: string | null;
+  cancellation: {
+    requestEligible: boolean;
+    state: "eligible" | "pending_provider" | "provider_confirmed" | "not_eligible";
+  };
+  invoice: { number: string; url: string } | null;
+  refundReceipt: { number: string; url: string } | null;
+};
+
+export type PaymentPayer = {
+  fullName: string;
+  phone: string;
+};
+
+export type PaymentConfirmations = {
+  termsAndCancellationAccepted: true;
+  adultPayerConfirmed: true;
+};
+
+export function getPaymentOffer() {
+  return apiFetch<PaymentOffer>("/api/payments/offer", { skipAuth: true });
+}
+
+export function createPaymentCheckout(payload: {
+  idempotencyKey: string;
+  payer?: PaymentPayer;
+  confirmations: PaymentConfirmations;
+  paymentMethod?: PaymentMethod;
+  productKey?: "ai_counselor_top_two";
+}) {
+  return apiFetch<{ order: PaymentOrderDto }>("/api/payments/checkout", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      productKey: payload.productKey ?? "ai_counselor_top_two",
+    }),
+    retries: 0,
+  });
+}
+
+export function createParentPaymentShare(
+  productKey: "ai_counselor_top_two" = "ai_counselor_top_two",
+) {
+  return apiFetch<{
+    shareUrl: string;
+    expiresAt: string;
+    product: PaymentProduct;
+  }>("/api/payments/parent-share", {
+    method: "POST",
+    body: JSON.stringify({ productKey }),
+  });
+}
+
+export function getParentPaymentShare(shareToken: string) {
+  return apiFetch<{
+    product: PaymentProduct;
+    expiresAt: string;
+    available: boolean;
+    status: PaymentOrderStatus;
+    paymentMethods: PaymentMethod[];
+    processor?: "Grow" | "Mock (development only)";
+    receiptsProvided?: boolean;
+    hostedPayerDetails?: boolean;
+    merchant?: PaymentMerchant;
+  }>(`/api/payments/share/${encodeURIComponent(shareToken)}`, { skipAuth: true });
+}
+
+export function checkoutParentPaymentShare(
+  shareToken: string,
+  payload: {
+    payer?: PaymentPayer;
+    confirmations: PaymentConfirmations;
+    paymentMethod?: PaymentMethod;
+  },
+) {
+  return apiFetch<{ order: PaymentOrderDto }>(
+    `/api/payments/share/${encodeURIComponent(shareToken)}/checkout`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      skipAuth: true,
+      retries: 0,
+    },
+  );
+}
+
+export function getPaymentOrder(publicId: string) {
+  return apiFetch<{ order: PaymentOrderDto; reconciliation: string }>(
+    `/api/payments/orders/${encodeURIComponent(publicId)}`,
+    { retries: 0 },
+  );
+}
+
+export function listPaymentOrders(limit = 25) {
+  return apiFetch<{ orders: PaymentOrderDto[] }>(
+    `/api/payments/orders?limit=${Math.min(50, Math.max(1, Math.round(limit)))}`,
+    { retries: 0 },
+  );
+}
+
+export function getPaymentReturnStatus(publicId: string, returnToken: string) {
+  return apiFetch<{ order: PaymentOrderDto; reconciliation: string }>(
+    `/api/payments/return/${encodeURIComponent(publicId)}/${encodeURIComponent(returnToken)}`,
+    { skipAuth: true, retries: 0 },
+  );
+}
+
+export function cancelPaymentOrder(publicId: string) {
+  return apiFetch<{ order: PaymentOrderDto }>(
+    `/api/payments/orders/${encodeURIComponent(publicId)}/cancel`,
+    { method: "POST" },
+  );
+}
+
+export function refundPaymentOrder(publicId: string, reason = "") {
+  return apiFetch<{
+    order: PaymentOrderDto;
+    duplicate: boolean;
+    reconciliation?: string;
+  }>(`/api/payments/orders/${encodeURIComponent(publicId)}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+    retries: 0,
+  });
+}
+
+export function confirmMockPayment(publicId: string) {
+  return apiFetch<{ order: PaymentOrderDto; duplicate: boolean }>(
+    `/api/payments/orders/${encodeURIComponent(publicId)}/mock-confirm`,
+    { method: "POST" },
+  );
+}
+
+export function confirmMockReturnPayment(publicId: string, returnToken: string) {
+  return apiFetch<{ order: PaymentOrderDto; duplicate: boolean }>(
+    `/api/payments/return/${encodeURIComponent(publicId)}/${encodeURIComponent(returnToken)}/mock-confirm`,
+    { method: "POST", skipAuth: true },
+  );
+}
+
+export type RecommendationAccess = {
+  paywallEnabled: boolean;
+  topTwoUnlocked: boolean;
+  productKey: "ai_counselor_top_two";
+};
+
+export type RecommendationScoreBreakdown = {
+  preference: number;
+  focus: number;
+  yom: number;
+  eligibility: number;
+  catalogQuality: number;
+  structuredAssessment: number;
+};
+
+export type UnlockedRoleMatch = {
+  kind: "role";
+  locked: false;
+  rank: number;
+  roleTitle: string;
+  matchPercentage: number;
+  scoreBreakdown: RecommendationScoreBreakdown | null;
+  summary: string;
+  description: string;
+  tags: string[];
+  nextStepPrompts: string[];
+  category: string;
+  combat: boolean;
+  dayToDay: string;
+  requirements: string[];
+  locations: string[];
+  serviceLengthLabel: string;
+};
+
+export type LockedRoleMatch = {
+  kind: "locked";
+  locked: true;
+  rank: number;
+  matchPercentage: number;
+};
+
+export type RoleMatch = UnlockedRoleMatch | LockedRoleMatch;
+
 export function matchRolesRequest() {
-  return apiFetch<{ roles: RoleMatch[]; aiCalls?: AiCallCapStatus; cached?: boolean; notice?: string }>("/api/ai/match-roles", {
+  return apiFetch<{
+    recommendationId?: string;
+    roles: RoleMatch[];
+    access?: RecommendationAccess;
+    cached?: boolean;
+    notice?: string;
+  }>("/api/ai/match-roles", {
     method: "POST",
     body: JSON.stringify({}),
   });
@@ -412,6 +668,8 @@ export type MatchHistoryItem = {
   topMatch: number | null;
   roleCount: number;
   roleTitles: string[];
+  recommendationId?: string;
+  access?: RecommendationAccess;
 };
 
 export type MatchHistoryDetail = MatchHistoryItem & {
@@ -419,15 +677,23 @@ export type MatchHistoryDetail = MatchHistoryItem & {
 };
 
 export function listMatchHistory() {
-  return apiFetch<{ generations: MatchHistoryItem[] }>("/api/ai/match-history");
+  return apiFetch<{
+    generations: MatchHistoryItem[];
+    access?: RecommendationAccess;
+  }>("/api/ai/match-history");
 }
 
 export function getMatchHistory(id: string) {
-  return apiFetch<{ generation: MatchHistoryDetail }>(`/api/ai/match-history/${id}`);
+  return apiFetch<{
+    generation: MatchHistoryDetail;
+    access?: RecommendationAccess;
+  }>(`/api/ai/match-history/${id}`);
 }
 
 export function deleteMatchHistory(id: string) {
-  return apiFetch<{ message: string; id: string }>(`/api/ai/match-history/${id}`, { method: "DELETE" });
+  return apiFetch<{ message: string; id: string }>(`/api/ai/match-history/${id}`, {
+    method: "DELETE",
+  });
 }
 
 // ── Role insights catalog (public) ──────────────────────────────────────────
@@ -502,23 +768,25 @@ export type AdminRoleReview = RoleReview & {
 export function listRoleReviews(slugOrTitle: string) {
   return apiFetch<{ roleSlug: string; roleTitle: string; reviews: RoleReview[] }>(
     `/api/roles/${encodeURIComponent(slugOrTitle)}/reviews`,
-    { skipAuth: true }
+    { skipAuth: true },
   );
 }
 
 export function submitRoleReview(
   slugOrTitle: string,
-  body: { displayName: string; body: string; rating?: number | null; servedInRole?: boolean }
+  body: { displayName: string; body: string; rating?: number | null; servedInRole?: boolean },
 ) {
   return apiFetch<{ message: string; review: { id: string; status: string } }>(
     `/api/roles/${encodeURIComponent(slugOrTitle)}/reviews`,
-    { method: "POST", body: JSON.stringify(body) }
+    { method: "POST", body: JSON.stringify(body) },
   );
 }
 
-export function listAdminRoleReviews(status: "pending" | "approved" | "rejected" | "all" = "pending") {
+export function listAdminRoleReviews(
+  status: "pending" | "approved" | "rejected" | "all" = "pending",
+) {
   return apiFetch<{ pendingCount: number; reviews: AdminRoleReview[] }>(
-    `/api/admin/role-reviews?status=${encodeURIComponent(status)}`
+    `/api/admin/role-reviews?status=${encodeURIComponent(status)}`,
   );
 }
 
@@ -531,126 +799,16 @@ export function moderateRoleReview(id: string, action: "approve" | "reject", rea
 
 /** Stable client-side slug (mirrors server). */
 export function roleInsightSlug(title: string) {
-  return String(title || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[/\\]+/g, "-")
-    .replace(/\s+/g, "-")
-    .replace(/[^\u0590-\u05FFa-z0-9-]+/gi, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "") || "role";
-}
-
-// ── Full Report ─────────────────────────────────────────────────────────────
-
-export type FitnessData = {
-  run3km?: string;
-  pullUps?: number | null;
-  pushUps?: number | null;
-  sitUps?: number | null;
-  motivation?: string;
-  interests?: string;
-  languages?: string;
-  notes?: string;
-};
-
-export type ReportRole = {
-  roleTitle: string;
-  matchPercentage: number;
-  summary: string;
-  description: string;
-  tags: string[];
-  fitReason: string;
-  riskNote: string;
-  serviceLength?: string;
-  location?: string;
-};
-
-export type FullReport = {
-  direction: string;
-  directionExplanation: string;
-  strengths: string[];
-  weaknesses: string[];
-  improvementTips: string[];
-  interviewTips: string[];
-  roles: ReportRole[];
-  rolesTheyAskedAbout?: string;
-  fearResponse?: string;
-  parentSummary: string;
-};
-
-export type FullReportResponse = {
-  report: FullReport;
-  userName: string;
-  generatedAt: string;
-  historyId?: string;
-};
-
-export type ReportHistoryItem = {
-  id: string;
-  userName: string;
-  direction: string;
-  topRole: string;
-  topMatch: number | null;
-  createdAt: string;
-};
-
-export type ReportHistoryDetail = {
-  id: string;
-  report: FullReport;
-  userName: string;
-  direction: string;
-  generatedAt: string;
-};
-
-export function listReportHistory() {
-  return apiFetch<{ reports: ReportHistoryItem[] }>("/api/reports");
-}
-
-export function getReportHistory(id: string) {
-  return apiFetch<ReportHistoryDetail>(`/api/reports/${id}`);
-}
-
-export function deleteReportHistory(id: string) {
-  return apiFetch<{ message: string; id: string }>(`/api/reports/${id}`, { method: "DELETE" });
-}
-
-export function generateFullReport(fitness: FitnessData) {
-  return apiFetch<FullReportResponse>("/api/ai/full-report", {
-    method: "POST",
-    body: JSON.stringify({ fitness }),
-    retries: 5,
-  });
-}
-
-export async function downloadReportPdf(report: FullReport, userName: string): Promise<Blob> {
-  let token = getToken();
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
-  let res = await fetch(`${base}/api/ai/report-pdf`, {
-    method: "POST",
-    headers,
-    credentials: "include",
-    body: JSON.stringify({ report, userName }),
-  });
-  if (token && res.status === 401) {
-    token = await refreshAccessToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-      res = await fetch(`${base}/api/ai/report-pdf`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify({ report, userName }),
-      });
-    }
-  }
-  if (!res.ok) {
-    throw new ApiError("PDF generation failed", res.status);
-  }
-  return res.blob();
+  return (
+    String(title || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[/\\]+/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/[^\u0590-\u05FFa-z0-9-]+/gi, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "role"
+  );
 }
 
 // ── Admin ───────────────────────────────────────────────────────────────────
@@ -858,13 +1016,10 @@ export function getBlockedIps() {
 }
 
 export function blockIpRequest(ip: string, reason?: string) {
-  return apiFetch<{ message: string; blockedIp: BlockedIpRow }>(
-    "/api/admin/security/blocked-ips",
-    {
-      method: "POST",
-      body: JSON.stringify({ ip, reason: reason || "" }),
-    },
-  );
+  return apiFetch<{ message: string; blockedIp: BlockedIpRow }>("/api/admin/security/blocked-ips", {
+    method: "POST",
+    body: JSON.stringify({ ip, reason: reason || "" }),
+  });
 }
 
 export function unblockIpRequest(id: string) {

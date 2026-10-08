@@ -30,7 +30,7 @@ const aiUsageLogSchema = new mongoose.Schema(
     durationMs: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
-      enum: ["success", "parse_error", "api_error", "cache_hit"],
+      enum: ["success", "parse_error", "api_error", "persistence_error", "cache_hit"],
       default: "success",
     },
     finishReason: { type: String, default: null },

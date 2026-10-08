@@ -8,14 +8,16 @@ import profileRoutes from "./routes/profile.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import aiRoutes from "./routes/ai.js";
 import adminRoutes from "./routes/admin.js";
-import reportsRoutes from "./routes/reports.js";
 import rolesRoutes from "./routes/roles.js";
+import assessmentsRoutes from "./routes/assessments.js";
+import paymentRoutes from "./routes/payments.js";
+import paymentWebhookRoutes from "./routes/paymentWebhooks.js";
 import { isEmailConfigured, isResendConfigured } from "./utils/email.js";
 import { hasHealthToken, runDeepHealth } from "./utils/deepHealth.js";
 import { getDailyStats } from "./utils/dailyStats.js";
 import { corsOptions } from "./utils/corsOptions.js";
 import { SITE_NAME_EN, SITE_NAME_HE } from "./utils/brand.js";
-import { apiLimiter } from "./middleware/rateLimit.js";
+import { apiLimiter, growWebhookLimiter } from "./middleware/rateLimit.js";
 import { requireEnv, requireProductionEnv } from "./utils/requireEnv.js";
 import { rejectOversizedUrl, jsonErrorHandler } from "./middleware/rejectMalformed.js";
 import { ipBlockGuard, refreshBlockedIpCache } from "./middleware/ipBlock.js";
@@ -42,6 +44,7 @@ app.use(rejectOversizedUrl);
 app.use(ipBlockGuard);
 app.use(suspiciousPathGuard);
 app.use(cors(corsOptions()));
+app.use("/api/payments/webhooks/grow", growWebhookLimiter, paymentWebhookRoutes);
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 app.use("/api", apiLimiter);
 
@@ -63,8 +66,9 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/reports", reportsRoutes);
 app.use("/api/roles", rolesRoutes);
+app.use("/api/assessments", assessmentsRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
@@ -105,11 +109,11 @@ async function start() {
     console.log(`App:  http://localhost:8080/  (npm run dev in repo root)`);
     if (isEmailConfigured()) {
       console.log(
-        `[email] ${isResendConfigured() ? "Resend" : "SMTP"} מוגדר — קודי OTP יישלחו באימייל.`
+        `[email] ${isResendConfigured() ? "Resend" : "SMTP"} מוגדר — קודי OTP יישלחו באימייל.`,
       );
     } else {
       console.warn(
-        "[email] אין ערוץ שליחה (RESEND_API_KEY או SMTP_HOST/SMTP_USER/SMTP_PASS ב־server/.env). קודי OTP לא יישלחו במייל; בפיתוח הקוד מודפס ללוג השרת בלבד."
+        "[email] אין ערוץ שליחה (RESEND_API_KEY או SMTP_HOST/SMTP_USER/SMTP_PASS ב־server/.env). קודי OTP לא יישלחו במייל; בפיתוח הקוד מודפס ללוג השרת בלבד.",
       );
     }
   });

@@ -44,7 +44,10 @@ async function checkOpenAI() {
   if (res.ok) return { ok: true, detail: "key accepted" };
   const body = await res.json().catch(() => ({}));
 
-  return { ok: false, detail: `HTTP ${res.status} ${body?.error?.code || body?.error?.message || ""}`.trim() };
+  return {
+    ok: false,
+    detail: `HTTP ${res.status} ${body?.error?.code || body?.error?.message || ""}`.trim(),
+  };
 }
 
 /**
@@ -53,7 +56,10 @@ async function checkOpenAI() {
  */
 async function checkOpenAIRecent() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const last = await AiUsageLog.findOne({ status: { $in: ["success", "api_error"] }, createdAt: { $gte: since } })
+  const last = await AiUsageLog.findOne({
+    status: { $in: ["success", "api_error"] },
+    createdAt: { $gte: since },
+  })
     .sort({ createdAt: -1 })
     .select("status errorMessage endpoint createdAt")
     .lean();
@@ -62,7 +68,10 @@ async function checkOpenAIRecent() {
 
   return last.status === "success"
     ? { ok: true, detail: `last real request succeeded ${ago}` }
-    : { ok: false, detail: `last real request FAILED ${ago} (${last.endpoint}): ${last.errorMessage || "unknown error"}` };
+    : {
+        ok: false,
+        detail: `last real request FAILED ${ago} (${last.endpoint}): ${last.errorMessage || "unknown error"}`,
+      };
 }
 
 function checkPayments() {
@@ -72,6 +81,14 @@ function checkPayments() {
     return missing.length
       ? { ok: false, detail: `grow: missing ${missing.join(", ")}` }
       : { ok: true, detail: `grow (${trimEnv("GROW_ENV") || "test"})` };
+  }
+  if (provider === "grow_link") {
+    const missing = ["GROW_PAYMENT_LINK_URL", "GROW_LINK_WEBHOOK_SECRET"].filter(
+      (k) => !trimEnv(k),
+    );
+    return missing.length
+      ? { ok: false, detail: `grow_link: missing ${missing.join(", ")}` }
+      : { ok: true, detail: "grow_link (payment page + webhook)" };
   }
 
   return { ok: true, detail: `${provider} (no real charges)` };
