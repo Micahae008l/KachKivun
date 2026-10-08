@@ -116,17 +116,16 @@ function escapeHtml(value) {
 }
 
 /**
- * Build OTP HTML.
- * Note: Gmail/Outlook block JS — no real clipboard API.
- * We use user-select:all so one click/tap selects the whole code for copy,
- * plus a large tap target and clear Hebrew hint.
- * Digits stay continuous (letter-spacing only) so paste into the OTP field works.
+ * Minimal OTP email, matching the site's code screen: brand, title, the code, validity, footer.
+ * Gmail/Outlook block JS, so the code wrapper uses user-select:all: one tap selects all six digits.
+ * The 3+3 split is a margin, not a character, so a copy still pastes as six digits.
  */
-function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
+export function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
   const safeName = escapeHtml(siteName);
-  const safeCode = escapeHtml(String(code));
-  const year = new Date().getFullYear();
-  const loginHref = appUrl ? escapeHtml(appUrl.replace(/\/$/, "") + "/post-signup") : "";
+  const digits = String(code).replace(/\D/g, "");
+  const first = escapeHtml(digits.slice(0, 3));
+  const second = escapeHtml(digits.slice(3));
+  const siteHref = appUrl ? escapeHtml(appUrl.replace(/\/$/, "")) : "";
 
   return `<!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -135,71 +134,34 @@ function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
   <meta name="supported-color-schemes" content="dark" />
-  <title>קוד הכניסה שלך</title>
+  <title>קוד הכניסה שלכם</title>
 </head>
 <body style="margin:0;padding:0;background:${C.bg};-webkit-text-size-adjust:100%;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
-    קוד הכניסה שלך ל${safeName}: ${safeCode}. תקף ל־${ttlMinutes} דקות.
+    ${escapeHtml(digits)} הוא הקוד שלכם. תקף ל־${ttlMinutes} דקות.
   </div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.bg};padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.bg};padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background:${C.card};border:1px solid ${C.border};border-radius:16px;overflow:hidden;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:420px;background:${C.card};border:1px solid ${C.border};border-radius:14px;">
           <tr>
-            <td style="height:4px;background:${C.olive};font-size:0;line-height:0;">&nbsp;</td>
-          </tr>
-          <tr>
-            <td style="padding:36px 28px 28px;font-family:Arial,Helvetica,sans-serif;color:${C.text};text-align:center;" dir="rtl">
-              <p style="margin:0 0 6px;font-size:13px;letter-spacing:0.12em;color:${C.olive};font-weight:700;">
-                ${safeName}
-              </p>
-              <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;font-weight:700;color:${C.white};">
-                קוד הכניסה שלך
-              </h1>
-              <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:${C.muted};">
-                הזינו את הקוד במסך ההתחברות. הקוד חד־פעמי ותקף ל־${ttlMinutes} דקות.
-              </p>
-
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;">
-                <tr>
-                  <td align="center" style="background:${C.codeBg};border:1px solid ${C.codeBorder};border-radius:12px;padding:22px 16px;">
-                    <p style="margin:0 0 10px;font-size:12px;color:${C.muted};">
-                      לחצו על הקוד כדי לסמן אותו — ואז העתיקו
-                    </p>
-                    <a href="#otp-code" id="otp-code" style="display:inline-block;font-family:'Courier New',Consolas,monospace;font-size:36px;font-weight:700;letter-spacing:0.35em;line-height:1.2;color:${C.white};text-decoration:none;direction:ltr;-webkit-user-select:all;-moz-user-select:all;user-select:all;cursor:pointer;padding:4px 8px 4px 18px;">${safeCode}</a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin:0 0 24px;font-size:13px;line-height:1.5;color:${C.muted};">
-                בטלפון: לחיצה ארוכה על הקוד ← העתקה · במחשב: לחיצה אחת ← Ctrl+C / ⌘C
-              </p>
-
-              ${
-                loginHref
-                  ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 24px;">
-                <tr>
-                  <td align="center" style="border-radius:10px;background:${C.olive};">
-                    <a href="${loginHref}" style="display:inline-block;padding:12px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:${C.white};text-decoration:none;border-radius:10px;">
-                      חזרה להתחברות
-                    </a>
-                  </td>
-                </tr>
-              </table>`
-                  : ""
-              }
-
-              <p style="margin:0;font-size:12px;line-height:1.55;color:${C.muted};">
-                לא ביקשתם קוד? התעלמו מהמייל — אל תשתפו את הקוד עם אף אחד.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:16px 28px 22px;border-top:1px solid ${C.border};font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${C.muted};text-align:center;" dir="rtl">
-              © ${year} ${safeName}
+            <td style="padding:36px 28px 32px;font-family:Arial,Helvetica,sans-serif;text-align:center;" dir="rtl">
+              <p style="margin:0 0 28px;font-size:14px;font-weight:700;color:${C.olive};">${safeName}</p>
+              <h1 style="margin:0 0 24px;font-size:22px;line-height:1.3;font-weight:700;color:${C.white};">קוד הכניסה שלכם</h1>
+              <div style="direction:ltr;-webkit-user-select:all;-moz-user-select:all;user-select:all;cursor:pointer;font-family:'SF Mono',Menlo,Consolas,'Courier New',monospace;font-size:38px;font-weight:700;letter-spacing:0.18em;line-height:1;color:${C.white};padding:20px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border};">
+                <span>${first}</span><span style="margin-left:18px;">${second}</span>
+              </div>
+              <p style="margin:20px 0 0;font-size:14px;line-height:1.6;color:${C.muted};">תקף ל־${ttlMinutes} דקות, לשימוש חד־פעמי.</p>
             </td>
           </tr>
         </table>
+        <p style="margin:20px 0 0;max-width:420px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.muted};text-align:center;" dir="rtl">
+          לא ביקשתם קוד? אפשר להתעלם מהמייל. אל תשתפו את הקוד עם אף אחד.${
+            siteHref
+              ? `<br /><a href="${siteHref}" style="color:${C.muted};text-decoration:underline;">${safeName}</a>`
+              : ""
+          }
+        </p>
       </td>
     </tr>
   </table>
@@ -209,18 +171,15 @@ function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
 
 function buildOtpText({ siteName, code, ttlMinutes, appUrl }) {
   const lines = [
-    `קוד הכניסה שלך ל${siteName}:`,
+    `קוד הכניסה שלכם ל${siteName}:`,
     "",
     code,
     "",
-    `הקוד תקף ל־${ttlMinutes} דקות.`,
-    "העתיקו את הקוד והדביקו במסך ההתחברות.",
+    `תקף ל־${ttlMinutes} דקות, לשימוש חד־פעמי.`,
     "",
-    "לא ביקשתם קוד? התעלמו מהמייל.",
+    "לא ביקשתם קוד? אפשר להתעלם מהמייל.",
   ];
-  if (appUrl) {
-    lines.push("", `התחברות: ${appUrl.replace(/\/$/, "")}/post-signup`);
-  }
+  if (appUrl) lines.push("", appUrl.replace(/\/$/, ""));
   return lines.join("\n");
 }
 
@@ -228,7 +187,7 @@ export async function sendOtpEmail(email, code) {
   const appUrl = trimEnv("FRONTEND_URL");
 
   // Code first in subject → iOS/Android notification often shows it for one-tap fill/copy
-  const subject = `${code} הוא קוד הכניסה שלך ל${SITE_NAME_HE}`;
+  const subject = `${code} הוא קוד הכניסה שלכם ל${SITE_NAME_HE}`;
   const text = buildOtpText({ siteName: SITE_NAME_HE, code, ttlMinutes: OTP_TTL_MINUTES, appUrl });
   const html = buildOtpHtml({ siteName: SITE_NAME_HE, code, ttlMinutes: OTP_TTL_MINUTES, appUrl });
 
