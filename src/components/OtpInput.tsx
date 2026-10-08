@@ -122,7 +122,7 @@ export function OtpInput({
       <legend id={legendId} className="sr-only">
         קוד אימות בן {length} ספרות
       </legend>
-      <div dir="ltr" className="mx-auto flex w-fit max-w-full flex-wrap justify-center gap-2 sm:gap-2.5">
+      <div dir="ltr" className="mx-auto flex w-fit max-w-full justify-center gap-2">
         {digits.map((digit, index) => (
           <input
             key={index}
@@ -137,7 +137,15 @@ export function OtpInput({
             value={digit}
             disabled={disabled}
             aria-label={`ספרה ${index + 1} מתוך ${length}`}
-            className={`input-field input-field--otp h-12 font-mono text-xl font-bold tabular-nums sm:h-14 sm:text-2xl${invalid ? " input-field--invalid" : ""}`}
+            className={`h-14 w-10 rounded-md border bg-card text-center font-mono text-2xl font-bold tabular-nums text-foreground caret-primary outline-none transition-[border-color,box-shadow,background-color] duration-150 focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:opacity-60 sm:w-12 ${
+              index === length / 2 ? "ml-2.5" : ""
+            } ${
+              invalid
+                ? "border-destructive"
+                : digit
+                  ? "border-primary/60 bg-primary/5"
+                  : "border-iron/35"
+            }`}
             onChange={(e) => handleDigitChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onFocus={(e) => e.target.select()}

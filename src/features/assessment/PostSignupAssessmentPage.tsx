@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { FormField } from "@/components/FormField";
+import { OtpInput } from "@/components/OtpInput";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { KachKivunLogo } from "@/components/KachKivunLogo";
 import {
@@ -168,9 +169,9 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
     subtitle: "אימייל אחד, בלי סיסמה. נשלח קוד חד־פעמי.",
   },
   otp: {
-    icon: Shield,
-    title: "השלב האחרון",
-    subtitle: "הזינו את הקוד כדי לשמור את ההערכה בחשבון.",
+    icon: Mail,
+    title: "בדקו את המייל",
+    subtitle: "שלחנו אליכם קוד בן 6 ספרות.",
   },
 };
 
@@ -850,7 +851,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                 aria-hidden
               />
             </div>
-            {!loginIntent ? (
+            {!loginIntent && !isAuthStep ? (
               <p className="mt-2 text-[11px] leading-4 text-dust">
                 מספר השלבים והזמן מתעדכנים לפי התשובות · נותרו {remainingTimeLabel(remainingEffort)}
               </p>
@@ -918,44 +919,44 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
 
               {currentStep === "otp" ? (
-                <div className="mx-auto max-w-md space-y-5">
-                  <p className="text-center text-sm text-dust">
-                    הקוד נשלח ל־
+                <div className="mx-auto max-w-sm space-y-6 text-center">
+                  <p className="text-sm text-dust">
                     <span className="font-medium text-foreground" dir="ltr">
                       {email}
                     </span>
+                    <span aria-hidden> · </span>
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={goBack}
+                      className="font-semibold text-primary hover:underline disabled:opacity-50"
+                    >
+                      שינוי
+                    </button>
                   </p>
                   {devOtpHint ? (
-                    <p
-                      className="border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm text-primary"
-                      dir="ltr"
-                    >
+                    <p className="text-xs text-primary" dir="ltr">
                       קוד פיתוח: <strong className="font-mono tracking-widest">{devOtpHint}</strong>
                     </p>
                   ) : null}
-                  <FormField label="קוד אימות בן 6 ספרות" error={authErrors.code}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      value={code}
-                      onChange={(event) => {
-                        const next = normalizeOtp(event.target.value);
-                        setCode(next);
-                        clearAuthError("code");
-                        // The 6th digit submits; no extra tap needed.
-                        if (next.length === 6 && !loading && !otpVerified) void verifyCode(next);
-                      }}
-                      placeholder="000000"
-                      disabled={loading || otpVerified}
-                      dir="ltr"
-                      className="input-field text-center font-mono text-2xl font-bold tracking-[0.35em]"
-                    />
-                  </FormField>
-                  {!legacyMode ? (
-                    <p className="text-center text-xs leading-5 text-dust">
-                      הטיוטה המלאה נשמרת במכשיר ולא תימחק עד שהשמירה בשרת תצליח.
+                  <OtpInput
+                    value={code}
+                    onChange={(next) => {
+                      setCode(next);
+                      clearAuthError("code");
+                      // The 6th digit submits; no extra tap needed.
+                      if (next.length === 6 && !loading && !otpVerified) void verifyCode(next);
+                    }}
+                    disabled={loading || otpVerified}
+                    invalid={Boolean(authErrors.code)}
+                  />
+                  {authErrors.code ? (
+                    <p role="alert" className="text-sm text-destructive">
+                      {authErrors.code}
+                    </p>
+                  ) : loading ? (
+                    <p className="text-sm text-dust" aria-live="polite">
+                      מאמתים…
                     </p>
                   ) : null}
                   {!otpVerified ? (
@@ -966,9 +967,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                         setCode("");
                         void sendCode();
                       }}
-                      className="block w-full text-center text-sm text-primary hover:underline disabled:opacity-50"
+                      className="text-sm text-dust underline-offset-4 transition-colors hover:text-foreground hover:underline disabled:opacity-50"
                     >
-                      לא קיבלתם? שלחו קוד חדש
+                      לא הגיע? שלחו שוב
                     </button>
                   ) : null}
                 </div>
