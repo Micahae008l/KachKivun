@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   BookOpen,
@@ -14,6 +14,7 @@ import {
   MapPin,
   Shield,
   Sparkles,
+  Trophy,
   Users,
   Waves,
 } from "lucide-react";
@@ -76,7 +77,11 @@ function ScoreBreakdownPanel({
                 className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-iron/20"
                 {...progressBarProps(value, `${label}: ${value}%`)}
               >
-                <div className="h-full bg-primary" style={{ width: `${value}%` }} aria-hidden />
+                <div
+                  className="animate-progress h-full bg-primary"
+                  style={{ width: `${value}%` }}
+                  aria-hidden
+                />
               </div>
             </li>
           );
@@ -86,16 +91,23 @@ function ScoreBreakdownPanel({
   );
 }
 
-function MatchRing({ percentage }: { percentage: number }) {
+function MatchRing({
+  percentage,
+  size = 72,
+  delayMs = 0,
+}: {
+  percentage: number;
+  size?: number;
+  delayMs?: number;
+}) {
   const value = Math.min(100, Math.max(0, Math.round(percentage)));
-  const size = 72;
-  const stroke = 5;
+  const stroke = size > 80 ? 7 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <div className="relative h-[72px] w-[72px] shrink-0">
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
           cx={size / 2}
@@ -114,9 +126,15 @@ function MatchRing({ percentage }: { percentage: number }) {
           stroke="currentColor"
           strokeWidth={stroke}
           strokeLinecap="round"
-          className="text-primary"
+          className="animate-ring text-primary"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
+          style={
+            {
+              "--ring-from": circumference,
+              animationDelay: `${delayMs + 150}ms`,
+            } as CSSProperties
+          }
         />
       </svg>
       <div
@@ -124,63 +142,149 @@ function MatchRing({ percentage }: { percentage: number }) {
         role="img"
         aria-label={ARIA.matchPct(value)}
       >
-        <span className="text-lg font-black text-foreground">{value}</span>
-        <span className="text-[9px] text-dust">%</span>
+        <span className={`font-black text-foreground ${size > 80 ? "text-2xl" : "text-lg"}`}>
+          {value}
+        </span>
+        <span className="text-[9px] text-dust">% התאמה</span>
       </div>
     </div>
   );
 }
 
-function LockedRoleCard({ role }: { role: LockedRoleMatch }) {
+function RankBadge({ rank, featured }: { rank: number; featured: boolean }) {
+  if (featured) {
+    return (
+      <p className="inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-1 text-xs font-black text-primary-foreground">
+        <Trophy className="h-3.5 w-3.5" aria-hidden />
+        מקום 1 · הכי מתאים לכם
+      </p>
+    );
+  }
+  return <p className="font-mono text-xs font-bold text-primary">מקום {rank}</p>;
+}
+
+function LockedRoleCard({ role, delayMs }: { role: LockedRoleMatch; delayMs: number }) {
   const headingId = useId();
+  const featured = role.rank === 1;
   return (
     <article
-      className="relative overflow-hidden border border-iron/30 bg-card p-6 text-right"
+      className={`animate-slide-up relative h-full overflow-hidden p-6 text-right ${
+        featured
+          ? "animate-top-glow border border-primary/60 bg-primary/5"
+          : "border border-iron/30 bg-card"
+      }`}
+      style={{ animationDelay: `${delayMs}ms` }}
       dir="rtl"
       aria-labelledby={headingId}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-35" aria-hidden>
-        <div className="absolute right-6 top-16 h-4 w-2/3 rounded-sm bg-iron/25 blur-[2px]" />
-        <div className="absolute right-6 top-24 h-3 w-1/2 rounded-sm bg-iron/20 blur-[2px]" />
-      </div>
-      <div className="relative flex min-h-28 items-start justify-between gap-5">
-        <div>
-          <p className="font-mono text-xs font-bold text-primary">מקום {role.rank}</p>
+      <div className="relative flex items-start justify-between gap-5">
+        <div className="min-w-0">
+          <RankBadge rank={role.rank} featured={featured} />
           <h3
             id={headingId}
             className="mt-3 flex items-center gap-2 text-base font-black text-foreground"
           >
             <Lock className="h-4 w-4 text-dust" aria-hidden />
-            ההתאמה נעולה
+            {featured ? "התפקיד שהכי מתאים לכם נעול" : "ההתאמה נעולה"}
           </h3>
-          <p className="mt-2 max-w-sm text-sm leading-6 text-dust">
-            שם התפקיד, ההסבר והנתונים אינם נשלחים לחשבון ללא הרשאה.
-          </p>
+          <div className="mt-3 space-y-2 opacity-50" aria-hidden>
+            <div className="h-4 w-40 rounded-sm bg-iron/30 blur-[3px]" />
+            <div className="h-3 w-56 max-w-full rounded-sm bg-iron/20 blur-[3px]" />
+            <div className="h-3 w-32 rounded-sm bg-iron/20 blur-[3px]" />
+          </div>
         </div>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-iron/30 bg-background/50">
-          <Lock className="h-5 w-5 text-dust" aria-hidden />
-        </div>
+        <MatchRing percentage={role.matchPercentage} size={featured ? 96 : 72} delayMs={delayMs} />
       </div>
     </article>
   );
 }
 
-function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: IdfPhoto | null }) {
+function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
+  const hasFacts =
+    role.requirements.length > 0 || role.locations.length > 0 || Boolean(role.serviceLengthLabel);
+  if (!hasFacts) {
+    return (
+      <p className="text-xs text-dust">
+        אין עדיין נתונים רשמיים על דרישות ומיקום לתפקיד הזה במאגר.
+      </p>
+    );
+  }
+  return (
+    <section
+      aria-label="נתוני מפתח על התפקיד"
+      className="grid gap-3 rounded-sm border border-iron/25 bg-background/40 p-4 text-sm"
+    >
+      {role.requirements.length ? (
+        <div className="flex items-start gap-2.5">
+          <ListChecks className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0">
+            <h4 className="text-xs font-bold text-dust">דרישות ותנאים</h4>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {role.requirements.map((requirement) => (
+                <li
+                  key={requirement}
+                  className="border border-iron/30 bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-foreground"
+                >
+                  {requirement}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
+      {role.serviceLengthLabel ? (
+        <div className="flex items-start gap-2.5">
+          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <div>
+            <h4 className="text-xs font-bold text-dust">משך שירות</h4>
+            <p className="mt-0.5 text-foreground">{role.serviceLengthLabel}</p>
+          </div>
+        </div>
+      ) : null}
+      {role.locations.length ? (
+        <div className="flex items-start gap-2.5">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <div>
+            <h4 className="text-xs font-bold text-dust">איפה משרתים</h4>
+            <p className="mt-0.5 text-foreground">{role.locations.join(" · ")}</p>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function UnlockedRoleCard({
+  role,
+  photo,
+  delayMs,
+}: {
+  role: UnlockedRoleMatch;
+  photo: IdfPhoto | null;
+  delayMs: number;
+}) {
   const [expanded, setExpanded] = useState(false);
   const headingId = useId();
   const detailsId = useId();
-  const knownServiceData =
-    role.requirements.length > 0 || role.locations.length > 0 || Boolean(role.serviceLengthLabel);
+  const featured = role.rank === 1;
+  const why = role.description || role.summary;
 
   return (
     <article
-      className="overflow-hidden border border-iron/30 bg-card text-right"
+      className={`animate-slide-up overflow-hidden bg-card text-right ${
+        featured ? "animate-top-glow border border-primary/60" : "border border-iron/30"
+      }`}
+      style={{ animationDelay: `${delayMs}ms` }}
       dir="rtl"
       aria-labelledby={headingId}
     >
-      <div className={photo ? "grid md:grid-cols-[180px_1fr]" : ""}>
+      <div
+        className={
+          photo ? `grid ${featured ? "md:grid-cols-[240px_1fr]" : "md:grid-cols-[180px_1fr]"}` : ""
+        }
+      >
         {photo ? (
-          <div className="relative min-h-40 overflow-hidden">
+          <div className={`relative overflow-hidden ${featured ? "min-h-52" : "min-h-40"}`}>
             <img
               src={photo.src}
               alt={photo.alt}
@@ -197,32 +301,39 @@ function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: Idf
         <div className="space-y-5 p-5 sm:p-7">
           <header className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="font-mono text-xs font-bold text-primary">מקום {role.rank}</p>
-              <h3 id={headingId} className="mt-1 text-xl font-black text-foreground">
+              <RankBadge rank={role.rank} featured={featured} />
+              <h3
+                id={headingId}
+                className={`mt-2 font-black text-foreground ${featured ? "text-2xl sm:text-3xl" : "text-xl"}`}
+              >
                 {role.roleTitle}
               </h3>
               {role.category ? (
-                <p className="mt-1 text-xs text-dust">תחום: {role.category}</p>
+                <p className="mt-1 text-xs text-dust">
+                  {role.category}
+                  {role.combat ? " · קרבי" : ""}
+                </p>
               ) : null}
             </div>
-            <MatchRing percentage={role.matchPercentage} />
+            <MatchRing
+              percentage={role.matchPercentage}
+              size={featured ? 96 : 72}
+              delayMs={delayMs}
+            />
           </header>
 
-          <section aria-label="סיכום היועץ">
-            <p className="mb-1 font-mono text-[10px] tracking-widest text-dust uppercase">
-              סיכום AI
-            </p>
-            <p className="text-sm leading-6 text-foreground/95">
-              {role.summary || "לא סופק תקציר נפרד להתאמה זו."}
-            </p>
-          </section>
-
-          <section aria-label="גורמי התאמה">
-            <p className="mb-2 font-mono text-[10px] tracking-widest text-dust uppercase">
-              גורמי התאמה
+          <section aria-labelledby={`${detailsId}-why`} className="border-r-2 border-primary pr-4">
+            <h4 id={`${detailsId}-why`} className="text-sm font-black text-primary">
+              למה זה מתאים לכם
+            </h4>
+            {role.summary && role.description ? (
+              <p className="mt-1.5 text-base font-bold leading-7 text-foreground">{role.summary}</p>
+            ) : null}
+            <p className="mt-1.5 max-w-prose text-[15px] leading-7 text-foreground/85">
+              {why || "לא סופק הסבר להתאמה זו."}
             </p>
             {role.tags.length ? (
-              <ul className="flex flex-wrap gap-2" aria-label="תגיות התאמה">
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label="מה בפרופיל שלכם תומך בהתאמה">
                 {role.tags.map((tag) => {
                   const Icon = tagIcon(tag);
                   return (
@@ -236,22 +347,20 @@ function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: Idf
                   );
                 })}
               </ul>
-            ) : (
-              <p className="text-xs text-dust">לא סופקו תגיות התאמה.</p>
-            )}
+            ) : null}
           </section>
 
+          <KeyFacts role={role} />
+
           {role.dayToDay ? (
-            <section className="border-r-2 border-primary/45 pr-3" aria-label="יום בתפקיד">
+            <section aria-label="יום בתפקיד">
               <div className="mb-1 flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-primary" aria-hidden />
                 <h4 className="text-sm font-bold text-foreground">מה עושים ביום־יום</h4>
               </div>
-              <p className="text-sm leading-6 text-dust">{role.dayToDay}</p>
+              <p className="max-w-prose text-sm leading-6 text-dust">{role.dayToDay}</p>
             </section>
-          ) : (
-            <p className="text-xs text-dust">לא הועבר מידע מובנה על שגרת היום־יום.</p>
-          )}
+          ) : null}
 
           <div>
             <button
@@ -266,7 +375,7 @@ function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: Idf
               aria-expanded={expanded}
               aria-controls={detailsId}
             >
-              {expanded ? "הסתרת פירוט היועץ" : "פתיחת כל פירוט היועץ"}
+              {expanded ? "הסתרה" : "פירוט הציון ושאלות להמשך"}
               <ChevronDown
                 className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
                 aria-hidden
@@ -274,78 +383,19 @@ function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: Idf
             </button>
 
             {expanded ? (
-              <div id={detailsId} className="mt-4 space-y-5 border-t border-iron/20 pt-5">
+              <div
+                id={detailsId}
+                className="animate-fade-in mt-4 space-y-5 border-t border-iron/20 pt-5"
+              >
                 {role.scoreBreakdown ? (
                   <ScoreBreakdownPanel breakdown={role.scoreBreakdown} />
                 ) : null}
-
-                <section aria-labelledby={`${detailsId}-explanation`}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <Bot className="h-4 w-4 text-primary" aria-hidden />
-                    <h4
-                      id={`${detailsId}-explanation`}
-                      className="text-sm font-bold text-foreground"
-                    >
-                      הסבר ההתאמה
-                    </h4>
-                  </div>
-                  <p className="text-sm leading-6 text-dust">
-                    {role.description || "לא סופק הסבר נוסף מעבר לתקציר."}
-                  </p>
-                </section>
-
-                <section aria-labelledby={`${detailsId}-service`}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <ListChecks className="h-4 w-4 text-primary" aria-hidden />
-                    <h4 id={`${detailsId}-service`} className="text-sm font-bold text-foreground">
-                      דרישות ונתוני שירות ידועים
-                    </h4>
-                  </div>
-                  {knownServiceData ? (
-                    <dl className="space-y-3 text-sm">
-                      {role.requirements.length ? (
-                        <div>
-                          <dt className="font-semibold text-foreground">דרישות שידועות במאגר</dt>
-                          <dd>
-                            <ul className="mt-1 list-disc space-y-1 pr-5 text-dust">
-                              {role.requirements.map((requirement) => (
-                                <li key={requirement}>{requirement}</li>
-                              ))}
-                            </ul>
-                          </dd>
-                        </div>
-                      ) : null}
-                      {role.serviceLengthLabel ? (
-                        <div className="flex items-start gap-2">
-                          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-                          <div>
-                            <dt className="font-semibold text-foreground">משך שירות</dt>
-                            <dd className="text-dust">{role.serviceLengthLabel}</dd>
-                          </div>
-                        </div>
-                      ) : null}
-                      {role.locations.length ? (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-                          <div>
-                            <dt className="font-semibold text-foreground">מיקומים שידועים במאגר</dt>
-                            <dd className="text-dust">{role.locations.join(" · ")}</dd>
-                          </div>
-                        </div>
-                      ) : null}
-                    </dl>
-                  ) : (
-                    <p className="text-sm leading-6 text-dust">
-                      לא הועברו נתוני דרישות, מיקום או משך שירות מאומתים לתפקיד זה.
-                    </p>
-                  )}
-                </section>
 
                 <section aria-labelledby={`${detailsId}-questions`}>
                   <div className="mb-2 flex items-center gap-2">
                     <CircleHelp className="h-4 w-4 text-primary" aria-hidden />
                     <h4 id={`${detailsId}-questions`} className="text-sm font-bold text-foreground">
-                      שאלות מומלצות להמשך בירור
+                      שאלות לשאול את מיטב (1111) על התפקיד
                     </h4>
                   </div>
                   {role.nextStepPrompts.length ? (
@@ -363,23 +413,18 @@ function UnlockedRoleCard({ role, photo }: { role: UnlockedRoleMatch; photo: Idf
                     <p className="text-sm text-dust">לא סופקו שאלות המשך לתפקיד זה.</p>
                   )}
                 </section>
+
+                <Link
+                  to="/role-insights"
+                  search={{ role: roleInsightSlug(role.roleTitle) }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                >
+                  <BookOpen className="h-3.5 w-3.5" aria-hidden />
+                  מידע כללי נוסף על התפקיד
+                </Link>
               </div>
             ) : null}
           </div>
-
-          <p className="border-t border-iron/20 pt-4 text-xs leading-5 text-dust">
-            ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי הסף, המיונים והנתונים העדכניים נקבעים רק על
-            ידי צה״ל ויש לאמת אותם בערוצים הרשמיים.
-          </p>
-
-          <Link
-            to="/role-insights"
-            search={{ role: roleInsightSlug(role.roleTitle) }}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-          >
-            <BookOpen className="h-3.5 w-3.5" aria-hidden />
-            מידע כללי נוסף על התפקיד (אופציונלי)
-          </Link>
         </div>
       </div>
     </article>
@@ -465,6 +510,19 @@ export function RoleMatchCards({
   const unlockedBeforePaywall =
     firstLockedIndex >= 0 ? ordered.slice(0, firstLockedIndex) : ordered;
   const lockedAfterPaywall = firstLockedIndex >= 0 ? ordered.slice(firstLockedIndex) : [];
+  // Countdown reveal: place 5 appears first, place 1 last.
+  const delayFor = (rank: number) => (5 - rank) * 140;
+
+  const renderCard = (role: RoleMatch) =>
+    role.kind === "role" ? (
+      <UnlockedRoleCard
+        role={role}
+        photo={photos.get(role.rank) ?? null}
+        delayMs={delayFor(role.rank)}
+      />
+    ) : (
+      <LockedRoleCard role={role} delayMs={delayFor(role.rank)} />
+    );
 
   return (
     <section className="space-y-5" aria-labelledby="role-match-results-heading" dir="rtl">
@@ -478,10 +536,10 @@ export function RoleMatchCards({
         <div>
           <p className="font-mono text-[10px] tracking-widest text-primary uppercase">תוצאות</p>
           <h2 id="role-match-results-heading" className="text-xl font-black text-foreground">
-            חמש ההתאמות, ממקום 5 עד מקום 1
+            חמש ההתאמות שלכם
           </h2>
           <p className="mt-1 text-xs leading-5 text-dust">
-            אין השהיות חשיפה: כל תוצאה זמינה מוצגת מיד.
+            מתחילים ממקום 5, וההתאמה הכי חזקה מחכה בסוף.
           </p>
         </div>
       </header>
@@ -489,30 +547,31 @@ export function RoleMatchCards({
       <ol reversed start={5} className="space-y-4 [list-style:none]">
         {unlockedBeforePaywall.map((role) => (
           <li key={`${role.kind}-${role.rank}`} value={role.rank}>
-            {role.kind === "role" ? (
-              <UnlockedRoleCard role={role} photo={photos.get(role.rank) ?? null} />
-            ) : (
-              <LockedRoleCard role={role} />
-            )}
+            {renderCard(role)}
           </li>
         ))}
       </ol>
 
-      {lockedAfterPaywall.length ? <PaywallCta offer={offer} /> : null}
+      {lockedAfterPaywall.length ? (
+        <div className="animate-slide-up" style={{ animationDelay: `${delayFor(2) - 70}ms` }}>
+          <PaywallCta offer={offer} />
+        </div>
+      ) : null}
 
       {lockedAfterPaywall.length ? (
-        <ol reversed start={2} className="grid gap-4 [list-style:none] sm:grid-cols-2">
+        <ol reversed start={2} className="space-y-4 [list-style:none]">
           {lockedAfterPaywall.map((role) => (
             <li key={`${role.kind}-${role.rank}`} value={role.rank}>
-              {role.kind === "locked" ? (
-                <LockedRoleCard role={role} />
-              ) : (
-                <UnlockedRoleCard role={role} photo={photos.get(role.rank) ?? null} />
-              )}
+              {renderCard(role)}
             </li>
           ))}
         </ol>
       ) : null}
+
+      <p className="text-xs leading-5 text-dust">
+        ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי הסף, המיונים והנתונים העדכניים נקבעים רק על ידי
+        צה״ל ויש לאמת אותם בערוצים הרשמיים.
+      </p>
     </section>
   );
 }
