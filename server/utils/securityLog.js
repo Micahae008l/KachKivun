@@ -22,6 +22,7 @@ const SEVERITY_BY_TYPE = {
   suspicious_path: "high",
   not_found_probe: "low",
   blocked_ip_hit: "medium",
+  refresh_token_reuse: "critical",
 };
 
 function clip(value, max) {

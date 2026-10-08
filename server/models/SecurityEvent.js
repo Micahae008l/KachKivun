@@ -13,6 +13,7 @@ export const SECURITY_EVENT_TYPES = [
   "suspicious_path",
   "not_found_probe",
   "blocked_ip_hit",
+  "refresh_token_reuse",
 ];
 
 export const SECURITY_SEVERITIES = ["low", "medium", "high", "critical"];

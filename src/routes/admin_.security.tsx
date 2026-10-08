@@ -65,6 +65,7 @@ const TYPE_LABELS: Record<SecurityEventType, string> = {
   suspicious_path: "סריקת פגיעויות",
   not_found_probe: "בדיקת נתיבים (404)",
   blocked_ip_hit: "בקשה מ־IP חסום",
+  refresh_token_reuse: "שימוש חוזר בטוקן התחברות (גניבה אפשרית)",
 };
 
 const SEVERITY_LABELS: Record<SecuritySeverity, string> = {

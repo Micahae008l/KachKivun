@@ -944,6 +944,7 @@ export type SecurityEventType =
   | "invalid_json"
   | "suspicious_path"
   | "not_found_probe"
+  | "refresh_token_reuse"
   | "blocked_ip_hit";
 
 export type SecuritySeverity = "low" | "medium" | "high" | "critical";

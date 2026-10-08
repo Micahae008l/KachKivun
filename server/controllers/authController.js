@@ -144,6 +144,30 @@ export async function getSession(req, res) {
   }
 }
 
+// Two tabs refreshing at once legitimately send the just-rotated token; only older reuse counts.
+const REFRESH_REUSE_GRACE_MS = 30_000;
+
+/**
+ * A rotated refresh token coming back after the grace window means a copy of it exists
+ * somewhere else (a stolen cookie). Revoke every session of that user so the thief's copy
+ * dies too, and log it for the admin security page.
+ */
+export async function handleRefreshTokenReuse(tokenHash, req, now = Date.now()) {
+  const used = await RefreshToken.findOne({ tokenHash }).select("userId revokedAt replacedByTokenHash");
+  if (!used?.revokedAt || !used.replacedByTokenHash) return false;
+  if (now - used.revokedAt.getTime() < REFRESH_REUSE_GRACE_MS) return false;
+  await RefreshToken.updateMany(
+    { userId: used.userId, revokedAt: null },
+    { $set: { revokedAt: new Date(now) } },
+  );
+  logSecurityEvent("refresh_token_reuse", req, {
+    statusCode: 401,
+    userId: used.userId,
+    message: "rotated refresh token reused; all sessions revoked",
+  });
+  return true;
+}
+
 export async function refreshSession(req, res) {
   try {
     const rawToken = readCookie(req, REFRESH_TOKEN_COOKIE);
@@ -154,13 +178,15 @@ export async function refreshSession(req, res) {
     }
 
     const tokenHash = hashRefreshToken(rawToken);
-    const existing = await RefreshToken.findOne({
-      tokenHash,
-      revokedAt: null,
-      expiresAt: { $gt: new Date() },
-    });
+    // Claim the token atomically so two simultaneous refreshes cannot both rotate it.
+    const existing = await RefreshToken.findOneAndUpdate(
+      { tokenHash, revokedAt: null, expiresAt: { $gt: new Date() } },
+      { $set: { revokedAt: new Date() } },
+      { new: true },
+    );
 
     if (!existing) {
+      await handleRefreshTokenReuse(tokenHash, req);
       clearRefreshCookie(res);
       return res
         .status(401)
@@ -175,7 +201,6 @@ export async function refreshSession(req, res) {
     }
 
     const replacement = await createRefreshTokenSession(user._id, req);
-    existing.revokedAt = new Date();
     existing.replacedByTokenHash = replacement.tokenHash;
     await existing.save();
     res.cookie(REFRESH_TOKEN_COOKIE, replacement.token, refreshCookieOptions());
