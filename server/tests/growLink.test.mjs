@@ -4,6 +4,7 @@ import { getPaymentConfig, validatePaymentEnvironment } from "../services/paymen
 import {
   normalizeGrowLinkWebhook,
   processGrowLinkWebhook,
+  unflattenBracketKeys,
   verifyGrowLinkWebhookSecret,
 } from "../services/payments/growLinkWebhook.js";
 import { createClaimCode } from "../services/payments/paymentService.js";
@@ -151,4 +152,27 @@ test("checkout payload may omit payer details for hosted Grow pages", () => {
   };
   assert.equal(validateCheckout(req).ok, true);
   assert.equal(req.body.payer, null);
+});
+
+test("Grow form posts with bracket keys are read (data[transactionId], data[customFields][cField1])", () => {
+  const evidence = normalizeGrowLinkWebhook({
+    status: "1",
+    "data[statusCode]": "2",
+    "data[transactionId]": "98765",
+    "data[sum]": "10",
+    "data[payerEmail]": "Parent@Example.com",
+    "data[customFields][cField1]": "229dpj",
+  });
+  assert.equal(evidence.transactionId, "98765");
+  assert.equal(evidence.paid, true);
+  assert.equal(evidence.amountMinor, 1000);
+  assert.equal(evidence.payerEmail, "parent@example.com");
+  assert.deepEqual(evidence.claimCodes, ["229DPJ"]);
+});
+
+test("bracket keys cannot reach the prototype", () => {
+  const out = unflattenBracketKeys({ "__proto__[polluted]": "x", "a[constructor][prototype][y]": "z", "b[c]": "1" });
+  assert.equal({}.polluted, undefined);
+  assert.equal(Object.prototype.y, undefined);
+  assert.deepEqual(out, { b: { c: "1" } });
 });

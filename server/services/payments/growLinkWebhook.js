@@ -63,8 +63,33 @@ function collectStrings(value, output, depth = 0) {
  * `webhookKey` / `transactionCode`. Legacy webhooks are only sent for
  * successful charges, so they carry no status code.
  */
+const UNSAFE_KEY_SEGMENTS = new Set(["__proto__", "constructor", "prototype"]);
+
+/**
+ * Grow posts form fields as flat bracket keys ("data[transactionId]", "data[customFields][cField1]").
+ * Rebuild the nesting they describe; keys that try to reach the prototype are dropped.
+ */
+export function unflattenBracketKeys(record) {
+  if (!isRecord(record) || !Object.keys(record).some((key) => key.includes("["))) return record;
+  const out = {};
+  for (const [key, value] of Object.entries(record)) {
+    const match = /^([^[\]]+)((?:\[[^[\]]*\])*)$/.exec(key);
+    const path = match
+      ? [match[1], ...[...match[2].matchAll(/\[([^[\]]*)\]/g)].map((m) => m[1])]
+      : [key];
+    if (path.some((segment) => UNSAFE_KEY_SEGMENTS.has(segment))) continue;
+    let node = out;
+    for (let i = 0; i < path.length - 1; i += 1) {
+      if (!isRecord(node[path[i]])) node[path[i]] = {};
+      node = node[path[i]];
+    }
+    node[path[path.length - 1]] = value;
+  }
+  return out;
+}
+
 export function normalizeGrowLinkWebhook(raw) {
-  const root = parseMaybeJson(raw) || (isRecord(raw) ? raw : {});
+  const root = unflattenBracketKeys(parseMaybeJson(raw) || (isRecord(raw) ? raw : {}));
   const data = parseMaybeJson(root.data) || (isRecord(root.data) ? root.data : null);
   const source = data || root;
   const legacy = !data;
@@ -98,6 +123,8 @@ export function normalizeGrowLinkWebhook(raw) {
     payerEmail: text(source.payerEmail || source.email, 254).toLowerCase(),
     webhookKey: text(root.webhookKey || source.webhookKey, 160),
     claimCodes,
+    // Field names only (never values), so an unexpected shape is diagnosable from the log.
+    fieldNames: [...Object.keys(root), ...(data ? Object.keys(data).map((k) => `data.${k}`) : [])].slice(0, 60),
   };
 }
 
@@ -190,7 +217,7 @@ export async function processGrowLinkWebhook({
     hasEmail: Boolean(evidence.payerEmail),
   };
   if (!evidence.transactionId) {
-    logGrowLink("warn", "ignored: missing transaction id", summary);
+    logGrowLink("warn", "ignored: missing transaction id", { ...summary, fields: evidence.fieldNames });
     return { state: "ignored", reason: "missing_transaction_id" };
   }
   if (!evidence.paid) {
