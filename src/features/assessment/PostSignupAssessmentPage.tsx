@@ -45,7 +45,6 @@ import { getToken, setAuthSession } from "@/lib/auth";
 import { consumeAuthReturnTarget } from "@/lib/auth-return";
 import { SITE_NAME_HE } from "@/lib/brand";
 import { idfPhotoAt } from "@/lib/idf-images";
-import { formatPaymentPrice } from "@/lib/payment-offer";
 import {
   coerceCombat,
   coerceFitness,
@@ -781,7 +780,6 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   const reviewSaves = currentStep === "review" && !authenticated && !loginIntent && !legacyMode;
   const showLoginShortcut = !authenticated && !loginIntent && !isAuthStep && !authedRef.current;
   const photo = idfPhotoAt(currentIndex + 1);
-  const offerPrice = offer ? formatPaymentPrice(offer.product) : "";
 
   return (
     <div dir="rtl" className="relative flex min-h-dvh">
@@ -1072,9 +1070,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             </div>
             {!loginIntent && currentStep === "direction" ? (
               <p className="mt-5 text-xs leading-5 text-dust/80">
-                {offer?.enabled
-                  ? `ההערכה ושלוש ההתאמות במקומות 5 עד 3 בחינם. חשיפת מקומות 2 ו־1 עולה ${offerPrice} בתשלום חד־פעמי, ללא מנוי, כולל מע״מ ככל שחל.`
-                  : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
+                {offer?.enabled ? "ההערכה בחינם." : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
                 ההמלצות אינן רשמיות ואינן מבטיחות זכאות, מיון או שיבוץ בצה״ל.
               </p>
             ) : null}

@@ -1,9 +1,20 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Link } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   BookOpen,
   Briefcase,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Gauge,
   CircleHelp,
   Clock3,
@@ -196,9 +207,11 @@ function LockedRoleCard({ role, delayMs }: { role: LockedRoleMatch; delayMs: num
             id={headingId}
             className="mt-3 flex items-center gap-2 text-base font-black text-foreground"
           >
-            <Lock className="h-4 w-4 text-dust" aria-hidden />
-            {featured ? "התפקיד שהכי מתאים לכם נעול" : "ההתאמה נעולה"}
+            {featured ? "ההתאמה הכי חזקה שלכם" : "התאמה חזקה עוד יותר"}
           </h3>
+          <p className="mt-1 text-xs text-dust">
+            {featured ? "התפקיד שהכי מתאים לכל מה שסיפרתם" : "מעל שלוש ההתאמות שראיתם"}
+          </p>
           <div className="mt-3 space-y-2 opacity-50" aria-hidden>
             <div className="h-4 w-40 rounded-sm bg-iron/30 blur-[3px]" />
             <div className="h-3 w-56 max-w-full rounded-sm bg-iron/20 blur-[3px]" />
@@ -416,22 +429,22 @@ function UnlockedRoleCard({
                 עוד על התפקיד
               </button>
               <button
-              type="button"
-              onClick={() => {
-                if (!expanded && role.rank >= 3 && role.rank <= 5) {
-                  trackEvent("free_role_expanded", { rank: role.rank as 3 | 4 | 5 });
-                }
-                setExpanded((value) => !value);
-              }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-iron/35 px-4 py-2 text-sm font-semibold text-dust transition-colors hover:text-foreground"
-              aria-expanded={expanded}
-              aria-controls={detailsId}
-            >
-              {expanded ? "הסתרה" : "פירוט הציון"}
-              <ChevronDown
-                className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
-                aria-hidden
-              />
+                type="button"
+                onClick={() => {
+                  if (!expanded && role.rank >= 3 && role.rank <= 5) {
+                    trackEvent("free_role_expanded", { rank: role.rank as 3 | 4 | 5 });
+                  }
+                  setExpanded((value) => !value);
+                }}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-iron/35 px-4 py-2 text-sm font-semibold text-dust transition-colors hover:text-foreground"
+                aria-expanded={expanded}
+                aria-controls={detailsId}
+              >
+                {expanded ? "הסתרה" : "פירוט הציון"}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+                  aria-hidden
+                />
               </button>
             </div>
 
@@ -504,11 +517,11 @@ function PaywallCta({ offer }: { offer: PaymentOffer | null | undefined }) {
     >
       <Lock className="mx-auto h-6 w-6 text-primary" aria-hidden />
       <h3 id="top-two-paywall-heading" className="mt-3 text-lg font-black text-foreground">
-        שתי ההתאמות המובילות נשארו
+        רוצים לראות את מקומות 2 ו־1?
       </h3>
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-dust">
-        שלוש ההתאמות שכבר הוצגו נשארות בחינם. {price} סופיים, כולל מע״מ ככל שחל, פותחים את מקומות 2
-        ו־1 לצמיתות בחשבון וגם בחישובים מחדש בעתיד. אין מנוי.
+        תשלום חד־פעמי של {price}, כולל מע״מ ככל שחל. נפתח לצמיתות בחשבון, גם בחישובים הבאים. בלי
+        מנוי.
       </p>
       <Link
         to="/checkout"
@@ -530,6 +543,10 @@ export function RoleMatchCards({
   const topRolesTracked = useRef(false);
   const [infoSlug, setInfoSlug] = useState<string | undefined>(undefined);
   const closeInfo = useCallback(() => setInfoSlug(undefined), []);
+  const [index, setIndex] = useState(0);
+  const [dir, setDir] = useState<1 | -1>(1);
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
   const ordered = useMemo(() => [...roles].sort((left, right) => right.rank - left.rank), [roles]);
   const photos = useMemo(() => {
     const used = new Set<string>();
@@ -539,6 +556,9 @@ export function RoleMatchCards({
         .map((role) => [role.rank, pickRolePhoto(role.tags, role.roleTitle, role.rank, used)]),
     );
   }, [ordered]);
+
+  // A new set of results (a fresh run or one picked from history) starts again at place 5.
+  useEffect(() => setIndex(0), [roles]);
 
   useEffect(() => {
     if (
@@ -552,54 +572,106 @@ export function RoleMatchCards({
 
   if (!ordered.length) return null;
 
-  const firstLockedIndex = ordered.findIndex((role) => role.kind === "locked");
-  const unlockedBeforePaywall =
-    firstLockedIndex >= 0 ? ordered.slice(0, firstLockedIndex) : ordered;
-  const lockedAfterPaywall = firstLockedIndex >= 0 ? ordered.slice(firstLockedIndex) : [];
-  // Countdown reveal: place 5 appears first, place 1 last.
-  const delayFor = (rank: number) => (5 - rank) * 140;
+  const current = ordered[Math.min(index, ordered.length - 1)];
+  const nextRole = ordered[index + 1];
+
+  function go(target: number) {
+    const clamped = Math.max(0, Math.min(ordered.length - 1, target));
+    if (clamped === index) return;
+    setDir(clamped > index ? 1 : -1);
+    setIndex(clamped);
+    sectionRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }
 
   const renderCard = (role: RoleMatch) =>
     role.kind === "role" ? (
       <UnlockedRoleCard
         role={role}
         photo={photos.get(role.rank) ?? null}
-        delayMs={delayFor(role.rank)}
+        delayMs={0}
         onMoreInfo={() => setInfoSlug(roleInsightSlug(role.roleTitle))}
       />
     ) : (
-      <LockedRoleCard role={role} delayMs={delayFor(role.rank)} />
+      <LockedRoleCard role={role} delayMs={0} />
     );
 
   return (
-    <section className="space-y-5" aria-labelledby="role-match-results-heading" dir="rtl">
+    <section
+      ref={sectionRef}
+      className="scroll-mt-20 space-y-4"
+      aria-labelledby="role-match-results-heading"
+      dir="rtl"
+    >
       <h2 id="role-match-results-heading" className="sr-only">
         חמש ההתאמות שלכם
       </h2>
 
-      <ol reversed start={5} className="space-y-4 [list-style:none]">
-        {unlockedBeforePaywall.map((role) => (
-          <li key={`${role.kind}-${role.rank}`} value={role.rank}>
-            {renderCard(role)}
-          </li>
+      <nav aria-label="מעבר בין ההתאמות" className="flex items-center justify-center gap-2">
+        {ordered.map((role, i) => (
+          <button
+            key={`${role.kind}-${role.rank}`}
+            type="button"
+            onClick={() => go(i)}
+            aria-current={i === index ? "step" : undefined}
+            aria-label={`מקום ${role.rank}`}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border font-mono text-sm font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+              i === index
+                ? "border-primary bg-primary text-primary-foreground"
+                : i < index
+                  ? "border-primary/40 text-primary"
+                  : "border-iron/30 text-dust"
+            }`}
+          >
+            {role.rank}
+          </button>
         ))}
-      </ol>
+      </nav>
 
-      {lockedAfterPaywall.length ? (
-        <div className="animate-slide-up" style={{ animationDelay: `${delayFor(2) - 70}ms` }}>
-          <PaywallCta offer={offer} />
-        </div>
-      ) : null}
+      {/* One match at a time, 5 to 1. Swipe right or press "next" to move toward place 1. */}
+      <div className="-mx-1 overflow-x-clip px-1 py-1">
+        <motion.div
+          key={`${current.kind}-${current.rank}`}
+          initial={
+            reduce ? false : { opacity: 0, transform: `translateX(${dir > 0 ? -40 : 40}px)` }
+          }
+          animate={{ opacity: 1, transform: "translateX(0px)" }}
+          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.18}
+          onDragEnd={(_, info) => {
+            if (info.offset.x > 70) go(index + 1);
+            else if (info.offset.x < -70) go(index - 1);
+          }}
+          className="space-y-4"
+        >
+          {renderCard(current)}
+          {/* The payment shows the moment the person reaches a locked place (2 or 1). */}
+          {current.kind === "locked" ? <PaywallCta offer={offer} /> : null}
+        </motion.div>
+      </div>
 
-      {lockedAfterPaywall.length ? (
-        <ol reversed start={2} className="space-y-4 [list-style:none]">
-          {lockedAfterPaywall.map((role) => (
-            <li key={`${role.kind}-${role.rank}`} value={role.rank}>
-              {renderCard(role)}
-            </li>
-          ))}
-        </ol>
-      ) : null}
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => go(index - 1)}
+          disabled={index === 0}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-iron/35 px-4 text-sm font-semibold text-dust transition-colors hover:text-foreground disabled:invisible"
+        >
+          <ChevronRight className="h-4 w-4" aria-hidden />
+          הקודם
+        </button>
+        {nextRole ? (
+          <button
+            type="button"
+            onClick={() => go(index + 1)}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
+          >
+            למקום {nextRole.rank}
+            <ChevronLeft className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
+      </div>
 
       <p className="text-xs leading-5 text-dust">
         ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי הסף, המיונים והנתונים העדכניים נקבעים רק על ידי
