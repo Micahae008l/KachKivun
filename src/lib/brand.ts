@@ -5,7 +5,7 @@ export const SITE_NAME_HE = "קח כיוון";
 export const SITE_NAME_EN = "Kach Kivun";
 
 /** Public support inbox. One place to change it. */
-export const SUPPORT_EMAIL = "mishlahat.idf@gmail.com";
+export const SUPPORT_EMAIL = "support@kachkivun.com";
 
 export const SITE_TAGLINE = "הכנה לשירות בצה״ל, בלי רעש";
 
