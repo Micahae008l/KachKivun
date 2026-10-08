@@ -54,7 +54,8 @@ Shape:
       "adjustment": 0,
       "summary": "one short Hebrew sentence (max ~20 words): the headline reason this fits",
       "description": "2-3 Hebrew sentences meeting the explanation contract",
-      "tags": ["עברית", "עברית"]
+      "tags": ["עברית", "עברית"],
+      "nextStepPrompts": ["1-2 short Hebrew questions the teen can ask מיטב (1111) or the unit about THIS role, e.g. when the next screening window is"]
     }
   ],
   "personalAnswer": "Hebrew string or empty"

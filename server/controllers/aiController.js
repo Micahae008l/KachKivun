@@ -264,8 +264,15 @@ export function finalizeRolesV2(rawRoles, pool) {
       const first = description.split(/(?<=[.!?])\s+/)[0]?.trim();
       summary = first && first.length <= 140 ? first : `${description.slice(0, 120).trim()}…`;
     }
+    const title = poolRole?.roleTitle || roleTitle;
+    const aiPrompts = Array.isArray(r.nextStepPrompts)
+      ? r.nextStepPrompts.map((p) => String(p).trim()).filter(Boolean).slice(0, 3)
+      : [];
+    // Official per-role facts come from the catalog, never from the model.
+    const baseFact =
+      poolRole?.closedBase === true ? "בסיס סגור" : poolRole?.closedBase === false ? "בסיס פתוח" : "";
     return {
-      roleTitle: poolRole?.roleTitle || roleTitle,
+      roleTitle: title,
       matchPercentage: blendPercent(basePercent, r.adjustment),
       scoreBreakdown: poolRole?.scoreBreakdown
         ? sanitizeScoreBreakdown(poolRole.scoreBreakdown)
@@ -273,6 +280,15 @@ export function finalizeRolesV2(rawRoles, pool) {
       summary,
       description,
       tags: Array.isArray(r.tags) ? r.tags.map((t) => String(t).trim()).filter(Boolean).slice(0, 6) : [],
+      nextStepPrompts: aiPrompts.length
+        ? aiPrompts
+        : [`מתי חלון המיונים הבא ל${title}?`, `מה תנאי הקבלה העדכניים ל${title}?`],
+      category: poolRole?.category || "",
+      combat: Boolean(poolRole?.combat),
+      dayToDay: poolRole?.dayToDay || "",
+      requirements: [...(baseFact ? [baseFact] : []), ...(poolRole?.requirements || [])].slice(0, 20),
+      locations: poolRole?.locations || [],
+      serviceLengthLabel: poolRole?.serviceLengthLabel || "",
     };
   });
 
