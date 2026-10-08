@@ -231,7 +231,7 @@ function AboutPage() {
             <div className="relative aspect-square overflow-hidden border-b border-iron/20 lg:aspect-auto lg:min-h-[22rem] lg:border-b-0 lg:border-l lg:border-iron/20">
               <img
                 src="/ceo-michael-haddad.png"
-                alt="מיכאל חדד, מייסד ומנכ״ל קח כיוון"
+                alt="מייקל חדד, מייסד ומנכ״ל קח כיוון"
                 className="h-full w-full object-cover object-[center_20%]"
                 loading="lazy"
                 width={640}
@@ -253,7 +253,7 @@ function AboutPage() {
                 <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
                   CEO / Founder
                 </p>
-                <h3 className="mt-1 text-xl font-bold text-foreground">מיכאל חדד</h3>
+                <h3 className="mt-1 text-xl font-bold text-foreground">מייקל חדד</h3>
                 <p className="mt-0.5 text-sm text-dust">מייסד ומנכ״ל {SITE_NAME_HE}</p>
                 <div className="mt-4 flex flex-wrap items-center justify-start gap-3">
                   <a
@@ -314,7 +314,7 @@ function AboutPage() {
             <ContactCard
               icon={<Linkedin className="h-5 w-5" />}
               title="LinkedIn"
-              body="מיכאל חדד"
+              body="מייקל חדד"
               note="מתחברים ומתעדכנים"
               href={CEO_LINKEDIN}
               external
