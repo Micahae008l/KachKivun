@@ -16,7 +16,7 @@ export function createDefaultAssessmentAnswers(): AssessmentAnswers {
     physicalActivityLevel: "",
     rolesInterested: [],
     rolesAvoided: [],
-    exitsPreference: "",
+    basePreference: "",
     environment: "",
     leadership: "",
     stress: "",

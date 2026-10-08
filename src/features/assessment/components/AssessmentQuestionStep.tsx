@@ -14,7 +14,7 @@ import {
   COMBAT_READINESS_OPTIONS,
   DAPAR_SCORES,
   ENVIRONMENT_OPTIONS,
-  EXIT_OPTIONS,
+  BASE_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
   FOCUS_PREFERENCE_OPTIONS,
   LEADERSHIP_OPTIONS,
@@ -116,13 +116,13 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
     content = (
       <div className="space-y-7">
         <OptionSection
-          legend="איזו מערכת יציאות מתאימה לכם?"
-          hint="הכוונה לתדירות היציאה הביתה לפי התפקיד, לא לאורך השירות."
+          legend="בסיס פתוח או סגור?"
+          hint="צה״ל לא מפרסם מערכת יציאות קבועה לתפקיד; היא משתנה לפי יחידה ומצב ביטחוני. מה שכן מפורסם הוא אם הבסיס פתוח או סגור, ולפי זה נתאים."
         >
           <SingleChoice
-            options={EXIT_OPTIONS}
-            value={answers.exitsPreference}
-            onChange={(exitsPreference) => update({ exitsPreference })}
+            options={BASE_OPTIONS}
+            value={answers.basePreference}
+            onChange={(basePreference) => update({ basePreference })}
             cards
           />
         </OptionSection>

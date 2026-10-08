@@ -149,7 +149,8 @@
       "bestFor": "Good fit for: people/admin, helping soldiers, aviation, drones/remote systems, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes hr, welfare, psychology, interviewing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
+      "closedBase": false
     },
     {
       "roleTitle": "רכז/ת אבטחת מידע",
@@ -191,7 +192,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Official Mitgaisim מפעיל/ת מכלול הגנה קרקעית page"
+      "validationSource": "Official Mitgaisim מפעיל/ת מכלול הגנה קרקעית page",
+      "nightDuty": true
     },
     {
       "roleTitle": "מדריך/ת מערכות כטמ\"ם בסימולטור",
@@ -235,7 +237,8 @@
       "bestFor": "Good fit for: teaching/instruction, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, aviation, drones. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": false
     },
     {
       "roleTitle": "מדריכת סימולטור בחיל האוויר",
@@ -259,7 +262,8 @@
       "bestFor": "Good fit for: teaching/instruction, aviation, drones/remote systems, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, aviation, drones. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "מדריך/ת מערכות נשלטות מרחוק",
@@ -325,7 +329,8 @@
       "bestFor": "Good fit for: drones/remote systems, aviation, ops rooms / live coordination",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes drones, aviation, operations, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Official Mitgaisim מטיס חוץ כטמ\"ם page"
+      "validationSource": "Official Mitgaisim מטיס חוץ כטמ\"ם page",
+      "closedBase": true
     },
     {
       "roleTitle": "לוחם לוחמה אלקטרונית",
@@ -369,7 +374,8 @@
       "bestFor": "Good fit for broad service preferences.",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes service, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "רכז/ת שליטה קרקעית (קשל\"ט)",
@@ -389,7 +395,8 @@
       "bestFor": "Good fit for: ground control coordinators at air bases",
       "aiRecommendationHint": "Suggest when the user likes aviation, operations, war-room, attention-to-detail.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/"
+      "validationSource": "mitgaisim.idf.il/roles/",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול אדרים",
@@ -1482,7 +1489,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination, emergency care",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes service, operations, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official/common military emergency call-center role family"
+      "validationSource": "Official/common military emergency call-center role family",
+      "nightDuty": true
     },
     {
       "roleTitle": "מיישם/ת ERP",
@@ -2618,7 +2626,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
+      "nightDuty": true
     },
     {
       "roleTitle": "מפעיל/ת מערכות רחף",
@@ -2733,7 +2742,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
+      "nightDuty": true
     },
     {
       "roleTitle": "בקר/ית אווירי/ת",
@@ -2784,7 +2794,9 @@
       "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true,
+      "nightDuty": true
     },
     {
       "roleTitle": "עובדת חדר מבצעים בחיל האוויר (פקמ\"צית)",
@@ -2810,7 +2822,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "פקח/ית טיסה",
@@ -2836,7 +2849,8 @@
       "bestFor": "Good fit for: IT/networking, ops rooms / live coordination, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, operations. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
-      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
+      "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
+      "closedBase": true
     },
     {
       "roleTitle": "תצפיתן/ית בגבולות",
@@ -2857,7 +2871,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official observation role family; exact title varies"
+      "validationSource": "Official observation role family; exact title varies",
+      "nightDuty": true
     },
     {
       "roleTitle": "עובד/ת חדר מצב",
@@ -2878,7 +2893,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official/common operations room role family"
+      "validationSource": "Official/common operations room role family",
+      "nightDuty": true
     },
     {
       "roleTitle": "רכז/ת חמ\"ל",
@@ -2899,7 +2915,8 @@
       "bestFor": "Good fit for: ops rooms / live coordination, leadership",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, leadership. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official/common operations room role family"
+      "validationSource": "Official/common operations room role family",
+      "nightDuty": true
     },
     {
       "roleTitle": "בקר/ית יבשתית",
@@ -3006,7 +3023,8 @@
       "bestFor": "Good fit for: research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול אתרוג",
@@ -3090,7 +3108,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, aviation, drones. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול מט\"מ",
@@ -3111,7 +3130,9 @@
       "bestFor": "Good fit for: SIGINT collection and processing in a central אמ\"ן unit",
       "aiRecommendationHint": "Suggest when the user likes intelligence, data, attention-to-detail, operations.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/מסלול-מטמ/"
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-מטמ/",
+      "closedBase": true,
+      "nightDuty": true
     },
     {
       "roleTitle": "מסלול אלקטרוניקה לבוגרי י\"ב עיוני",
@@ -3179,7 +3200,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "חוקרת מודיעין ימי",
@@ -3243,7 +3265,8 @@
       "bestFor": "Good fit for: self-taught computer people without formal CS for אמ\"ן tech units",
       "aiRecommendationHint": "Suggest when the user likes software, it, qa, coding.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/מסלול-אניגמה-מחשבים/"
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-אניגמה-מחשבים/",
+      "closedBase": false
     },
     {
       "roleTitle": "מסלול מומנט",
@@ -3269,7 +3292,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, combat interest, fitness",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math, physics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול ממ\"ש",
@@ -3290,7 +3314,8 @@
       "bestFor": "Good fit for: ops/projects in a leading אמ\"ן cyber unit",
       "aiRecommendationHint": "Suggest when the user likes it, devops, operations, intelligence.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/מסלול-ממש/"
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-ממש/",
+      "closedBase": false
     },
     {
       "roleTitle": "מסלול רומא",
@@ -3311,7 +3336,8 @@
       "bestFor": "Good fit for: 3D/tech support for special forces inside אמ\"ן",
       "aiRecommendationHint": "Suggest when the user likes hardware, physics, coding, operations.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/מסלול-רומא/"
+      "validationSource": "mitgaisim.idf.il/roles/מסלול-רומא/",
+      "closedBase": true
     },
     {
       "roleTitle": "קורס מת\"ן",
@@ -3337,7 +3363,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math, physics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": false
     },
     {
       "roleTitle": "מסלול נץ",
@@ -3383,7 +3410,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, sea/navy environment",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math, physics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": true
     },
     {
       "roleTitle": "אנליסט בטחוני",
@@ -3444,7 +3472,8 @@
       "bestFor": "Good fit for: cyber/spectrum intelligence analysts",
       "aiRecommendationHint": "Suggest when the user likes intelligence, research, cyber, electronics.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/חוקר-מודיעין-טכנולוגי/"
+      "validationSource": "mitgaisim.idf.il/roles/חוקר-מודיעין-טכנולוגי/",
+      "closedBase": false
     },
     {
       "roleTitle": "מש\"ק/ית מודיעין",
@@ -3552,7 +3581,8 @@
       "bestFor": "Good fit for: Arabic, languages/translation, research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes arabic, languages, intelligence. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official/common Intelligence language track; verify current naming in portal"
+      "validationSource": "Official/common Intelligence language track; verify current naming in portal",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול בכיר לדוברי השפה הערבית",
@@ -3574,7 +3604,9 @@
       "bestFor": "Good fit for: Arabic, languages/translation, research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes arabic, languages, intelligence, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_directory_validated",
-      "validationSource": "Mitgaisim role directory lists מסלול בכיר לדוברי השפה הערבית"
+      "validationSource": "Mitgaisim role directory lists מסלול בכיר לדוברי השפה הערבית",
+      "closedBase": true,
+      "nightDuty": true
     },
     {
       "roleTitle": "מסלול בכיר לדוברי השפה הפרסית",
@@ -3595,7 +3627,9 @@
       "bestFor": "Good fit for: native Persian speakers for intelligence collection",
       "aiRecommendationHint": "Suggest when the user likes languages, intelligence, research, attention-to-detail.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/תפקידים/מסלול-בכיר-לדוברי-השפה-הפרסית/"
+      "validationSource": "mitgaisim.idf.il/תפקידים/מסלול-בכיר-לדוברי-השפה-הפרסית/",
+      "closedBase": true,
+      "nightDuty": true
     },
     {
       "roleTitle": "מסלולי ערבית (אלמוג, רשף, קדם)",
@@ -3616,7 +3650,8 @@
       "bestFor": "Good fit for: students with 5 units of Arabic for the אמ\"ן operational core",
       "aiRecommendationHint": "Suggest when the user likes arabic, languages, intelligence, attention-to-detail.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/תפקידים/מסלולי-ערבית/"
+      "validationSource": "mitgaisim.idf.il/תפקידים/מסלולי-ערבית/",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול שחקים",
@@ -3701,7 +3736,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, writing/research",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, writing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_subtrack_validated",
-      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks"
+      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks",
+      "closedBase": false
     },
     {
       "roleTitle": "מסלול שחקים - אמ\"מ",
@@ -3744,7 +3780,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, programming",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, coding, research, math. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_subtrack_validated",
-      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks"
+      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks",
+      "closedBase": true
     },
     {
       "roleTitle": "מסלול שחקים - אע\"מ",
@@ -3808,7 +3845,8 @@
       "bestFor": "Good fit for: research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_subtrack_validated",
-      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks"
+      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks",
+      "closedBase": false
     },
     {
       "roleTitle": "מסלול שחקים - שוב\"ל",
@@ -3851,7 +3889,8 @@
       "bestFor": "Good fit for: research/intelligence thinking, data analysis",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, data. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_subtrack_validated",
-      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks"
+      "validationSource": "Official Mitgaisim Shchakim page lists Shoval, Amnon, Erezim, Shamam, Macha, Acham, Aam, Amam tracks",
+      "closedBase": true
     },
     {
       "roleTitle": "נגן/ית בתזמורת צה\"ל",
@@ -4100,7 +4139,8 @@
       "bestFor": "Good fit for: aviation",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, electronics, hardware. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role family"
+      "validationSource": "Official Air Force technical array role family",
+      "closedBase": true
     },
     {
       "roleTitle": "טכנאי/ת דרג א׳ בחיל האוויר",
@@ -4121,7 +4161,8 @@
       "bestFor": "Good fit for: aviation, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, mechanics, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role family"
+      "validationSource": "Official Air Force technical array role family",
+      "closedBase": true
     },
     {
       "roleTitle": "טכנאי/ת דרג ב׳ בחיל האוויר",
@@ -4142,7 +4183,8 @@
       "bestFor": "Good fit for: aviation, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role family"
+      "validationSource": "Official Air Force technical array role family",
+      "closedBase": true
     },
     {
       "roleTitle": "טכנאי/ת כטמ\"ם",
@@ -4164,7 +4206,8 @@
       "bestFor": "Good fit for: drones/remote systems, hands-on technical work, aviation",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes drones, mechanics, electronics, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role family"
+      "validationSource": "Official Air Force technical array role family",
+      "closedBase": true
     },
     {
       "roleTitle": "טכנאי/ת מטוסים",
@@ -4185,7 +4228,8 @@
       "bestFor": "Good fit for: aviation, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role page describes broad technical roles"
+      "validationSource": "Official Air Force technical array role page describes broad technical roles",
+      "closedBase": true
     },
     {
       "roleTitle": "טכנאי/ת מסוקים",
@@ -4206,7 +4250,8 @@
       "bestFor": "Good fit for: aviation, hands-on technical work",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, mechanics, electronics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official Air Force technical array role family"
+      "validationSource": "Official Air Force technical array role family",
+      "closedBase": true
     },
     {
       "roleTitle": "בודק/ת תוכנה",
@@ -4751,7 +4796,8 @@
       "bestFor": "Good fit for: programming, cybersecurity, research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes coding, software, cyber, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
-      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
+      "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
+      "closedBase": false
     },
     {
       "roleTitle": "מגן/ת סייבר",
@@ -4816,7 +4862,8 @@
       "bestFor": "Good fit for: cybersecurity, IT/networking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes cyber, it, networks, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
-      "validationSource": "Official cyber role family; exact title varies by course/slot"
+      "validationSource": "Official cyber role family; exact title varies by course/slot",
+      "nightDuty": true
     },
     {
       "roleTitle": "מסלול תלפיות",
@@ -6565,7 +6612,8 @@
       "bestFor": "Good fit for: spectrum software developers at פריזמה",
       "aiRecommendationHint": "Suggest when the user likes coding, electronics, physics, software.",
       "validationLevel": "official_public_validated",
-      "validationSource": "mitgaisim.idf.il/roles/פסי-פיתוח-ספקטראלי-ייעודי-מפתח-ספקטרום/"
+      "validationSource": "mitgaisim.idf.il/roles/פסי-פיתוח-ספקטראלי-ייעודי-מפתח-ספקטרום/",
+      "closedBase": false
     },
     {
       "roleTitle": "טכנאי/ת קשר",

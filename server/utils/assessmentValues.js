@@ -52,6 +52,9 @@ export const EXIT_PREFERENCES = [
   "rare",
   "no_preference",
 ];
+// Legacy: the IDF publishes no יציאות per role, so this is no longer asked. Kept to validate old documents.
+// Replaced by BASE_PREFERENCES (בסיס פתוח / סגור), which role pages on mitgaisim do state.
+export const BASE_PREFERENCES = ["open", "closed", "no_preference"];
 export const ENVIRONMENTS = ["office", "field", "mixed", "no_preference"];
 export const LEADERSHIP_PREFERENCES = ["want_lead", "open", "prefer_team"];
 export const STRESS_PREFERENCES = ["high", "moderate", "low"];

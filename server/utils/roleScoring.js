@@ -167,8 +167,8 @@ export function normalizeAssessmentSignals(input) {
   return {
     rolesInterested: sortedUniqueStrings(source.rolesInterested, new Set(["undecided"])),
     rolesAvoided: sortedUniqueStrings(source.rolesAvoided),
-    exitsPreference:
-      typeof source.exitsPreference === "string" ? source.exitsPreference : "",
+    basePreference:
+      typeof source.basePreference === "string" ? source.basePreference : "",
     environment: typeof source.environment === "string" ? source.environment : "",
     leadership: typeof source.leadership === "string" ? source.leadership : "",
     stress: typeof source.stress === "string" ? source.stress : "",
@@ -188,7 +188,7 @@ export function hasStructuredAssessmentSignals(input) {
   return Boolean(
     signals.rolesInterested.length ||
       signals.rolesAvoided.length ||
-      (signals.exitsPreference && signals.exitsPreference !== "no_preference") ||
+      (signals.basePreference && signals.basePreference !== "no_preference") ||
       (signals.environment && signals.environment !== "no_preference") ||
       signals.leadership ||
       signals.stress ||
@@ -322,11 +322,11 @@ function environmentFit(role, signals) {
   return 0.15;
 }
 
-function exitsFit(role, signals) {
-  const wanted = signals.exitsPreference;
-  const actual = Array.isArray(role.exitPatterns) ? role.exitPatterns : [];
-  if (!wanted || wanted === "no_preference" || !actual.length) return null;
-  return actual.includes(wanted) ? 1 : 0.2;
+/** בסיס פתוח / סגור: the one leave-related fact mitgaisim publishes per role. Unknown stays neutral. */
+function baseFit(role, signals) {
+  const wanted = signals.basePreference;
+  if (!wanted || wanted === "no_preference" || typeof role.closedBase !== "boolean") return null;
+  return (wanted === "closed") === role.closedBase ? 1 : 0.25;
 }
 
 function leadershipFit(role, signals) {
@@ -435,7 +435,7 @@ export function structuredAssessmentFit(role, input) {
     interests: interestFit(role, signals),
     avoidances: avoidanceFit(role, signals),
     environment: environmentFit(role, signals),
-    exits: exitsFit(role, signals),
+    base: baseFit(role, signals),
     leadership: leadershipFit(role, signals),
     stress: stressFit(role, signals),
     motivations: motivationFit(role, signals),
@@ -446,7 +446,7 @@ export function structuredAssessmentFit(role, input) {
     interests: 0.26,
     avoidances: 0.2,
     environment: 0.1,
-    exits: 0.06,
+    base: 0.08,
     leadership: 0.1,
     stress: 0.1,
     motivations: 0.08,

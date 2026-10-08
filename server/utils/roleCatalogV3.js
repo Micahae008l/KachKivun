@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 import { getIdfRoleCatalogParsed } from "./idfRoleCatalog.js";
 import { YOM_HAMEAH_KEYS } from "./yomHameahKeys.js";
 import {
-  EXIT_PREFERENCES,
   MOTIVATIONS,
   ROLE_AVOIDANCES,
   ROLE_INTERESTS,
@@ -96,7 +95,6 @@ const OFFICE_TAGS = new Set([
 const HIGH_STRESS_TAGS = new Set(["combat", "emergency", "war-room", "operations", "rescue"]);
 const VALID_ROLE_INTERESTS = new Set(ROLE_INTERESTS.filter((value) => value !== "undecided"));
 const VALID_ROLE_AVOIDANCES = new Set(ROLE_AVOIDANCES);
-const VALID_EXIT_PATTERNS = new Set(EXIT_PREFERENCES.filter((value) => value !== "no_preference"));
 const VALID_MOTIVATIONS = new Set(MOTIVATIONS.filter((value) => value !== "unsure"));
 const VALID_TECHNICAL_AREAS = new Set(TECHNICAL_AREAS.filter((value) => value !== "undecided"));
 
@@ -193,6 +191,16 @@ function deriveEnvironment(role, tags, physicalDemand) {
   return "unknown";
 }
 
+/** Explicit catalog flag wins; field combat units are closed bases with guard duty by nature. */
+function deriveClosedBase(role) {
+  if (typeof role.closedBase === "boolean") return role.closedBase;
+  return role.combat ? true : null;
+}
+
+function deriveNightDuty(role) {
+  return role.hasNightDuty === true || role.nightDuty === true || role.combat === true;
+}
+
 function deriveAvoidanceSignals(role, tags, physicalDemand, environment) {
   const signals = new Set(
     normalizedEnumArray(role.avoidanceSignals, VALID_ROLE_AVOIDANCES),
@@ -202,8 +210,8 @@ function deriveAvoidanceSignals(role, tags, physicalDemand, environment) {
   if (environment === "office") signals.add("office_only");
   if (physicalDemand >= 4) signals.add("too_physical");
   if (/(?:טבח|מטבח|אחזקה|תחזוקה)/.test(title)) signals.add("kitchen_maintenance");
-  if (role.hasNightDuty === true || role.nightDuty === true) signals.add("guard_duty_nights");
-  if (role.closedBase === true || role.remotePosting === true) signals.add("far_from_home");
+  if (deriveNightDuty(role)) signals.add("guard_duty_nights");
+  if (deriveClosedBase(role) === true || role.remotePosting === true) signals.add("far_from_home");
   if (Number(role.monotonyLevel) >= 4) signals.add("monotonous");
 
   return [...signals].filter((signal) => VALID_ROLE_AVOIDANCES.has(signal)).sort();
@@ -336,10 +344,8 @@ export function normalizeRoleV3(role) {
     interestAreas,
     avoidanceSignals: deriveAvoidanceSignals(role, tags, physicalDemand, environment),
     environment,
-    exitPatterns: normalizedEnumArray(
-      role.exitPatterns || role.exitsPatterns || role.exits,
-      VALID_EXIT_PATTERNS,
-    ),
+    closedBase: deriveClosedBase(role),
+    nightDuty: deriveNightDuty(role),
     leadershipDemand,
     teamworkDemand,
     stressDemand,

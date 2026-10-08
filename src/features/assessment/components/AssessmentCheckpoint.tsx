@@ -1,24 +1,8 @@
-import { useMemo } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { progressBarProps } from "@/lib/a11y";
-import { YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE } from "@/lib/yom-hameah";
 import {
+  BASE_OPTIONS,
   COMBAT_PREFERENCE_OPTIONS,
   ENVIRONMENT_OPTIONS,
-  EXIT_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
   FOCUS_PREFERENCE_OPTIONS,
   LEADERSHIP_OPTIONS,
@@ -29,17 +13,21 @@ import {
 } from "../options";
 import { deriveAssessmentBranches } from "../flow";
 import type { AssessmentAnswers } from "../types";
-import { AssessmentInsights, DraftRoadmap } from "./AssessmentInsights";
+import {
+  AnswerEcho,
+  CommitmentCard,
+  DaparDoorsCard,
+  DraftRoadmap,
+  ProfileHeadline,
+  ProfileLadderCard,
+  StrengthsCard,
+} from "./AssessmentInsights";
 
 type Props = {
   answers: AssessmentAnswers;
   className?: string;
   variant?: "profile" | "review";
 };
-
-function average(values: number[]): number {
-  return Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10;
-}
 
 function optionTitle<T extends string>(
   options: readonly { value: T; title: string }[],
@@ -60,223 +48,23 @@ function thresholdLabel(value: number | "unknown" | null): string {
 }
 
 export function AssessmentCheckpoint({ answers, className = "", variant = "profile" }: Props) {
-  const radarData = useMemo(
-    () => [
-      {
-        label: "טכני",
-        value: average([
-          answers.yomHameah.technicalActivation,
-          answers.yomHameah.spatialPerception,
-        ]),
-      },
-      {
-        label: "מידע",
-        value: answers.yomHameah.dataProcessing,
-      },
-      {
-        label: "צוות",
-        value: average([answers.yomHameah.teamwork, answers.yomHameah.interpersonalCare]),
-      },
-      {
-        label: "פיקוד",
-        value: average([answers.yomHameah.command, answers.yomHameah.frameworkBehavior]),
-      },
-      { label: "הדרכה", value: answers.yomHameah.instruction },
-      {
-        label: "ארגון",
-        value: average([
-          answers.yomHameah.diligencePersistence,
-          answers.yomHameah.managementOrganization,
-          answers.yomHameah.maturity,
-        ]),
-      },
-    ],
-    [answers.yomHameah],
-  );
-
-  const preferenceData = useMemo(() => {
-    const fieldScore =
-      answers.combatPreference === "FieldCombat"
-        ? 5
-        : answers.combatPreference === "Mixed"
-          ? 4
-          : answers.physicalActivityLevel === "High"
-            ? 3
-            : 2;
-    const technicalScore =
-      answers.combatPreference === "TechTrack" || answers.focus === "Tech"
-        ? 5
-        : answers.focus === "Research"
-          ? 4
-          : 2;
-    const peopleScore =
-      answers.focus === "Medical" ||
-      answers.rolesInterested.includes("medical") ||
-      answers.rolesInterested.includes("instruction_education")
-        ? 5
-        : answers.leadership === "want_lead"
-          ? 4
-          : 3;
-
-    return [
-      {
-        label: "שטח ואתגר",
-        value: fieldScore,
-        answer: optionTitle(COMBAT_PREFERENCE_OPTIONS, answers.combatPreference),
-      },
-      {
-        label: "טכנולוגיה וניתוח",
-        value: technicalScore,
-        answer: optionTitle(FOCUS_PREFERENCE_OPTIONS, answers.focus),
-      },
-      {
-        label: "אנשים ופיקוד",
-        value: peopleScore,
-        answer:
-          answers.leadership === "want_lead"
-            ? "רוצה לפקד"
-            : answers.leadership === "open"
-              ? "פתוח/ה לפיקוד"
-              : "עבודת צוות",
-      },
-    ];
-  }, [
-    answers.combatPreference,
-    answers.focus,
-    answers.leadership,
-    answers.physicalActivityLevel,
-    answers.rolesInterested,
-  ]);
-
   if (variant === "review") {
     return <FinalSignalsReview answers={answers} className={className} />;
   }
 
   return (
-    <section
-      className={`space-y-7 text-right ${className}`}
-      aria-labelledby="assessment-checkpoint-title"
-    >
-      <div>
-        <p className="font-mono text-[10px] tracking-widest text-primary uppercase">נקודת ביניים</p>
-        <h2 id="assessment-checkpoint-title" className="mt-2 text-xl font-black text-foreground">
-          הפרופיל שלכם מתחיל לקבל צורה
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-dust">
-          זהו סיכום של התשובות שלכם, לא ציון התאמה ולא תחזית שיבוץ. אפשר לחזור ולשנות.
-        </p>
+    <section className={`space-y-5 text-right ${className}`} aria-label="הפרופיל שלכם">
+      <AnswerEcho answers={answers} />
+      <ProfileHeadline answers={answers} />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <DaparDoorsCard answers={answers} />
+        <ProfileLadderCard answers={answers} />
       </div>
-
-      <AssessmentInsights answers={answers} />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="border border-iron/25 bg-card/70 p-3 sm:p-5">
-          <h3 className="text-sm font-bold text-foreground">
-            מפת מדדי מא״ה ·{" "}
-            {answers.yomHameahSource === "official"
-              ? "ציונים רשמיים"
-              : answers.yomHameahSource === "self"
-                ? "הערכה עצמית"
-                : "לא ידוע"}
-          </h3>
-          {answers.yomHameahSource === "unknown" ? (
-            <div className="mt-4 border border-amber-500/45 bg-amber-500/10 p-4">
-              <p className="text-sm font-bold text-foreground">מדדי מא״ה לא הוערכו</p>
-              <p className="mt-2 text-xs leading-5 text-dust">
-                ציוני 3 נשמרים כמציין מקום ניטרלי בלבד. הם לא יוצגו כחוזקה, לא ישמשו לאימות זכאות
-                ויקבלו משקל אפסי כאות אישי.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="mt-2 h-64 w-full" dir="rtl" aria-hidden>
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData} outerRadius="68%">
-                    <PolarGrid stroke="var(--iron)" strokeOpacity={0.45} />
-                    <PolarAngleAxis
-                      dataKey="label"
-                      tick={{ fill: "var(--foreground)", fontSize: 11 }}
-                    />
-                    <PolarRadiusAxis domain={[0, 5]} tickCount={6} tick={false} axisLine={false} />
-                    <Radar
-                      dataKey="value"
-                      stroke="var(--primary)"
-                      fill="var(--primary)"
-                      fillOpacity={0.22}
-                      strokeWidth={2}
-                      isAnimationActive={false}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-              <ul className="grid grid-cols-1 gap-x-4 gap-y-2 border-t border-iron/20 pt-3 text-xs sm:grid-cols-2">
-                {YOM_HAMEAH_KEYS.map((key) => (
-                  <li key={key} className="flex items-start justify-between gap-2">
-                    <span className="text-dust">{YOM_HAMEAH_LABELS_HE[key]}</span>
-                    <strong className="font-mono tabular-nums text-foreground">
-                      {answers.yomHameah[key]}/5
-                    </strong>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-
-        <div className="border border-iron/25 bg-card/70 p-3 sm:p-5">
-          <h3 className="text-sm font-bold text-foreground">תמונת העדפות</h3>
-          <div className="mt-3 h-52 w-full" dir="rtl" aria-hidden>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={preferenceData}
-                layout="vertical"
-                margin={{ top: 4, right: 28, bottom: 4, left: 6 }}
-              >
-                <CartesianGrid stroke="var(--iron)" strokeOpacity={0.3} horizontal={false} />
-                <XAxis type="number" domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} hide />
-                <YAxis
-                  type="category"
-                  dataKey="label"
-                  width={94}
-                  tick={{ fill: "var(--foreground)", fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Bar
-                  dataKey="value"
-                  fill="var(--primary)"
-                  radius={[0, 3, 3, 0]}
-                  isAnimationActive={false}
-                >
-                  <LabelList
-                    dataKey="value"
-                    position="right"
-                    formatter={(value: unknown) => `${String(value)}/5`}
-                    fill="var(--foreground)"
-                    fontSize={11}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="space-y-2 border-t border-iron/20 pt-3 text-sm">
-            {preferenceData.map((item) => (
-              <li key={item.label} className="flex items-start justify-between gap-3">
-                <span className="font-medium text-foreground">{item.label}</span>
-                <span className="text-left text-dust">
-                  {item.value} מתוך 5 · {item.answer}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-xs leading-5 text-dust">
-            רמת פעילות שנבחרה:{" "}
-            <strong className="font-medium text-foreground">
-              {optionTitle(FITNESS_PREFERENCE_OPTIONS, answers.physicalActivityLevel)}
-            </strong>
-          </p>
-        </div>
-      </div>
+      <StrengthsCard answers={answers} />
+      <CommitmentCard answers={answers} />
+      <p className="text-[11px] leading-5 text-dust">
+        ספים ומשכי שירות לפי אתר מתגייסים וחוק שירות ביטחון (יולי 2026). זו לא תחזית שיבוץ; אפשר לחזור ולשנות כל תשובה.
+      </p>
     </section>
   );
 }
@@ -294,7 +82,7 @@ function FinalSignalsReview({
     answers.medicalProfile === "unknown",
     answers.yomHameahSource === "unknown",
     answers.rolesInterested.includes("undecided"),
-    answers.exitsPreference === "no_preference",
+    answers.basePreference === "no_preference",
     answers.environment === "no_preference",
     answers.motivations.includes("unsure"),
     branches.wantsCombat && answers.combatDetails.run3kmBand === "unknown",
@@ -332,7 +120,7 @@ function FinalSignalsReview({
           ? "11 ציונים רשמיים"
           : answers.yomHameahSource === "self"
             ? "11 הערכות עצמיות, יסומנו בביטחון נמוך יותר"
-            : "לא ידוע — ציונים ניטרליים נשמרים לתאימות בלבד ולא ישמשו כאות",
+            : "לא ידוע: ציונים ניטרליים, לא ישמשו כאות",
     },
     {
       title: "תחומי עניין והימנעות",
@@ -351,10 +139,10 @@ function FinalSignalsReview({
       )}`,
     },
     {
-      title: "סביבה ויציאות",
-      detail: `${optionLabel(ENVIRONMENT_OPTIONS, answers.environment)} · ${optionLabel(
-        EXIT_OPTIONS,
-        answers.exitsPreference,
+      title: "בסיס וסביבת עבודה",
+      detail: `${optionLabel(BASE_OPTIONS, answers.basePreference)} · ${optionLabel(
+        ENVIRONMENT_OPTIONS,
+        answers.environment,
       )}`,
     },
     {
@@ -387,13 +175,13 @@ function FinalSignalsReview({
           האותות שישמשו את הפרופיל
         </h2>
         <p className="mt-2 text-sm leading-6 text-dust">
-          ביטחון הנתונים מתאר כמה מהתשובות מבוססות על מידע רשמי ומפורט. הוא אינו ציון התאמה לתפקיד.
+          שלמות הנתונים מתארת כמה מהתשובות מבוססות על מידע רשמי ומפורט. היא אינה ציון התאמה לתפקיד.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Metric label="השלמת ההערכה" value={100} />
-        <Metric label="ביטחון בנתוני הקלט" value={confidence} />
+        <Metric label="שלמות הנתונים" value={confidence} />
       </div>
 
       {answers.daparScore === "unknown" ||

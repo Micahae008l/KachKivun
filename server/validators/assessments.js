@@ -14,6 +14,7 @@ import {
   DAPAR_SCORES,
   ENVIRONMENTS,
   EXIT_PREFERENCES,
+  BASE_PREFERENCES,
   FITNESS_LEVELS,
   FOCUS_PREFERENCES,
   GENDERS,
@@ -175,6 +176,7 @@ function parseAnswers(value) {
     "rolesInterested",
     "rolesAvoided",
     "exitsPreference",
+    "basePreference",
     "environment",
     "leadership",
     "stress",
@@ -242,10 +244,17 @@ function parseAnswers(value) {
     max: 6,
   });
   if (!rolesAvoided.ok) return rolesAvoided;
-  const exits = parseEnum(raw.exitsPreference, EXIT_PREFERENCES, {
-    label: "exitsPreference",
-  });
+  // exitsPreference is legacy (old clients); basePreference replaces it. Both default to no_preference.
+  const exits =
+    raw.exitsPreference === undefined
+      ? ok("no_preference")
+      : parseEnum(raw.exitsPreference, EXIT_PREFERENCES, { label: "exitsPreference" });
   if (!exits.ok) return exits;
+  const basePreference =
+    raw.basePreference === undefined
+      ? ok("no_preference")
+      : parseEnum(raw.basePreference, BASE_PREFERENCES, { label: "basePreference" });
+  if (!basePreference.ok) return basePreference;
   const environment = parseEnum(raw.environment, ENVIRONMENTS, { label: "environment" });
   if (!environment.ok) return environment;
   const leadership = parseEnum(raw.leadership, LEADERSHIP_PREFERENCES, {
@@ -288,6 +297,7 @@ function parseAnswers(value) {
     rolesInterested: rolesInterested.value,
     rolesAvoided: rolesAvoided.value,
     exitsPreference: exits.value,
+    basePreference: basePreference.value,
     environment: environment.value,
     leadership: leadership.value,
     stress: stress.value,

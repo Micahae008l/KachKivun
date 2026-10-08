@@ -144,6 +144,35 @@ for (const [title, category, combat, tags, signals, bestFor, src, e] of ADD) {
   }
 }
 
+// ---------- 4. base type and shifts (mitgaisim states "בסיס סגור/פתוח" and shift work per role) ----------
+// Combat roles are closed with guard duty by rule in roleCatalogV3.js; only non-combat roles are listed here.
+const CLOSED_BASE = [
+  'מש"ק/ית בקרה אווירית', "פקח/ית טיסה", 'עובדת חדר מבצעים בחיל האוויר (פקמ"צית)', "מדריכת סימולטור בחיל האוויר",
+  'מטיס/ת חוץ כטמ"ם', "טכנאי/ת אוויוניקה", "טכנאי/ת דרג א׳ בחיל האוויר", "טכנאי/ת דרג ב׳ בחיל האוויר", 'טכנאי/ת כטמ"ם',
+  "טכנאי/ת מטוסים", "טכנאי/ת מסוקים", 'מפעיל/ת לוחמה אלקטרונית (ל"א)', 'מפעיל/ת מודיעין אלקטרוני (מודא"ל) מוטס',
+  'רכז/ת שליטה קרקעית (קשל"ט)', "מסלול שחקים - אמנון", 'מסלול שחקים - שמ"מ', "מסלול בכיר לדוברי השפה הערבית",
+  "מסלול בכיר לדוברי השפה הפרסית", "מסלולי ערבית (אלמוג, רשף, קדם)", 'מסלול מט"מ', "מסלול אופק", "מסלול גוונים",
+  "מסלול מומנט", "מסלול שביט", "מודיעיני ייחודי", "מסלול רומא",
+];
+const OPEN_BASE = [
+  "מאבחן/ת צוות אוויר", "מדריך/ת פיזיולוגיה תעופתית", 'מסלול שחקים - אח"מ', 'מסלול שחקים - מח"א', 'מסלול ממ"ש',
+  "מסלול אניגמה מחשבים", "חוקר/ת מודיעין טכנולוגי (מסלול חומה)", 'קורס מת"ן', 'לה"ב מצו"ב/חוקר ומפתח יכולות הגנה בסייבר',
+  'פס"י - מפתח/ת ספקטרום (פריזמה)',
+];
+const SHIFT_WORK = [
+  'מש"ק/ית בקרה אווירית', "מפעיל/ת מערכות הגנה קרקעית", "בקר/ית שליטה ימית", "מסלול בכיר לדוברי השפה הערבית",
+  "מסלול בכיר לדוברי השפה הפרסית", "מיישם/ת הגנת סייבר", 'מסלול מט"מ', "תצפיתנ/ית", "תצפיתן/ית בגבולות",
+  "עובד/ת חדר מצב", 'רכז/ת חמ"ל', "מוקדן/ית חירום צבאי/ת",
+];
+const closedSet = new Set(CLOSED_BASE);
+const openSet = new Set(OPEN_BASE);
+const shiftSet = new Set(SHIFT_WORK);
+for (const r of catalog.roles) {
+  if (closedSet.has(r.roleTitle)) r.closedBase = true;
+  else if (openSet.has(r.roleTitle)) r.closedBase = false;
+  if (shiftSet.has(r.roleTitle)) r.nightDuty = true;
+}
+
 catalog.roleCount = catalog.roles.length;
 catalog.roles.sort((a, b) => a.category.localeCompare(b.category, "he") || a.roleTitle.localeCompare(b.roleTitle, "he"));
 fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2) + "\n");

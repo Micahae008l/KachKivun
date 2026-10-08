@@ -35,14 +35,8 @@ export type RoleAvoidance =
   | "too_physical"
   | "monotonous";
 
-export type ExitPreference =
-  | "week_on_off"
-  | "hamshushim"
-  | "shushim"
-  | "twelve_two"
-  | "twenty_one"
-  | "rare"
-  | "no_preference";
+/** בסיס פתוח / סגור. Replaces the old יציאות question: the IDF publishes no leave schedule per role. */
+export type BasePreference = "open" | "closed" | "no_preference";
 
 export type EnvironmentPreference = "office" | "field" | "mixed" | "no_preference";
 export type LeadershipPreference = "want_lead" | "open" | "prefer_team";
@@ -113,7 +107,7 @@ export type AssessmentAnswers = {
   physicalActivityLevel: FitnessPreferenceValue | "";
   rolesInterested: RoleInterest[];
   rolesAvoided: RoleAvoidance[];
-  exitsPreference: ExitPreference | "";
+  basePreference: BasePreference | "";
   environment: EnvironmentPreference | "";
   leadership: LeadershipPreference | "";
   stress: StressPreference | "";

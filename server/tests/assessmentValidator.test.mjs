@@ -22,7 +22,7 @@ function validBody(overrides = {}) {
       physicalActivityLevel: "Medium",
       rolesInterested: ["medical"],
       rolesAvoided: [],
-      exitsPreference: "no_preference",
+      basePreference: "no_preference",
       environment: "mixed",
       leadership: "open",
       stress: "moderate",

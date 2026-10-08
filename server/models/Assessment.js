@@ -7,6 +7,7 @@ import {
   DAPAR_SCORES,
   ENVIRONMENTS,
   EXIT_PREFERENCES,
+  BASE_PREFERENCES,
   FITNESS_LEVELS,
   FOCUS_PREFERENCES,
   GENDERS,
@@ -100,7 +101,8 @@ const answersSchema = new mongoose.Schema(
       ],
     },
     rolesAvoided: enumArray(ROLE_AVOIDANCES, 6),
-    exitsPreference: { type: String, enum: EXIT_PREFERENCES, required: true },
+    exitsPreference: { type: String, enum: EXIT_PREFERENCES, default: "no_preference" }, // legacy, no longer asked
+    basePreference: { type: String, enum: BASE_PREFERENCES, default: "no_preference" },
     environment: { type: String, enum: ENVIRONMENTS, required: true },
     leadership: { type: String, enum: LEADERSHIP_PREFERENCES, required: true },
     stress: { type: String, enum: STRESS_PREFERENCES, required: true },

@@ -4,7 +4,7 @@ import {
   COMBAT_PREFERENCE_OPTIONS,
   DAPAR_SCORES,
   ENVIRONMENT_OPTIONS,
-  EXIT_OPTIONS,
+  BASE_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
   FOCUS_PREFERENCE_OPTIONS,
   LEADERSHIP_OPTIONS,
@@ -77,7 +77,7 @@ const focusPreferences = optionSet(FOCUS_PREFERENCE_OPTIONS);
 const fitnessPreferences = optionSet(FITNESS_PREFERENCE_OPTIONS);
 const roleInterests = optionSet(ROLE_INTEREST_OPTIONS);
 const roleAvoidances = optionSet(ROLE_AVOIDANCE_OPTIONS);
-const exitPreferences = optionSet(EXIT_OPTIONS);
+const basePreferences = optionSet(BASE_OPTIONS);
 const environments = optionSet(ENVIRONMENT_OPTIONS);
 const leadershipPreferences = optionSet(LEADERSHIP_OPTIONS);
 const stressPreferences = optionSet(STRESS_OPTIONS);
@@ -149,7 +149,7 @@ export function normalizeAssessmentAnswers(value: unknown): AssessmentAnswers {
     physicalActivityLevel: enumOrEmpty(source.physicalActivityLevel, fitnessPreferences),
     rolesInterested: enumArray(source.rolesInterested, roleInterests, 5),
     rolesAvoided: enumArray(source.rolesAvoided, roleAvoidances, 6),
-    exitsPreference: enumOrEmpty(source.exitsPreference, exitPreferences),
+    basePreference: enumOrEmpty(source.basePreference, basePreferences),
     environment: enumOrEmpty(source.environment, environments),
     leadership: enumOrEmpty(source.leadership, leadershipPreferences),
     stress: enumOrEmpty(source.stress, stressPreferences),

@@ -313,7 +313,7 @@ test("structured assessment signals deterministically affect v3 ranking", () => 
     assessmentSignals: {
       rolesInterested: ["technology_engineering"],
       rolesAvoided: [],
-      exitsPreference: "no_preference",
+      basePreference: "no_preference",
       environment: "no_preference",
       leadership: "open",
       stress: "moderate",
@@ -340,7 +340,7 @@ test("profile hash is stable under structured assessment array ordering", () => 
     rolesAvoided: ["monotonous", "office_only"],
     motivations: ["career", "challenge", "personal_growth"],
     environment: "mixed",
-    exitsPreference: "hamshushim",
+    basePreference: "closed",
     leadership: "want_lead",
     stress: "high",
     technicalDetails: {
@@ -384,14 +384,14 @@ test("profile hash is stable under structured assessment array ordering", () => 
   assert.notEqual(h1, h3);
 });
 
-test("all known structured fields score while unknown environment and exits stay neutral", () => {
+test("all known structured fields score while unknown environment and base type stay neutral", () => {
   const structuredRole = normalizeRoleV3({
     roleTitle: "מסלול משולב",
     category: "מבצעי",
     combat: true,
     preferenceTags: ["combat", "coding", "leadership"],
     environment: "field",
-    exitPatterns: ["twelve_two"],
+    closedBase: true,
     leadershipDemand: 5,
     stressDemand: 5,
     motivationSignals: ["challenge"],
@@ -404,7 +404,7 @@ test("all known structured fields score while unknown environment and exits stay
     rolesInterested: ["combat", "technology_engineering"],
     rolesAvoided: ["office_only"],
     environment: "field",
-    exitsPreference: "twelve_two",
+    basePreference: "closed",
     leadership: "want_lead",
     stress: "high",
     motivations: ["challenge"],
@@ -420,7 +420,7 @@ test("all known structured fields score while unknown environment and exits stay
     rolesInterested: ["medical"],
     rolesAvoided: ["too_physical"],
     environment: "office",
-    exitsPreference: "rare",
+    basePreference: "open",
     leadership: "prefer_team",
     stress: "low",
     motivations: ["career"],
@@ -442,8 +442,8 @@ test("all known structured fields score while unknown environment and exits stay
   });
   const unknown = structuredAssessmentFit(unknownRole, {
     environment: "field",
-    exitsPreference: "hamshushim",
+    basePreference: "closed",
   });
   assert.equal(unknown.components.environment, null);
-  assert.equal(unknown.components.exits, null);
+  assert.equal(unknown.components.base, null);
 });

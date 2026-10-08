@@ -10,8 +10,11 @@ function compatibilityPreferences(answers) {
     combatPreference: answers.combatPreference,
     focus: answers.focus,
     physicalActivityLevel: answers.physicalActivityLevel,
-    schedule: answers.exitsPreference === "hamshushim" ? "Hamshushim" : "Any",
-    location: answers.rolesAvoided.includes("far_from_home") ? "Close to home" : "Anywhere",
+    schedule: "Any",
+    location:
+      answers.rolesAvoided.includes("far_from_home") || answers.basePreference === "open"
+        ? "Close to home"
+        : "Anywhere",
     yomHameahSource:
       answers.yomHameahSource === "unknown"
         ? "unknown"

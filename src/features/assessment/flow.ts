@@ -58,7 +58,7 @@ export function validateAssessmentStep(
   if (step === "preferences" && (!answers.focus || !answers.physicalActivityLevel)) {
     return "בחרו מיקוד ורמת פעילות לפני שממשיכים";
   }
-  if (step === "environment" && (!answers.exitsPreference || !answers.environment)) {
+  if (step === "environment" && (!answers.basePreference || !answers.environment)) {
     return "בחרו מערכת יציאות וסביבת עבודה";
   }
   if (step === "style" && (!answers.leadership || !answers.stress)) {

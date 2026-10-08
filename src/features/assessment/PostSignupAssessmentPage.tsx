@@ -114,7 +114,7 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   environment: {
     icon: MapPin,
-    title: "יציאות וסביבת עבודה",
+    title: "בסיס וסביבת עבודה",
     subtitle: "התנאים שבהם יהיה לכם קל יותר להצליח לאורך זמן.",
   },
   style: {
@@ -144,8 +144,8 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   checkpoint: {
     icon: CheckCircle2,
-    title: "עוצרים לרגע ומסתכלים",
-    subtitle: "נקודת ביניים אחת שמסכמת את התמונה, בלי להציף בגרפים.",
+    title: "מה הנתונים שלכם פותחים",
+    subtitle: "התשובות שלכם מול הספים הרשמיים של צה״ל, לפני שממשיכים.",
   },
   motivation: {
     icon: Heart,

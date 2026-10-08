@@ -7,7 +7,7 @@ import type {
   CombatReadiness,
   DaparScore,
   EnvironmentPreference,
-  ExitPreference,
+  BasePreference,
   LeadershipPreference,
   MedicalProfile,
   Motivation,
@@ -74,14 +74,10 @@ export const ROLE_AVOIDANCE_OPTIONS: readonly AssessmentOption<RoleAvoidance>[] 
   { value: "monotonous", label: "מונוטוני / משעמם" },
 ];
 
-export const EXIT_OPTIONS: readonly AssessmentOption<ExitPreference>[] = [
-  { value: "week_on_off", label: "שבוע בבסיס / שבוע בבית" },
-  { value: "hamshushim", label: "חמשושים — 4 ימים בבסיס, 3 בבית" },
-  { value: "shushim", label: "שושים — 5 ימים בבסיס, 2 בבית" },
-  { value: "twelve_two", label: "12–2 — 12 ימים בבסיס, 2 בבית" },
-  { value: "twenty_one", label: "21 — כ־19 ימים בבסיס, 2 בבית" },
-  { value: "rare", label: "יציאות נדירות, לרוב במסלולים מיוחדים" },
-  { value: "no_preference", label: "אין לי העדפה" },
+export const BASE_OPTIONS: readonly AssessmentOption<BasePreference>[] = [
+  { value: "open", label: "בסיס פתוח: חוזרים הביתה בערב" },
+  { value: "closed", label: "בסיס סגור: ישנים בבסיס, יוצאים בסופ״ש או לפי סבב" },
+  { value: "no_preference", label: "לא משנה לי" },
 ];
 
 export const ENVIRONMENT_OPTIONS: readonly AssessmentOption<EnvironmentPreference>[] = [
