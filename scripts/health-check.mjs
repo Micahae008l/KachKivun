@@ -29,8 +29,8 @@ const LABELS = {
   site: "🌐 Website",
   api: "⚙️ API server",
   database: "🗄️ Database",
-  openai: "🔑 OpenAI key",
-  "openai-live": "🤖 AI requests",
+  "ai-key": "🔑 AI key",
+  "ai-live": "🤖 AI requests",
   deep: "🩺 Deep check",
   email: "✉️ Login emails",
   payments: "💳 Payments",
@@ -50,8 +50,18 @@ async function httpCheck(url, tries = 1) {
   let last;
   for (let i = 0; i < tries; i++) {
     last = await timed(async () => {
-      const res = await fetch(url, { signal: AbortSignal.timeout(30_000), redirect: "follow" });
-      return res.ok ? { ok: true, detail: "up" } : { ok: false, detail: `HTTP ${res.status}` };
+      const res = await fetch(url, {
+        headers: { "user-agent": "KachKivunHealthCheck/1.0 (+github-actions)" },
+        signal: AbortSignal.timeout(30_000),
+        redirect: "follow",
+      });
+      if (res.ok) return { ok: true, detail: "up" };
+      // Cloudflare bot protection challenges datacenter IPs such as GitHub's runners. That is
+      // Cloudflare answering, not the site failing; say so instead of crying "down".
+      if (res.status === 403 && res.headers.get("cf-mitigated") === "challenge") {
+        return { ok: true, detail: "up (Cloudflare challenged the checker; allow it in Cloudflare to test the page itself)" };
+      }
+      return { ok: false, detail: `HTTP ${res.status}` };
     });
     if (last.ok) break;
     if (i + 1 < tries) await new Promise((r) => setTimeout(r, 20_000));
@@ -89,7 +99,7 @@ async function deepChecks() {
       signal: AbortSignal.timeout(60_000),
     });
     const body = await r.json().catch(() => null);
-    if (!body?.checks) return { ok: false, detail: `no report (HTTP ${r.status}): is HEALTH_CHECK_TOKEN set on Render?` };
+    if (!body?.checks) return { ok: false, detail: `no report (HTTP ${r.status}): is HEALTH_CHECK_TOKEN set in server/.env on the API server, matching the GitHub secret?` };
     return { ok: true, checks: body.checks };
   });
 
@@ -132,8 +142,8 @@ function buttons() {
     type: "actions",
     elements: [
       button("Open site", SITE),
-      button("Render", "https://dashboard.render.com"),
-      button("OpenAI usage", "https://platform.openai.com/usage"),
+      button("AWS", "https://console.aws.amazon.com/ec2/home"),
+      button("Claude usage", "https://platform.claude.com/usage"),
       ...(RUN_URL ? [button("Run log", RUN_URL)] : []),
     ],
   };

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import mongoose from "mongoose";
 import AiUsageLog from "../models/AiUsageLog.js";
 import { verifyEmailChannel } from "./email.js";
+import { isAnthropicModel } from "./llmClient.js";
 
 function trimEnv(name) {
   return String(process.env[name] || "").trim();
@@ -33,6 +34,29 @@ async function checkDatabase() {
   return { ok: true, detail: "ping ok" };
 }
 
+/** Lists models: proves the Anthropic key is valid without spending tokens. */
+async function checkAnthropic(model) {
+  const key = trimEnv("ANTHROPIC_API_KEY");
+  if (!key) return { ok: false, detail: "ANTHROPIC_API_KEY not set" };
+  const res = await fetch("https://api.anthropic.com/v1/models", {
+    headers: { "x-api-key": key, "anthropic-version": "2023-06-01" },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (res.ok) return { ok: true, detail: `Anthropic key accepted (${model})` };
+  const body = await res.json().catch(() => ({}));
+
+  return {
+    ok: false,
+    detail: `Anthropic HTTP ${res.status} ${body?.error?.type || body?.error?.message || ""}`.trim(),
+  };
+}
+
+/** Checks the key of whichever provider role matching actually runs on (AI_MATCH_MODEL). */
+async function checkAiKey() {
+  const model = trimEnv("AI_MATCH_MODEL") || "gpt-4o";
+  return isAnthropicModel(model) ? checkAnthropic(model) : checkOpenAI();
+}
+
 /** Lists models: proves the key is valid without spending tokens. */
 async function checkOpenAI() {
   const key = trimEnv("OPENAI_API_KEY");
@@ -52,9 +76,9 @@ async function checkOpenAI() {
 
 /**
  * A valid key can still fail (credit used up, rate limit): judge by the site's own
- * latest real OpenAI request in the last day, which the AI routes already log.
+ * latest real AI request in the last day, which the AI routes already log.
  */
-async function checkOpenAIRecent() {
+async function checkAiRecent() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const last = await AiUsageLog.findOne({
     status: { $in: ["success", "api_error"] },
@@ -98,8 +122,8 @@ function checkPayments() {
 export async function runDeepHealth() {
   const checks = await Promise.all([
     check("database", checkDatabase),
-    check("openai", checkOpenAI),
-    check("openai-live", checkOpenAIRecent),
+    check("ai-key", checkAiKey),
+    check("ai-live", checkAiRecent),
     check("email", verifyEmailChannel),
     check("payments", async () => checkPayments()),
   ]);

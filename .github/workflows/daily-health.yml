@@ -1,4 +1,4 @@
-# Watches kachkivun.com and everything behind it (DB, OpenAI key and live AI
+# Watches kachkivun.com and everything behind it (DB, AI key and live AI
 # requests, email, payments config, SSL) and pings you in Slack:
 #   - every morning: a full report, good or bad
 #   - every hour: silent while healthy; one alert when something breaks, one when it recovers
@@ -6,7 +6,7 @@
 #
 # Repo secrets (Settings → Secrets and variables → Actions):
 #   SLACK_WEBHOOK_URL   — the Slack incoming webhook
-#   HEALTH_CHECK_TOKEN  — the same random value as HEALTH_CHECK_TOKEN on Render
+#   HEALTH_CHECK_TOKEN  — the same random value as HEALTH_CHECK_TOKEN in server/.env on the API server
 #   SLACK_USER_ID       — your Slack member ID (U…), so the message pings you; without it, @here
 name: Health check
 
