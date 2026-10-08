@@ -34,3 +34,15 @@ test("combat profile lowers the chance for tech roles; dapar margin raises it", 
   assert.equal(admissionChance(easy, female97).level, "high");
   assert.equal(admissionChance(easy, { gender: "male" }).level, "unknown");
 });
+
+test("rolesForAi keeps every eligible role and puts request matches first", async () => {
+  const { rolesForAi, scoreRole } = await import("../utils/roleScoring.js");
+  const { getIdfRoleCatalogV3 } = await import("../utils/roleCatalogV3.js");
+  const roles = getIdfRoleCatalogV3().roles;
+  const profile = { daparScore: 50, medicalProfile: 64, gender: "female", personalRequest: "רחפנים" };
+  const list = rolesForAi(roles, profile);
+  const eligible = roles.filter((r) => scoreRole(r, { ...profile, yomFlat: true }).eligible).length;
+  assert.equal(list.length, eligible);
+  assert.ok(list[0].requestMatch, "first entry answers the request");
+  assert.ok(list.every((r, i) => !r.requestMatch || list.slice(0, i).every((p) => p.requestMatch)), "matches form a prefix");
+});

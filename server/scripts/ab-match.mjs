@@ -6,7 +6,7 @@
  *   node scripts/ab-match.mjs --models gpt-4o,claude-haiku-5-5 --engines v2,v3 --profile scripts/fixtures/ab-profile.json
  *
  * v3: roles are chosen deterministically, so only the Hebrew copy differs per model.
- * v2: the model picks and ranks 5 out of a wide pool (~40-50 roles), so the roles themselves differ.
+ * v2: the model picks and ranks 5 out of every eligible role (request matches first), so the roles differ.
  */
 import "../env.js";
 import fs from "node:fs";
@@ -14,7 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chatJson } from "../utils/llmClient.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
-import { buildCandidatePool, rankRolesV3, normalizeAssessmentSignals } from "../utils/roleScoring.js";
+import { rolesForAi, rankRolesV3, normalizeAssessmentSignals } from "../utils/roleScoring.js";
 import { finalizeRolesV3 } from "../utils/roleRecommendationV3.js";
 import {
   buildMatchUserPrompt,
@@ -63,7 +63,7 @@ for (const engine of engines) {
   const pool =
     engine === "v3"
       ? rankRolesV3(catalog.roles, profileForMatch, { limit: 5 })
-      : buildCandidatePool(catalog.roles, profileForMatch);
+      : rolesForAi(catalog.roles, profileForMatch);
   const system = engine === "v3" ? buildSystemPromptV3(pool) : buildSystemPromptV2(pool);
   const user = buildMatchUserPrompt({
     engine,
@@ -76,7 +76,7 @@ for (const engine of engines) {
     personalRequest: profileForMatch.personalRequest,
   });
 
-  console.log(`\n${"=".repeat(70)}\nengine ${engine} · pool ${pool.length}${engine === "v2" ? ": " + pool.map((r) => r.roleTitle).join(" | ") : ""}`);
+  console.log(`\n${"=".repeat(70)}\nengine ${engine} · pool ${pool.length}${engine === "v2" ? ": " + pool.slice(0, 12).map((r) => r.roleTitle).join(" | ") + " …" : ""}`);
 
   for (const model of models) {
     const startedAt = Date.now();

@@ -18,7 +18,7 @@ import { preFilterRoles } from "../utils/rolePreFilter.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
 import {
   SCORING_VERSION,
-  buildCandidatePool,
+  rolesForAi,
   blendPercent,
   seedFromString,
   computeProfileHash,
@@ -64,27 +64,34 @@ export function buildSystemPromptV2(pool) {
 
 ---
 
-## מאגר תפקידים מדורג מראש (JSON — בחרו מתוכו בלבד)
+## כל התפקידים שהמועמד/ת עומד/ת בתנאי הסף שלהם (JSON, בחרו מתוכם בלבד)
 
-להלן ${pool.length} תפקידים שדורגו מראש ע"י מנוע הניקוד עבור המועמד. בחרו את 5 הטובים ביותר, החזירו adjustment (מ-8- עד 8+) לכל אחד, ואל תמציאו תפקידים שאינם ברשימה.
+להלן ${pool.length} תפקידים: כל מה שנשאר מהמאגר אחרי סינון לפי דפ"ר, פרופיל ומין. הם ממוינים כך: קודם תפקידים שעונים על הבקשה האישית (requestMatch), ואחריהם לפי basePercent. ל-${pool.filter((r) => r.detailed !== false).length} הראשונים מצורף פירוט, והשאר בשורה מקוצרת. בחרו את 5 הטובים ביותר מכל הרשימה, החזירו adjustment (מ-8- עד 8+) לכל אחד, ואל תמציאו תפקידים שאינם ברשימה.
 
 ${JSON.stringify(
-  pool.map((r) => ({
-    roleTitle: r.roleTitle,
-    category: r.category,
-    combat: r.combat,
-    basePercent: r.basePercent,
-    breakdownHe: r.breakdownHe,
-    tier: r.tier,
-    requestMatch: r.requestMatch || undefined,
-    admissionChance: r.admissionChance
+  pool.map((r) => {
+    const chance = r.admissionChance
       ? `${r.admissionChance.label}${r.admissionChance.reason ? `: ${r.admissionChance.reason}` : ""}`
-      : undefined,
-    dayToDay: r.dayToDay ? String(r.dayToDay).slice(0, 220) : undefined,
-    requirements: r.requirements?.length ? r.requirements : undefined,
-    serviceLengthLabel: r.serviceLengthLabel || undefined,
-    keyDimensions: r.keyDimensions,
-  })),
+      : undefined;
+    const brief = {
+      roleTitle: r.roleTitle,
+      category: r.category,
+      combat: r.combat,
+      basePercent: r.basePercent,
+      requestMatch: r.requestMatch || undefined,
+    };
+    return r.detailed === false
+      ? { ...brief, admissionChance: r.admissionChance?.label }
+      : {
+          ...brief,
+          admissionChance: chance,
+          breakdownHe: r.breakdownHe,
+          dayToDay: r.dayToDay ? String(r.dayToDay).slice(0, 160) : undefined,
+          requirements: r.requirements?.length ? r.requirements.slice(0, 4) : undefined,
+          serviceLengthLabel: r.serviceLengthLabel || undefined,
+          keyDimensions: r.keyDimensions,
+        };
+  }),
   null,
   0
 )}`
@@ -714,8 +721,8 @@ export async function matchRoles(req, res) {
         `[ai/match-roles] engine=v3 deterministic-top=${candidatePool.length} for user ${userId}`,
       );
     } else if (MATCH_ENGINE === "v2") {
-      // Wide pool: the AI chooses with the personal request, interests and admission chances in view.
-      candidatePool = buildCandidatePool(catalogV3?.roles || [], profileForMatch);
+      // Every eligible role, request matches first: the AI chooses from all of them.
+      candidatePool = rolesForAi(catalogV3?.roles || [], profileForMatch);
       filteredRoles = candidatePool;
       filteredRoleCount = candidatePool.length;
       console.log(`[ai/match-roles] engine=v2 pool=${candidatePool.length} for user ${userId}`);

@@ -348,12 +348,7 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
     }
     case "identity": {
       const name = a.preferredName.trim();
-      if (!name) return null;
-      const draft = new Date(a.draftDate);
-      const months = Number.isNaN(draft.getTime()) ? null : monthsUntil(draft);
-      return months != null && months > 0
-        ? `${name}, נשארו כ־${months} חודשים לגיוס. זה בדיוק הזמן לתכנן נכון.`
-        : `נעים להכיר, ${name}.`;
+      return name ? `נעים להכיר, ${name}. עוד רגע הפרופיל מוכן.` : null;
     }
     default:
       return null;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { animate, motion, useInView, useReducedMotion } from "framer-motion";
-import { Check, Lock, Sparkles } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { COMBAT_PREFERENCE_OPTIONS, FOCUS_PREFERENCE_OPTIONS } from "@/lib/profile-preference-data";
 import { BASE_OPTIONS, ENVIRONMENT_OPTIONS, LEADERSHIP_OPTIONS, ROLE_INTEREST_OPTIONS } from "../options";
 import {
@@ -16,6 +16,7 @@ import {
   wantsTech,
 } from "../insights";
 import type { AssessmentAnswers } from "../types";
+import { YomRadar } from "./YomRadar";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const num = (v: number | "unknown" | null) => (typeof v === "number" ? v : null);
@@ -80,7 +81,7 @@ function Grow({ pct, delay = 0, className }: { pct: number; delay?: number; clas
 function Card({ kicker, title, children, className = "" }: { kicker: string; title: ReactNode; children: ReactNode; className?: string }) {
   return (
     <section className={`relative overflow-hidden border border-iron/25 bg-gradient-to-b from-card to-background/40 p-4 sm:p-6 ${className}`}>
-      <p className="font-mono text-[10px] tracking-[0.25em] text-primary">{kicker}</p>
+      <p className="font-mono text-[11px] tracking-[0.25em] text-primary">{kicker}</p>
       <h3 className="mt-1.5 text-lg font-black leading-snug text-foreground sm:text-xl">{title}</h3>
       <div className="mt-4">{children}</div>
     </section>
@@ -291,7 +292,6 @@ export function ProfileLadderCard({ answers }: { answers: AssessmentAnswers }) {
 // ---------- 5. מא"ה strengths ----------
 
 export function StrengthsCard({ answers }: { answers: AssessmentAnswers }) {
-  const reduce = useReducedMotion();
   const source = answers.yomHameahSource;
   if (source !== "official" && source !== "self") return null;
   const { rows, flat } = dimensionRows(answers);
@@ -299,44 +299,32 @@ export function StrengthsCard({ answers }: { answers: AssessmentAnswers }) {
   return (
     <Card
       kicker={source === "official" ? "מא״ה · ציונים רשמיים" : "מא״ה · הערכה עצמית"}
-      title={flat ? `כל 11 הציונים שלכם ${rows[0].score}/5` : `החוזקות שלכם: ${top.map((r) => r.label).join(", ")}`}
+      title={flat ? "כל הממדים שלכם באותה רמה" : "המפה של החוזקות שלכם"}
     >
-      {flat ? (
-        <p className="mb-4 text-sm leading-6 text-foreground/80">
-          ציונים זהים לא מבדילים בין תפקידים, אז ההתאמה תישען יותר על הספים ועל מה שסימנתם. זה בסדר גמור.
-        </p>
-      ) : top.length ? (
-        <ul className="mb-4 flex flex-wrap gap-2">
-          {top.map((r) => (
-            <li key={r.key} className="inline-flex items-center gap-1.5 border border-primary/35 bg-primary/10 px-2.5 py-1 text-xs text-foreground">
-              <Sparkles className="h-3 w-3 text-primary" aria-hidden />
-              {r.label} → {r.opens}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
-        {rows.map((r, i) => (
-          <li key={r.key} className="grid grid-cols-[1fr_auto] items-center gap-3 text-sm">
-            <span className={r.top ? "font-bold text-foreground" : "text-foreground/80"}>{r.label}</span>
-            <span className="flex gap-1" aria-label={`${r.score} מתוך 5`}>
-              {[1, 2, 3, 4, 5].map((cell) => (
-                <motion.span
-                  key={cell}
-                  className={`h-3 w-3 sm:w-4 ${cell <= r.score ? (r.top ? "bg-primary" : "bg-primary/60") : "bg-iron/25"}`}
-                  initial={reduce ? false : { opacity: 0, scale: 0.4 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.25, delay: 0.03 * i + 0.05 * cell, ease: EASE }}
-                />
-              ))}
-            </span>
-          </li>
-        ))}
-      </ul>
-      {source === "self" ? (
-        <p className="mt-3 text-[11px] text-dust">הערכה עצמית משפיעה פחות מציונים רשמיים על הדירוג.</p>
-      ) : null}
+      <div className="grid items-center gap-5 md:grid-cols-[1.1fr_1fr]">
+        <YomRadar answers={answers} />
+        {top.length ? (
+          <ul className="space-y-2">
+            {top.map((r, i) => (
+              <Reveal key={r.key} delay={0.4 + 0.12 * i}>
+                <li className="flex items-center gap-3 border border-primary/35 bg-primary/10 p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary font-mono text-base font-black text-primary-foreground">
+                    {r.score}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-foreground">{r.label}</span>
+                    <span className="block text-xs text-dust">פותח: {r.opens}</span>
+                  </span>
+                </li>
+              </Reveal>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm leading-6 text-dust">
+            אין ממד שבולט מעל השאר, אז ההתאמה תישען יותר על מה שסימנתם.
+          </p>
+        )}
+      </div>
     </Card>
   );
 }

@@ -821,7 +821,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
           aria-labelledby="assessment-step-title"
         >
           <div className="border-b border-iron/20 px-4 py-4 sm:px-6">
-            <div className="mb-2 flex items-center justify-between gap-4 text-[10px] text-dust">
+            <div className="mb-2 flex items-center justify-between gap-4 text-[11px] text-dust">
               <span className="font-mono tracking-widest uppercase">
                 {loginIntent
                   ? "התחברות"
@@ -1059,7 +1059,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             מחיקת טיוטה מהמכשיר
           </button>
         ) : null}
-        <p className="mt-5 text-center font-mono text-[9px] text-dust/50">{photo.creditShort}</p>
+        <p className="mt-5 text-center font-mono text-[11px] text-dust/50">{photo.creditShort}</p>
       </div>
     </div>
   );

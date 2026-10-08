@@ -7,6 +7,7 @@ import { ARIA } from "@/lib/a11y";
 import { defaultYomHameahScores, YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE } from "@/lib/yom-hameah";
 import { AssessmentCheckpoint } from "./AssessmentCheckpoint";
 import { stepReflection } from "../insights";
+import { YomRadar } from "./YomRadar";
 import {
   COMBAT_PREFERENCE_OPTIONS,
   COMBAT_READINESS_OPTIONS,
@@ -302,6 +303,13 @@ export function AssessmentQuestionStep({
                 : "בחרו מאיפה הציונים כדי להמשיך."}
         </p>
         {answers.yomHameahSource === "official" || answers.yomHameahSource === "self" ? (
+          <div className="sticky top-0 z-10 -mx-4 border-b border-iron/20 bg-background/95 px-4 py-2 backdrop-blur-sm sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+            <div className="mx-auto max-w-[15rem] sm:max-w-xs">
+              <YomRadar answers={answers} live />
+            </div>
+          </div>
+        ) : null}
+        {answers.yomHameahSource === "official" || answers.yomHameahSource === "self" ? (
           <div className="grid gap-2 sm:grid-cols-2">
             {YOM_HAMEAH_KEYS.map((key) => (
               <YomScoreRow
@@ -352,7 +360,7 @@ export function AssessmentQuestionStep({
             className="input-field min-h-28 resize-y"
           />
         </FormField>
-        <p className="-mt-4 text-left font-mono text-[10px] tabular-nums text-dust">
+        <p className="-mt-4 text-left font-mono text-[11px] tabular-nums text-dust">
           {answers.extraNote.length}/400
         </p>
       </div>
@@ -447,7 +455,7 @@ function SingleChoice<T extends string>({
             onClick={() => onChange(option.value)}
             style={{ animationDelay: `${index * 35}ms` }}
             className={`animate-option border text-right text-sm transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
-              cards ? "w-full px-4 py-3" : "rounded-sm px-3 py-2"
+              cards ? "w-full min-h-11 px-4 py-3" : "min-h-11 rounded-sm px-3 py-2"
             } ${
               selected
                 ? "border-primary bg-primary/10 font-semibold text-foreground"
@@ -521,7 +529,7 @@ function MultiChoice<T extends string>({
             disabled={disabled}
             onClick={() => toggle(option.value)}
             style={{ animationDelay: `${index * 35}ms` }}
-            className={`animate-option rounded-sm border px-3 py-2 text-xs font-medium transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`animate-option min-h-11 rounded-sm border px-3 py-2 text-xs font-medium transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 ${
               selected
                 ? "border-primary bg-primary/15 text-primary"
                 : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
@@ -562,7 +570,7 @@ function YomScoreRow({
               aria-pressed={selected}
               aria-label={ARIA.rangeValue(title, score, 5)}
               onClick={() => onChange(score)}
-              className={`h-9 w-9 rounded-sm border font-mono text-sm tabular-nums transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+              className={`h-11 w-10 rounded-sm border font-mono text-sm tabular-nums transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
                 selected
                   ? "border-primary bg-primary font-black text-primary-foreground"
                   : score < value

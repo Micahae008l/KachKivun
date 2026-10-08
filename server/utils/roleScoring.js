@@ -801,7 +801,40 @@ export function admissionChance(role, profile) {
   return { level, label: CHANCE_LABEL[level], reason: reasons.slice(0, 2).join(". ") };
 }
 
-export function buildCandidatePool(roles, profile, { poolSize = 40, maxPerCategory = 4, requestLimit = 12 } = {}) {
+/**
+ * Match-roles input: every catalog role the profile is eligible for (דפ"ר, profile and gender
+ * gates), ordered so the AI reads the personal request's roles first, then by preference score.
+ * The first `detailed` entries carry full facts in the prompt; the rest go as one-liners to keep
+ * the prompt affordable. The AI chooses the 5 from the whole list.
+ */
+export function rolesForAi(roles, profile, { detailed = 80 } = {}) {
+  const ctx = { ...profile, yomFlat: isFlatYom(profile.yom) };
+  const scored = [];
+  for (const role of roles) {
+    const s = scoreRole(role, ctx);
+    if (!s.eligible) continue;
+    scored.push({
+      ...role,
+      _score: s.base01,
+      basePercent: s.basePercent,
+      breakdownHe: s.breakdownHe,
+      scoreBreakdown: s.scoreBreakdown,
+      _subscores: s.subscores,
+    });
+  }
+  scored.sort((a, b) => b._score - a._score || compareStableText(a.roleTitle, b.roleTitle));
+  const requested = requestMatchedRoles(scored, profile.personalRequest, 40);
+  const requestedTitles = new Set(requested.map((r) => r.roleTitle));
+  const ordered = [...requested, ...scored.filter((r) => !requestedTitles.has(r.roleTitle))];
+  return ordered.map((r, i) => ({
+    ...r,
+    requestMatch: requestedTitles.has(r.roleTitle) || undefined,
+    admissionChance: admissionChance(r, profile),
+    detailed: i < detailed,
+  }));
+}
+
+export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCategory = 2, requestLimit = 6 } = {}) {
   const yomFlat = isFlatYom(profile.yom);
   const ctx = { ...profile, yomFlat };
 
