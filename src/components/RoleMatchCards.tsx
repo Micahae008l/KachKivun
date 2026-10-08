@@ -1,8 +1,7 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   BookOpen,
-  Bot,
   Briefcase,
   ChevronDown,
   Gauge,
@@ -20,6 +19,7 @@ import {
   Waves,
 } from "lucide-react";
 import { IdfPhotoCredit } from "@/components/IdfPhotoCredit";
+import { RoleInsightSheet } from "@/components/RoleInsightSheet";
 import {
   roleInsightSlug,
   type LockedRoleMatch,
@@ -297,12 +297,15 @@ function UnlockedRoleCard({
   role,
   photo,
   delayMs,
+  onMoreInfo,
 }: {
   role: UnlockedRoleMatch;
   photo: IdfPhoto | null;
   delayMs: number;
+  onMoreInfo: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [readMore, setReadMore] = useState(false);
   const headingId = useId();
   const detailsId = useId();
   const featured = role.rank === 1;
@@ -368,9 +371,20 @@ function UnlockedRoleCard({
             {role.summary && role.description ? (
               <p className="mt-1.5 text-base font-bold leading-7 text-foreground">{role.summary}</p>
             ) : null}
-            <p className="mt-1.5 max-w-prose text-[15px] leading-7 text-foreground/85">
+            <p
+              className={`mt-1.5 max-w-prose text-[15px] leading-7 text-foreground/85 ${readMore ? "" : "line-clamp-3"}`}
+            >
               {why || "לא סופק הסבר להתאמה זו."}
             </p>
+            {why.length > 180 && !readMore ? (
+              <button
+                type="button"
+                onClick={() => setReadMore(true)}
+                className="mt-1 text-sm font-semibold text-primary hover:underline"
+              >
+                קראו עוד
+              </button>
+            ) : null}
             {role.tags.length ? (
               <ul className="mt-3 flex flex-wrap gap-2" aria-label="מה בפרופיל שלכם תומך בהתאמה">
                 {role.tags.map((tag) => {
@@ -391,18 +405,17 @@ function UnlockedRoleCard({
 
           <KeyFacts role={role} />
 
-          {role.dayToDay ? (
-            <section aria-label="יום בתפקיד">
-              <div className="mb-1 flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-primary" aria-hidden />
-                <h4 className="text-sm font-bold text-foreground">מה עושים ביום־יום</h4>
-              </div>
-              <p className="max-w-prose text-sm leading-6 text-dust">{role.dayToDay}</p>
-            </section>
-          ) : null}
-
           <div>
-            <button
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={onMoreInfo}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary/15 px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/25"
+              >
+                <BookOpen className="h-4 w-4" aria-hidden />
+                עוד על התפקיד
+              </button>
+              <button
               type="button"
               onClick={() => {
                 if (!expanded && role.rank >= 3 && role.rank <= 5) {
@@ -410,16 +423,17 @@ function UnlockedRoleCard({
                 }
                 setExpanded((value) => !value);
               }}
-              className="inline-flex min-h-10 items-center gap-2 rounded-md border border-primary/35 px-3 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/10"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-iron/35 px-4 py-2 text-sm font-semibold text-dust transition-colors hover:text-foreground"
               aria-expanded={expanded}
               aria-controls={detailsId}
             >
-              {expanded ? "הסתרה" : "פירוט הציון ושאלות להמשך"}
+              {expanded ? "הסתרה" : "פירוט הציון"}
               <ChevronDown
                 className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
                 aria-hidden
               />
-            </button>
+              </button>
+            </div>
 
             {expanded ? (
               <div
@@ -452,15 +466,6 @@ function UnlockedRoleCard({
                     <p className="text-sm text-dust">לא סופקו שאלות המשך לתפקיד זה.</p>
                   )}
                 </section>
-
-                <Link
-                  to="/role-insights"
-                  search={{ role: roleInsightSlug(role.roleTitle) }}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                >
-                  <BookOpen className="h-3.5 w-3.5" aria-hidden />
-                  מידע כללי נוסף על התפקיד
-                </Link>
               </div>
             ) : null}
           </div>
@@ -523,6 +528,8 @@ export function RoleMatchCards({
   offer?: PaymentOffer | null;
 }) {
   const topRolesTracked = useRef(false);
+  const [infoSlug, setInfoSlug] = useState<string | undefined>(undefined);
+  const closeInfo = useCallback(() => setInfoSlug(undefined), []);
   const ordered = useMemo(() => [...roles].sort((left, right) => right.rank - left.rank), [roles]);
   const photos = useMemo(() => {
     const used = new Set<string>();
@@ -558,6 +565,7 @@ export function RoleMatchCards({
         role={role}
         photo={photos.get(role.rank) ?? null}
         delayMs={delayFor(role.rank)}
+        onMoreInfo={() => setInfoSlug(roleInsightSlug(role.roleTitle))}
       />
     ) : (
       <LockedRoleCard role={role} delayMs={delayFor(role.rank)} />
@@ -565,23 +573,9 @@ export function RoleMatchCards({
 
   return (
     <section className="space-y-5" aria-labelledby="role-match-results-heading" dir="rtl">
-      <header className="flex items-center gap-3 text-right">
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10 text-primary"
-          aria-hidden
-        >
-          <Bot className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="font-mono text-[10px] tracking-widest text-primary uppercase">תוצאות</p>
-          <h2 id="role-match-results-heading" className="text-xl font-black text-foreground">
-            חמש ההתאמות שלכם
-          </h2>
-          <p className="mt-1 text-xs leading-5 text-dust">
-            מתחילים ממקום 5, וההתאמה הכי חזקה מחכה בסוף.
-          </p>
-        </div>
-      </header>
+      <h2 id="role-match-results-heading" className="sr-only">
+        חמש ההתאמות שלכם
+      </h2>
 
       <ol reversed start={5} className="space-y-4 [list-style:none]">
         {unlockedBeforePaywall.map((role) => (
@@ -611,6 +605,7 @@ export function RoleMatchCards({
         ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי הסף, המיונים והנתונים העדכניים נקבעים רק על ידי
         צה״ל ויש לאמת אותם בערוצים הרשמיים.
       </p>
+      <RoleInsightSheet slug={infoSlug} onClose={closeInfo} />
     </section>
   );
 }

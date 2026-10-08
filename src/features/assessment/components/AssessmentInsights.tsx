@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { animate, motion, useInView, useReducedMotion } from "framer-motion";
 import { Check, Lock } from "lucide-react";
-import { COMBAT_PREFERENCE_OPTIONS, FOCUS_PREFERENCE_OPTIONS } from "@/lib/profile-preference-data";
-import { BASE_OPTIONS, ENVIRONMENT_OPTIONS, LEADERSHIP_OPTIONS, ROLE_INTEREST_OPTIONS } from "../options";
 import {
   PROFILE_RUNGS,
   commitmentRows,
@@ -12,7 +10,6 @@ import {
   isCombatDesignatedMale,
   monthsUntil,
   nextSteps,
-  wantsCombat,
   wantsTech,
 } from "../insights";
 import type { AssessmentAnswers } from "../types";
@@ -88,43 +85,6 @@ function Card({ kicker, title, children, className = "" }: { kicker: string; tit
   );
 }
 
-// ---------- 1. what you told us ----------
-
-function labelOf<T extends string>(options: readonly { value: T; label?: string; title?: string }[], value: T | "") {
-  const o = options.find((x) => x.value === value);
-  return o ? (o.label ?? o.title ?? "") : "";
-}
-
-export function AnswerEcho({ answers }: { answers: AssessmentAnswers }) {
-  const reduce = useReducedMotion();
-  const chips = [
-    labelOf(COMBAT_PREFERENCE_OPTIONS, answers.combatPreference),
-    labelOf(FOCUS_PREFERENCE_OPTIONS, answers.focus),
-    ...answers.rolesInterested.filter((r) => r !== "undecided").map((r) => labelOf(ROLE_INTEREST_OPTIONS, r)),
-    answers.basePreference && answers.basePreference !== "no_preference" ? labelOf(BASE_OPTIONS, answers.basePreference).split(":")[0] : "",
-    answers.environment && answers.environment !== "no_preference" ? labelOf(ENVIRONMENT_OPTIONS, answers.environment) : "",
-    answers.leadership ? labelOf(LEADERSHIP_OPTIONS, answers.leadership) : "",
-  ].filter(Boolean);
-  return (
-    <div>
-      <p className="text-xs text-dust">מה סימנתם עד עכשיו</p>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {chips.map((chip, i) => (
-          <motion.li
-            key={chip}
-            initial={reduce ? false : { opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 * i, duration: 0.35, ease: EASE }}
-            className="border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-foreground"
-          >
-            {chip}
-          </motion.li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 // ---------- 2. headline numbers ----------
 
 export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
@@ -133,9 +93,7 @@ export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
   const doors = daparDoors(answers);
   const total = doors.reduce((s, d) => s + d.items.length, 0);
   const open = dapar == null ? 0 : doors.filter((d) => dapar >= d.dapar).reduce((s, d) => s + d.items.length, 0);
-  const { rows, flat } = dimensionRows(answers);
   const rung = medical == null ? null : PROFILE_RUNGS.find((r) => medical >= r.profile);
-  const yomKnown = answers.yomHameahSource === "official" || answers.yomHameahSource === "self";
 
   const tiles = [
     {
@@ -144,22 +102,15 @@ export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
       note: dapar == null ? "לא ידוע עדיין" : total ? `${open} מתוך ${total} השערים שבחרתם פתוחים` : "מעל הממוצע הוא 50",
     },
     { label: "פרופיל", value: medical, note: rung ? rung.opens : "לא ידוע עדיין" },
-    {
-      label: "מא״ה הכי חזק",
-      value: yomKnown && !flat ? rows[0].score : null,
-      note: !yomKnown ? "לא הוזנו ציונים" : flat ? `כל הציונים ${rows[0].score}/5, לא מבדיל בין תפקידים` : rows[0].label,
-      suffix: "/5",
-    },
   ];
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
       {tiles.map((t, i) => (
         <Reveal key={t.label} delay={0.08 * i}>
-          <div className="h-full border border-iron/25 bg-card/70 p-5">
+          <div className="h-full border border-iron/25 bg-card/70 p-4 sm:p-5">
             <p className="text-xs text-dust">{t.label}</p>
             <p className="mt-1 font-mono text-4xl font-black leading-none text-primary">
               {t.value == null ? "—" : <CountUp value={t.value} />}
-              {t.value != null && t.suffix ? <span className="text-lg text-dust">{t.suffix}</span> : null}
             </p>
             <p className="mt-2 text-xs leading-5 text-foreground/80">{t.note}</p>
           </div>
@@ -241,50 +192,6 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
       <p className="mt-3 text-[11px] leading-5 text-dust">
         דפ״ר הוא רק השער. מעבר לו יש מיונים, ראיון וסיווג ביטחוני. מבחן חוזר אפשרי רק למי שיש לו 70 ומטה.
       </p>
-    </Card>
-  );
-}
-
-// ---------- 4. profile ladder ----------
-
-export function ProfileLadderCard({ answers }: { answers: AssessmentAnswers }) {
-  const reduce = useReducedMotion();
-  const medical = num(answers.medicalProfile);
-  if (medical == null) return null;
-  const female = answers.gender === "female";
-  const combat = wantsCombat(answers);
-  const current = PROFILE_RUNGS.find((r) => medical >= r.profile)?.profile;
-  return (
-    <Card kicker="סולם הפרופיל" title={`פרופיל ${medical}: איפה זה שם אתכם`}>
-      <ol className="space-y-2">
-        {PROFILE_RUNGS.map((rung, i) => {
-          const reached = medical >= rung.profile;
-          const isCurrent = rung.profile === current;
-          return (
-            <motion.li
-              key={rung.profile}
-              initial={reduce ? false : { opacity: 0, x: 10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35, delay: 0.06 * (PROFILE_RUNGS.length - i), ease: EASE }}
-              className={`grid grid-cols-[2.75rem_1fr] items-center gap-3 border-r-2 px-3 py-2.5 text-sm leading-6 ${
-                isCurrent ? "border-primary bg-primary/15" : reached ? "border-primary/40" : "border-iron/25"
-              }`}
-            >
-              <span className={`font-mono text-base font-black tabular-nums ${reached ? "text-primary" : "text-dust/60"}`}>{rung.profile}</span>
-              <span className={reached ? "text-foreground" : "text-dust/60 line-through decoration-iron/50"}>
-                {rung.opens}
-                {isCurrent ? <span className="mr-2 text-[11px] font-bold text-primary">← אתם כאן</span> : null}
-              </span>
-            </motion.li>
-          );
-        })}
-      </ol>
-      {female && combat ? (
-        <p className="mt-3 text-xs leading-5 text-foreground/80">
-          לנשים לוחמה היא בחירה: מיון לוחמות בלי מבחן פיזי, 32 חודשים ומילואים. סגורים עדיין חי״ר מתמרן וקומנדו.
-        </p>
-      ) : null}
     </Card>
   );
 }

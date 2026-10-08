@@ -1,17 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useDeferredValue, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft,
-  ExternalLink,
-  Search,
-  Shield,
-  Sparkles,
-  X,
-} from "lucide-react";
-import { getRoleInsight, listRoles, roleInsightSlug } from "@/lib/api";
-import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
+import { motion } from "framer-motion";
+import { Search, Shield, Sparkles } from "lucide-react";
+import { listRoles, roleInsightSlug } from "@/lib/api";
+import { RoleInsightSheet } from "@/components/RoleInsightSheet";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
 
@@ -49,22 +42,6 @@ export const Route = createFileRoute("/role-insights")({
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-function IntensityBar({ label, value }: { label: string; value: number | null }) {
-  if (value == null) return null;
-  const pct = Math.round((Math.min(5, Math.max(1, value)) / 5) * 100);
-  return (
-    <div className="space-y-1 text-right">
-      <div className="flex items-center justify-between gap-3 text-xs" dir="rtl">
-        <span className="text-dust">{label}</span>
-        <span className="font-mono tabular-nums text-dust">{value}/5</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-sm bg-iron/25">
-        <div className="h-full bg-primary/80" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
-
 function RoleInsightsPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
@@ -79,16 +56,8 @@ function RoleInsightsPage() {
     staleTime: 5 * 60_000,
   });
 
-  const detailQuery = useQuery({
-    queryKey: ["role-insight", selectedSlug],
-    queryFn: () => getRoleInsight(selectedSlug!),
-    enabled: Boolean(selectedSlug),
-    staleTime: 10 * 60_000,
-  });
-
   const categories = listQuery.data?.categories ?? [];
   const roles = listQuery.data?.roles ?? [];
-  const detail = detailQuery.data?.role;
 
   const categoryChips = useMemo(() => categories.slice(0, 24), [categories]);
 
@@ -247,155 +216,7 @@ function RoleInsightsPage() {
         <p className="py-10 text-center text-sm text-dust">לא נמצאו תפקידים לחיפוש הזה.</p>
       ) : null}
 
-      <AnimatePresence>
-        {selectedSlug ? (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 p-3 backdrop-blur-sm sm:items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeRole}
-          >
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="role-insight-title"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              transition={{ duration: 0.25, ease }}
-              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto border border-iron/40 bg-card p-5 text-right shadow-xl sm:p-8"
-              dir="rtl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mb-4 flex items-start justify-between gap-3" dir="ltr">
-                <div className="min-w-0 flex-1 text-right" dir="rtl">
-                  <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
-                    {detail?.category || "תפקיד"}
-                  </p>
-                  <h2 id="role-insight-title" className="text-xl font-black text-foreground sm:text-2xl">
-                    {detail?.roleTitle || "טוען…"}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeRole}
-                  className="shrink-0 rounded-md border border-iron/30 p-2 text-dust transition hover:text-foreground"
-                  aria-label="סגירה"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {detailQuery.isLoading ? (
-                <p className="text-sm text-dust">טוען פירוט…</p>
-              ) : detailQuery.isError ? (
-                <p className="text-sm text-destructive">לא הצלחנו לטעון את התפקיד. נסו שוב.</p>
-              ) : detail ? (
-                <div className="space-y-5">
-                  <div className="flex flex-wrap gap-2" dir="rtl">
-                    {detail.combat ? (
-                      <span className="rounded-sm border border-primary/30 bg-primary/10 px-2 py-1 text-[11px] text-primary">
-                        כיוון קרבי / שדה
-                      </span>
-                    ) : (
-                      <span className="rounded-sm border border-iron/30 px-2 py-1 text-[11px] text-dust">
-                        כיוון מקצועי / עורפי
-                      </span>
-                    )}
-                    {detail.selective ? (
-                      <span className="rounded-sm border border-iron/30 px-2 py-1 text-[11px] text-dust">
-                        קבלה סלקטיבית
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-3 text-sm leading-relaxed text-foreground/90">
-                    {detail.about.split(/\n\n+/).map((p, i) => (
-                      <p key={i} className={i === 0 ? "" : "text-dust"}>
-                        {p}
-                      </p>
-                    ))}
-                  </div>
-
-                  {detail.signals.length ? (
-                    <div>
-                      <h3 className="mb-2 text-xs font-bold text-foreground">מה עושים בפועל</h3>
-                      <ul className="list-disc space-y-1 pr-5 text-sm text-dust">
-                        {detail.signals.map((s) => (
-                          <li key={s}>{s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {detail.requirements.length ? (
-                    <div>
-                      <h3 className="mb-2 text-xs font-bold text-foreground">דרישות / הערות</h3>
-                      <ul className="list-disc space-y-1 pr-5 text-sm text-dust">
-                        {detail.requirements.map((s) => (
-                          <li key={s}>{s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {(detail.locations.length > 0 || detail.serviceLengthLabel) && (
-                    <div className="grid gap-2 text-sm text-dust sm:grid-cols-2">
-                      {detail.serviceLengthLabel ? (
-                        <p>
-                          <span className="text-foreground">אורך שירות משוער: </span>
-                          {detail.serviceLengthLabel}
-                        </p>
-                      ) : null}
-                      {detail.locations.length ? (
-                        <p>
-                          <span className="text-foreground">מיקומים משוערים: </span>
-                          {detail.locations.join(", ")}
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <IntensityBar label="עומס פיזי" value={detail.physicalDemand} />
-                    <IntensityBar label="טכנולוגיה" value={detail.techIntensity} />
-                    <IntensityBar label="עבודה עם אנשים" value={detail.peopleIntensity} />
-                  </div>
-
-                  <div className="flex flex-col gap-2 border-t border-iron/20 pt-4 sm:flex-row sm:justify-start" dir="rtl">
-                    <a
-                      href={detail.officialSearchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110"
-                    >
-                      <ExternalLink className="h-4 w-4" aria-hidden />
-                      חיפוש באתר מתגייסים
-                    </a>
-                    <a
-                      href={detail.officialDirectoryUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-md border border-iron/40 px-4 py-2.5 text-sm text-dust transition hover:border-primary/40 hover:text-foreground"
-                    >
-                      קטלוג תפקידים רשמי
-                      <ChevronLeft className="h-4 w-4" aria-hidden />
-                    </a>
-                  </div>
-
-                  <p className="text-[11px] leading-relaxed text-dust/80">
-                    קישור החיפוש מוביל לתוצאות מאתר מתגייסים (mitgaisim.idf.il). השמות והדרישות משתנים,
-                    ואנחנו לא מחליפים ייעוץ רשמי של צה״ל.
-                  </p>
-
-                  <RoleReviewsPanel roleSlug={detail.slug} roleTitle={detail.roleTitle} />
-                </div>
-              ) : null}
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      <RoleInsightSheet slug={selectedSlug} onClose={closeRole} />
     </div>
   );
 }

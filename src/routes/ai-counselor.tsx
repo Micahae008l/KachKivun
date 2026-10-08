@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { RoleMatchCards } from "@/components/RoleMatchCards";
+import { BuildingMatches } from "@/components/BuildingMatches";
 import { MatchHistoryPanel } from "@/components/MatchHistoryPanel";
 import { RoleMatchCardsSkeleton } from "@/components/skeletons/PageSkeletons";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
@@ -12,7 +13,6 @@ import { getErrorMessage } from "@/lib/api-errors";
 import { dashboardQueryOptions } from "@/lib/queries";
 import { getToken } from "@/lib/auth";
 import { AI_PROFILE_MISSING_LABELS } from "@/lib/profile-preference-data";
-import { migrateLegacyYomHameah, YOM_HAMEAH_KEYS } from "@/lib/yom-hameah";
 import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/ai-counselor")({
@@ -88,7 +88,19 @@ function AiCounselorPage() {
       }
 
       try {
+        let fresh = false;
+        try {
+          fresh = sessionStorage.getItem("kk_fresh_results") === "1";
+          sessionStorage.removeItem("kk_fresh_results");
+        } catch {
+          // storage blocked: no minimum, the screen shows while the request runs
+        }
+        const startedAt = Date.now();
         const response = await matchRolesRequest();
+        if (fresh) {
+          const wait = 3200 - (Date.now() - startedAt);
+          if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+        }
         setRoles(response.roles);
         setNotice(response.notice || "");
         setPersonalAnswer(response.personalAnswer || "");
@@ -114,16 +126,6 @@ function AiCounselorPage() {
     autoStarted.current = true;
     void generateRecommendation();
   }, [aiReady, dashboard, generateRecommendation, mounted, token]);
-
-  const yomAverage = (() => {
-    const yom = dashboard?.stats?.yomHameah
-      ? migrateLegacyYomHameah(dashboard.stats.yomHameah)
-      : null;
-    if (!yom) return "—";
-    const average =
-      YOM_HAMEAH_KEYS.reduce((total, key) => total + yom[key], 0) / YOM_HAMEAH_KEYS.length;
-    return `${average.toFixed(1)}/5`;
-  })();
 
   if (!mounted || (!token && mounted) || (dashboardQuery.isPending && !dashboard)) {
     return (
@@ -152,8 +154,7 @@ function AiCounselorPage() {
             חמש התאמות התפקיד שלכם
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-dust">
-            ההתאמה מתחילה אוטומטית כשהפרופיל וההערכה הושלמו. הדירוג מוצג ממקום 5 ועד מקום 1, בלי
-            המתנות מלאכותיות.
+            מתחילים ממקום 5, וההתאמה הכי חזקה מחכה בסוף.
           </p>
         </header>
 
@@ -208,28 +209,11 @@ function AiCounselorPage() {
                 {dashboard.stats?.medicalProfile ?? "—"}
               </strong>
             </span>
-            <span>
-              מא״ה <strong className="text-foreground">{yomAverage}</strong>
-            </span>
           </section>
         ) : null}
 
         {generationState === "loading" ? (
-          <section aria-labelledby="recommendation-loading-heading" aria-live="polite">
-            <div className="mb-4 flex items-center gap-3 border border-primary/30 bg-primary/10 px-4 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
-              <div>
-                <h2
-                  id="recommendation-loading-heading"
-                  className="text-sm font-bold text-foreground"
-                >
-                  מנתחים את ההערכה
-                </h2>
-                <p className="text-xs text-dust">התוצאה תוצג מיד כשהשרת יסיים.</p>
-              </div>
-            </div>
-            <RoleMatchCardsSkeleton />
-          </section>
+          <BuildingMatches />
         ) : null}
 
         {generationState === "error" ? (

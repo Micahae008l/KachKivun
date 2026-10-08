@@ -588,7 +588,12 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["assessment", "latest"] }),
       ]);
-      toast.success("ההערכה נשמרה. היועץ האישי מוכן");
+      // The counselor shows its "building your matches" screen for a beat even on a cache hit.
+      try {
+        sessionStorage.setItem("kk_fresh_results", "1");
+      } catch {
+        // Private mode: the build screen still shows while the request runs.
+      }
       navigate({ to: "/ai-counselor", replace: true });
       return true;
     } catch (error) {
