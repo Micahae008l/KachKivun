@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronLeft, Crosshair } from "lucide-react";
 import { toast } from "sonner";
-import { getDashboardStats, updateProfile, type YomHameah } from "@/lib/api";
+import { getDashboardStats, getPaymentOffer, updateProfile, type YomHameah } from "@/lib/api";
 import { dashboardQueryOptions } from "@/lib/queries";
 import { getToken } from "@/lib/auth";
 import { PreferenceOptionGrid } from "@/components/PreferenceOptionGrid";
@@ -18,12 +18,7 @@ import {
   type FitnessPreferenceValue,
 } from "@/lib/profile-preference-data";
 import { YOM_HAMEAH_KEYS, migrateLegacyYomHameah } from "@/lib/yom-hameah";
-import {
-  coerceCombat,
-  coerceFitness,
-  coerceFocus,
-  draftDateToYmd,
-} from "@/lib/profile-resume";
+import { coerceCombat, coerceFitness, coerceFocus, draftDateToYmd } from "@/lib/profile-resume";
 import { ARIA } from "@/lib/a11y";
 import { FieldError } from "@/components/FormField";
 import { getErrorMessage } from "@/lib/api-errors";
@@ -82,9 +77,27 @@ function OnboardingPage() {
     setMounted(true);
   }, []);
 
+  // One onboarding: with the adaptive funnel on, this legacy page forwards to it.
+  const offerQuery = useQuery({
+    queryKey: ["payment-offer"],
+    queryFn: getPaymentOffer,
+    staleTime: 60_000,
+    retry: 1,
+    enabled: mounted,
+  });
+  const forwardToAssessment = offerQuery.data?.personalizedFunnelV2 === true;
+  useEffect(() => {
+    if (forwardToAssessment) navigate({ to: "/post-signup", replace: true });
+  }, [forwardToAssessment, navigate]);
+
   const token = mounted ? getToken() : null;
 
-  const { data: dash, isPending, isError, refetch } = useQuery({
+  const {
+    data: dash,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
     ...dashboardQueryOptions(token),
     enabled: mounted && !!token,
   });
@@ -216,7 +229,7 @@ function OnboardingPage() {
           ? "מה רמת הכושר שלכם?"
           : step === STEP_DRAFT
             ? "מתי הגיוס?"
-            : 'דפ״ר ופרופיל רפואי';
+            : "דפ״ר ופרופיל רפואי";
 
   const subtitleForStep =
     step === STEP_COMBAT
@@ -229,7 +242,7 @@ function OnboardingPage() {
             ? "בחרו תאריך משוער. אפשר לעדכן אחר כך."
             : "נדרש לפני שימוש ביועץ AI.";
 
-  if (!mounted || (token && showSkeleton)) {
+  if (!mounted || offerQuery.isPending || forwardToAssessment || (token && showSkeleton)) {
     return <OnboardingSkeleton />;
   }
 
@@ -258,180 +271,186 @@ function OnboardingPage() {
         />
       </div>
       <div className="mx-auto max-w-2xl">
-      {/* Progress */}
-      <div className="mb-8 space-y-2">
-        <div className="flex gap-1">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div key={i} className="relative h-1 flex-1 overflow-hidden bg-iron/20">
-              <motion.div
-                className="absolute inset-y-0 right-0 bg-primary"
-                initial={{ width: "0%" }}
-                animate={{ width: i <= step ? "100%" : "0%" }}
-                transition={{ duration: 0.35, ease }}
-              />
-            </div>
-          ))}
-        </div>
-        <p className="text-center font-mono text-[10px] text-dust/50 tabular-nums">
-          שלב {step + 1} מתוך {TOTAL_STEPS}
-        </p>
-      </div>
-
-      <div className="border border-iron/30 bg-card p-5 overflow-hidden sm:p-8">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={step}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease }}
-            className="space-y-6 text-center"
-          >
-            <div className="flex flex-col items-center gap-2">
-              <div className="inline-flex h-10 w-10 items-center justify-center border border-primary/30 text-primary">
-                {step === STEP_DRAFT ? <Calendar className="h-5 w-5" /> : <Crosshair className="h-5 w-5" />}
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">{titleForStep}</h2>
-              <p className="text-sm text-dust">{subtitleForStep}</p>
-            </div>
-
-            {step === STEP_COMBAT && (
-              <PreferenceOptionGrid
-                options={COMBAT_PREFERENCE_OPTIONS}
-                selected={combat}
-                onSelect={(v) => {
-                  setCombat(v);
-                  setStepError(null);
-                }}
-                columnsClass="grid-cols-1 sm:grid-cols-2"
-              />
-            )}
-
-            {step === STEP_FOCUS && (
-              <PreferenceOptionGrid
-                options={FOCUS_PREFERENCE_OPTIONS}
-                selected={focus}
-                onSelect={(v) => {
-                  setFocus(v);
-                  setStepError(null);
-                }}
-                columnsClass="grid-cols-1 sm:grid-cols-2"
-              />
-            )}
-
-            {step === STEP_FITNESS && (
-              <PreferenceOptionGrid
-                options={FITNESS_PREFERENCE_OPTIONS}
-                selected={fitness}
-                onSelect={(v) => {
-                  setFitness(v);
-                  setStepError(null);
-                }}
-                columnsClass="grid-cols-1 sm:grid-cols-3"
-              />
-            )}
-
-            {step === STEP_DRAFT && (
-              <div className="space-y-3 text-right">
-                <label className="block text-sm font-medium text-foreground">תאריך גיוס משוער</label>
-                <DraftDateField
-                  value={draftDate}
-                  onChange={(v) => {
-                    setDraftDate(v);
-                    setStepError(null);
-                  }}
-                  invalid={Boolean(stepError)}
+        {/* Progress */}
+        <div className="mb-8 space-y-2">
+          <div className="flex gap-1">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div key={i} className="relative h-1 flex-1 overflow-hidden bg-iron/20">
+                <motion.div
+                  className="absolute inset-y-0 right-0 bg-primary"
+                  initial={{ width: "0%" }}
+                  animate={{ width: i <= step ? "100%" : "0%" }}
+                  transition={{ duration: 0.35, ease }}
                 />
               </div>
-            )}
+            ))}
+          </div>
+          <p className="text-center font-mono text-[10px] text-dust/50 tabular-nums">
+            שלב {step + 1} מתוך {TOTAL_STEPS}
+          </p>
+        </div>
 
-            {step === STEP_STATS && (
-              <div className="space-y-5 text-right">
-                <p className="text-xs font-medium text-dust">דפ&quot;ר</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {DAPAR_SCORES.map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => {
-                        setDapar(n);
-                        setStepError(null);
-                      }}
-                      aria-pressed={dapar === n}
-                      aria-label={ARIA.scoreChip(n, dapar === n)}
-                      className={`rounded-sm border px-3.5 py-2 font-mono text-sm font-bold tabular-nums transition-colors ${
-                        dapar === n
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-iron/30 bg-card text-foreground hover:border-primary/40"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
+        <div className="border border-iron/30 bg-card p-5 overflow-hidden sm:p-8">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease }}
+              className="space-y-6 text-center"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="inline-flex h-10 w-10 items-center justify-center border border-primary/30 text-primary">
+                  {step === STEP_DRAFT ? (
+                    <Calendar className="h-5 w-5" />
+                  ) : (
+                    <Crosshair className="h-5 w-5" />
+                  )}
                 </div>
-                <p className="text-xs font-medium text-dust">פרופיל רפואי</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {MEDICAL_SCORES.map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => {
-                        setMedical(n);
-                        setStepError(null);
-                      }}
-                      aria-pressed={medical === n}
-                      aria-label={ARIA.scoreChip(n, medical === n)}
-                      className={`rounded-sm border px-3.5 py-2 font-mono text-sm font-bold tabular-nums transition-colors ${
-                        medical === n
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-iron/30 bg-card text-foreground hover:border-primary/40"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
+                <h2 className="text-2xl font-bold text-foreground">{titleForStep}</h2>
+                <p className="text-sm text-dust">{subtitleForStep}</p>
               </div>
-            )}
 
-            {stepError ? <FieldError message={stepError} className="justify-center" /> : null}
+              {step === STEP_COMBAT && (
+                <PreferenceOptionGrid
+                  options={COMBAT_PREFERENCE_OPTIONS}
+                  selected={combat}
+                  onSelect={(v) => {
+                    setCombat(v);
+                    setStepError(null);
+                  }}
+                  columnsClass="grid-cols-1 sm:grid-cols-2"
+                />
+              )}
 
-            <div className="flex items-center justify-center gap-3 pt-2">
-              {step === STEP_STATS ? (
-                <button
-                  type="button"
-                  onClick={finish}
-                  disabled={dapar == null || medical == null || saving}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-40"
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden />
-                  {saving ? "שומר…" : "סיום ושמירה"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110"
-                >
-                  <ChevronLeft className="h-4 w-4" aria-hidden />
-                  הבא
-                </button>
+              {step === STEP_FOCUS && (
+                <PreferenceOptionGrid
+                  options={FOCUS_PREFERENCE_OPTIONS}
+                  selected={focus}
+                  onSelect={(v) => {
+                    setFocus(v);
+                    setStepError(null);
+                  }}
+                  columnsClass="grid-cols-1 sm:grid-cols-2"
+                />
               )}
-              {step > 0 && (
-                <button
-                  type="button"
-                  onClick={prev}
-                  className="rounded-md border border-iron/40 px-5 py-2.5 text-sm font-medium text-dust transition hover:border-primary/40 hover:text-foreground"
-                >
-                  הקודם
-                </button>
+
+              {step === STEP_FITNESS && (
+                <PreferenceOptionGrid
+                  options={FITNESS_PREFERENCE_OPTIONS}
+                  selected={fitness}
+                  onSelect={(v) => {
+                    setFitness(v);
+                    setStepError(null);
+                  }}
+                  columnsClass="grid-cols-1 sm:grid-cols-3"
+                />
               )}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+
+              {step === STEP_DRAFT && (
+                <div className="space-y-3 text-right">
+                  <label className="block text-sm font-medium text-foreground">
+                    תאריך גיוס משוער
+                  </label>
+                  <DraftDateField
+                    value={draftDate}
+                    onChange={(v) => {
+                      setDraftDate(v);
+                      setStepError(null);
+                    }}
+                    invalid={Boolean(stepError)}
+                  />
+                </div>
+              )}
+
+              {step === STEP_STATS && (
+                <div className="space-y-5 text-right">
+                  <p className="text-xs font-medium text-dust">דפ&quot;ר</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {DAPAR_SCORES.map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => {
+                          setDapar(n);
+                          setStepError(null);
+                        }}
+                        aria-pressed={dapar === n}
+                        aria-label={ARIA.scoreChip(n, dapar === n)}
+                        className={`rounded-sm border px-3.5 py-2 font-mono text-sm font-bold tabular-nums transition-colors ${
+                          dapar === n
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-iron/30 bg-card text-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs font-medium text-dust">פרופיל רפואי</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {MEDICAL_SCORES.map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => {
+                          setMedical(n);
+                          setStepError(null);
+                        }}
+                        aria-pressed={medical === n}
+                        aria-label={ARIA.scoreChip(n, medical === n)}
+                        className={`rounded-sm border px-3.5 py-2 font-mono text-sm font-bold tabular-nums transition-colors ${
+                          medical === n
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-iron/30 bg-card text-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {stepError ? <FieldError message={stepError} className="justify-center" /> : null}
+
+              <div className="flex items-center justify-center gap-3 pt-2">
+                {step === STEP_STATS ? (
+                  <button
+                    type="button"
+                    onClick={finish}
+                    disabled={dapar == null || medical == null || saving}
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-40"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden />
+                    {saving ? "שומר…" : "סיום ושמירה"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={next}
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden />
+                    הבא
+                  </button>
+                )}
+                {step > 0 && (
+                  <button
+                    type="button"
+                    onClick={prev}
+                    className="rounded-md border border-iron/40 px-5 py-2.5 text-sm font-medium text-dust transition hover:border-primary/40 hover:text-foreground"
+                  >
+                    הקודם
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

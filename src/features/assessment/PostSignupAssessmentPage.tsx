@@ -104,7 +104,7 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   roles: {
     icon: Target,
-    title: "מה מעניין — ומה פחות",
+    title: "מה מעניין, ומה פחות",
     subtitle: "הבחירות כאן קובעות אילו שאלות המשך באמת רלוונטיות לכם.",
   },
   preferences: {
@@ -174,6 +174,9 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
 };
 
+const REVIEW_SAVE_TITLE = "הפרופיל שלכם מוכן";
+const REVIEW_SAVE_SUBTITLE = "בדקו שהכול נכון, והזינו אימייל כדי לשמור. אפשר לחזור ולתקן כל שלב.";
+
 type AuthField = "email" | "code";
 
 function normalizeEmail(value: string) {
@@ -232,7 +235,7 @@ function safeResumeStep(
 
   const incomplete = firstIncompleteAssessmentStep(answers);
   if (incomplete) return incomplete;
-  return includeAuth ? "email" : "review";
+  return "review";
 }
 
 type PostSignupAssessmentPageProps = {
@@ -260,6 +263,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   const [stepError, setStepError] = useState("");
   const [authErrors, setAuthErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+  const [navDirection, setNavDirection] = useState<1 | -1>(1);
+  const autoAdvanceTimer = useRef<number | undefined>(undefined);
+  const advanceRef = useRef<() => void>(() => {});
   const authedRef = useRef(false);
   const assessmentStartTracked = useRef(false);
   const lastSectionTracked = useRef<AssessmentStepId | null>(null);
@@ -367,6 +373,16 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
       cancelled = true;
     };
   }, [legacyMode, mounted, navigate, queryClient]);
+
+  useEffect(() => () => window.clearTimeout(autoAdvanceTimer.current), []);
+  useEffect(() => {
+    advanceRef.current = nextQuestion;
+  });
+
+  // Long steps on phones: each new step starts at the top, not where the last one was scrolled.
+  useEffect(() => {
+    if (bootstrapped) window.scrollTo({ top: 0 });
+  }, [step, bootstrapped]);
 
   useAssessmentDraft({
     enabled: bootstrapped && !loginIntent && !authenticated && !legacyMode,
@@ -651,7 +667,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
     }
   }
 
-  async function verifyCode() {
+  async function verifyCode(codeInput = code) {
     clearAuthError("code");
     if (otpVerified && !loginIntent) {
       setLoading(true);
@@ -663,7 +679,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
       return;
     }
 
-    const cleanCode = normalizeOtp(code);
+    const cleanCode = normalizeOtp(codeInput);
     if (cleanCode.length !== 6) {
       setAuthErrors((current) => ({
         ...current,
@@ -703,6 +719,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   }
 
   function nextQuestion() {
+    window.clearTimeout(autoAdvanceTimer.current);
+    setNavDirection(1);
     setStepError("");
     const validationError = validateAssessmentStep(currentStep, answers);
     if (validationError) {
@@ -720,6 +738,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   }
 
   function goBack() {
+    window.clearTimeout(autoAdvanceTimer.current);
+    setNavDirection(-1);
     setStepError("");
     clearAuthError();
     if (loginIntent && currentStep === "email") {
@@ -734,6 +754,12 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
     setStep(steps[index - 1]);
   }
 
+  // Single-question screens move on by themselves a beat after the tap.
+  function scheduleAutoAdvance() {
+    window.clearTimeout(autoAdvanceTimer.current);
+    autoAdvanceTimer.current = window.setTimeout(() => advanceRef.current(), 320);
+  }
+
   if (!mounted) {
     return (
       <div dir="rtl" className="flex min-h-dvh items-center justify-center bg-background px-6">
@@ -745,6 +771,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   if (!bootstrapped) return <PostSignupBootstrapSkeleton />;
 
   const isAuthStep = currentStep === "email" || currentStep === "otp";
+  // Signed-out users save straight from the review screen: recap above, email below.
+  const reviewSaves = currentStep === "review" && !authenticated && !loginIntent && !legacyMode;
   const showLoginShortcut = !authenticated && !loginIntent && !isAuthStep && !authedRef.current;
   const photo = idfPhotoAt(currentIndex + 1);
   const offerPrice = offer ? formatPaymentPrice(offer.product) : "";
@@ -817,8 +845,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               )}
             >
               <div
-                className="h-full bg-primary transition-[width] duration-300"
-                style={{ width: `${progress}%` }}
+                className="h-full origin-right bg-primary transition-transform duration-300 ease-out"
+                style={{ transform: `scaleX(${progress / 100})` }}
                 aria-hidden
               />
             </div>
@@ -830,116 +858,136 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
           </div>
 
           <div className="px-4 py-6 sm:px-8 sm:py-8">
-            {!loginIntent && currentStep === "direction" ? (
-              <aside className="mb-6 border border-primary/45 bg-primary/10 px-4 py-3 text-right text-sm leading-6 text-dust">
-                <strong className="text-foreground">לפני שמתחילים:</strong>{" "}
-                {offer?.enabled
-                  ? `ההערכה האדפטיבית ושלוש ההתאמות האישיות במקומות 5–3 בחינם. חשיפת מקומות 2 ו־1 עולה ${offerPrice} בתשלום חד־פעמי, ללא מנוי. הפתיחה קבועה בחשבון וכוללת חישובים מחדש בעתיד; המחיר כולל מע״מ ככל שחל.`
-                  : "בתקופת הבטא ההערכה האדפטיבית וכל חמש ההתאמות האישיות פתוחות בחינם."}{" "}
-                ההמלצות אינן רשמיות ואינן מבטיחות זכאות, מיון או שיבוץ בצה״ל.
-              </aside>
-            ) : null}
-            <motion.header
+            <motion.div
               key={currentStep}
-              initial={reduceMotion ? false : { opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.22 }}
-              className="mb-7 text-center"
+              initial={
+                reduceMotion
+                  ? false
+                  : {
+                      opacity: 0,
+                      // RTL: the next screen enters from the left, the previous one from the right.
+                      transform: `translateX(${navDirection > 0 ? -16 : 16}px)`,
+                    }
+              }
+              animate={{ opacity: 1, transform: "translateX(0px)" }}
+              transition={{ duration: reduceMotion ? 0 : 0.26, ease }}
             >
-              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center border border-primary/30 bg-primary/5 text-primary">
-                <MetaIcon className="h-5 w-5" aria-hidden />
-              </div>
-              <h1
-                id="assessment-step-title"
-                className="text-xl font-black text-foreground sm:text-2xl"
-              >
-                {meta.title}
-              </h1>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust">{meta.subtitle}</p>
-            </motion.header>
-
-            {!isAuthStep ? (
-              <AssessmentQuestionStep
-                step={currentStep}
-                answers={answers}
-                setAnswers={setAnswers}
-                error={stepError}
-                clearError={() => setStepError("")}
-              />
-            ) : null}
-
-            {currentStep === "email" ? (
-              <FormField label="אימייל" error={authErrors.email}>
-                <input
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    clearAuthError("email");
-                  }}
-                  placeholder="name@gmail.com"
-                  className="input-field"
-                />
-              </FormField>
-            ) : null}
-
-            {currentStep === "otp" ? (
-              <div className="mx-auto max-w-md space-y-5">
-                <p className="text-center text-sm text-dust">
-                  הקוד נשלח ל־
-                  <span className="font-medium text-foreground" dir="ltr">
-                    {email}
-                  </span>
+              <header className="mb-7 text-center">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center border border-primary/30 bg-primary/5 text-primary">
+                  <MetaIcon className="h-5 w-5" aria-hidden />
+                </div>
+                <h1
+                  id="assessment-step-title"
+                  className="text-xl font-black text-foreground sm:text-2xl"
+                >
+                  {reviewSaves ? REVIEW_SAVE_TITLE : meta.title}
+                </h1>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust">
+                  {reviewSaves ? REVIEW_SAVE_SUBTITLE : meta.subtitle}
                 </p>
-                {devOtpHint ? (
-                  <p
-                    className="border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm text-primary"
-                    dir="ltr"
-                  >
-                    קוד פיתוח: <strong className="font-mono tracking-widest">{devOtpHint}</strong>
+              </header>
+
+              {!isAuthStep ? (
+                <AssessmentQuestionStep
+                  step={currentStep}
+                  answers={answers}
+                  setAnswers={setAnswers}
+                  error={stepError}
+                  clearError={() => setStepError("")}
+                  onAutoAdvance={scheduleAutoAdvance}
+                />
+              ) : null}
+
+              {currentStep === "email" || reviewSaves ? (
+                <div className={reviewSaves ? "mx-auto mt-8 max-w-md" : ""}>
+                  <FormField label="אימייל לשמירת התוצאות" error={authErrors.email}>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        clearAuthError("email");
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") void sendCode();
+                      }}
+                      placeholder="name@gmail.com"
+                      className="input-field"
+                    />
+                  </FormField>
+                  {reviewSaves ? (
+                    <p className="mt-2 text-xs leading-5 text-dust">
+                      בלי סיסמה. נשלח קוד חד־פעמי, והפרופיל נשמר בחשבון.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {currentStep === "otp" ? (
+                <div className="mx-auto max-w-md space-y-5">
+                  <p className="text-center text-sm text-dust">
+                    הקוד נשלח ל־
+                    <span className="font-medium text-foreground" dir="ltr">
+                      {email}
+                    </span>
                   </p>
-                ) : null}
-                <FormField label="קוד אימות בן 6 ספרות" error={authErrors.code}>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={6}
-                    value={code}
-                    onChange={(event) => {
-                      setCode(normalizeOtp(event.target.value));
-                      clearAuthError("code");
-                    }}
-                    placeholder="000000"
-                    disabled={loading || otpVerified}
-                    dir="ltr"
-                    className="input-field text-center font-mono text-2xl font-bold tracking-[0.35em]"
-                  />
-                </FormField>
-                {!legacyMode ? (
-                  <p className="text-center text-xs leading-5 text-dust">
-                    הטיוטה המלאה נשמרת במכשיר ולא תימחק עד שהשמירה בשרת תצליח.
-                  </p>
-                ) : null}
-                {!otpVerified ? (
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => {
-                      setCode("");
-                      void sendCode();
-                    }}
-                    className="block w-full text-center text-sm text-primary hover:underline disabled:opacity-50"
-                  >
-                    לא קיבלתם? שלחו קוד חדש
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
+                  {devOtpHint ? (
+                    <p
+                      className="border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm text-primary"
+                      dir="ltr"
+                    >
+                      קוד פיתוח: <strong className="font-mono tracking-widest">{devOtpHint}</strong>
+                    </p>
+                  ) : null}
+                  <FormField label="קוד אימות בן 6 ספרות" error={authErrors.code}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={code}
+                      onChange={(event) => {
+                        const next = normalizeOtp(event.target.value);
+                        setCode(next);
+                        clearAuthError("code");
+                        // The 6th digit submits; no extra tap needed.
+                        if (next.length === 6 && !loading && !otpVerified) void verifyCode(next);
+                      }}
+                      placeholder="000000"
+                      disabled={loading || otpVerified}
+                      dir="ltr"
+                      className="input-field text-center font-mono text-2xl font-bold tracking-[0.35em]"
+                    />
+                  </FormField>
+                  {!legacyMode ? (
+                    <p className="text-center text-xs leading-5 text-dust">
+                      הטיוטה המלאה נשמרת במכשיר ולא תימחק עד שהשמירה בשרת תצליח.
+                    </p>
+                  ) : null}
+                  {!otpVerified ? (
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() => {
+                        setCode("");
+                        void sendCode();
+                      }}
+                      className="block w-full text-center text-sm text-primary hover:underline disabled:opacity-50"
+                    >
+                      לא קיבלתם? שלחו קוד חדש
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </motion.div>
 
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-iron/20 pt-6">
-              {!isAuthStep ? (
+              {reviewSaves ? (
+                <PrimaryButton loading={loading} onClick={sendCode}>
+                  שלחו לי קוד ושמרו
+                </PrimaryButton>
+              ) : !isAuthStep ? (
                 <PrimaryButton loading={loading} onClick={nextQuestion}>
                   {currentStep === "review" && authenticated ? "שמירה וסיום" : "הבא"}
                 </PrimaryButton>
@@ -990,6 +1038,14 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                 </button>
               ) : null}
             </div>
+            {!loginIntent && currentStep === "direction" ? (
+              <p className="mt-5 text-xs leading-5 text-dust/80">
+                {offer?.enabled
+                  ? `ההערכה ושלוש ההתאמות במקומות 5 עד 3 בחינם. חשיפת מקומות 2 ו־1 עולה ${offerPrice} בתשלום חד־פעמי, ללא מנוי, כולל מע״מ ככל שחל.`
+                  : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
+                ההמלצות אינן רשמיות ואינן מבטיחות זכאות, מיון או שיבוץ בצה״ל.
+              </p>
+            ) : null}
           </div>
         </motion.section>
 

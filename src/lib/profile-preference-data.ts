@@ -9,7 +9,7 @@ export const COMBAT_PREFERENCE_OPTIONS: { value: CombatPreferenceValue; title: s
   {
     value: "FieldCombat",
     title: "כיוון קרבי / שטח",
-    subtitle: "לחימה, גיסריות, סיור, יחידות מיוחדות",
+    subtitle: "לחימה, חי״ר ושריון, סיור, יחידות מיוחדות",
   },
   {
     value: "SupportHQ",

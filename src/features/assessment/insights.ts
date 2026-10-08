@@ -1,5 +1,7 @@
 import { YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE, type YomHameahKey } from "@/lib/yom-hameah";
-import type { AssessmentAnswers } from "./types";
+import { deriveAssessmentBranches } from "./flow";
+import { ROLE_AVOIDANCE_OPTIONS } from "./options";
+import type { AssessmentAnswers, AssessmentStepId } from "./types";
 
 /**
  * Everything the checkpoint and review screens visualize, derived only from the user's answers.
@@ -11,11 +13,20 @@ const TECH_INTERESTS = new Set(["cyber", "intelligence", "technology_engineering
 const num = (v: number | "unknown" | null): number | null => (typeof v === "number" ? v : null);
 
 export function wantsTech(a: AssessmentAnswers): boolean {
-  return a.combatPreference === "TechTrack" || a.focus === "Tech" || a.focus === "Research" || a.rolesInterested.some((r) => TECH_INTERESTS.has(r));
+  return (
+    a.combatPreference === "TechTrack" ||
+    a.focus === "Tech" ||
+    a.focus === "Research" ||
+    a.rolesInterested.some((r) => TECH_INTERESTS.has(r))
+  );
 }
 
 export function wantsCombat(a: AssessmentAnswers): boolean {
-  return a.combatPreference === "FieldCombat" || a.combatPreference === "Mixed" || a.rolesInterested.includes("combat");
+  return (
+    a.combatPreference === "FieldCombat" ||
+    a.combatPreference === "Mixed" ||
+    a.rolesInterested.includes("combat")
+  );
 }
 
 /** A man with profile 72+ is "מיועד ללוחמה": rear roles are not in his questionnaire. */
@@ -39,20 +50,24 @@ export function daparDoors(a: AssessmentAnswers): DaparDoor[] {
   const doors = new Map<number, string[]>();
   const add = (d: number, item: string) => doors.set(d, [...(doors.get(d) ?? []), item]);
 
-  if (combat && medical >= 82 && (!female || medical >= 97)) add(50, "יום סיירות (מטכ״ל, שלדג, שייטת)");
+  if (combat && medical >= 82 && (!female || medical >= 97))
+    add(50, "יום סיירות (מטכ״ל, שלדג, שייטת)");
   if (intel) add(50, "מסלולי שפות: ערבית, פרסית, אופק");
   if (tech || intel) add(60, "גאמ״א סייבר");
   if (intel && !combatMale) add(60, "יום מיון כלל חמ״ן");
   if (tech && !combatMale) add(60, "אשכול מקצועות המחשב: QA, דאטה, מיישם הגנה");
   if ((air || combat) && medical >= 97) add(60, "קורס טיס");
-  if (combat && medical >= 82 && (a.rolesInterested.includes("navy") || air)) add(60, "חובלים, צוללות");
+  if (combat && medical >= 82 && (a.rolesInterested.includes("navy") || air))
+    add(60, "חובלים, צוללות");
   if (tech && !combatMale) add(70, "תוכניתן, מגן סייבר, DevOps, לה״ב");
   if (tech || a.focus === "Research") add(70, "עתודה עילית: פסגות, אלונים, ברקים");
   if (tech && combatMale) add(80, "אשכול מקצועות המחשב לבעלי פרופיל קרבי (+10 יח״ל)");
   if (tech || intel) add(80, "שחקים: אמנון, אח״מ, אע״מ (8200)");
   if (tech || a.focus === "Research") add(90, "תלפיות");
 
-  return [...doors.entries()].sort((x, y) => y[0] - x[0]).map(([dapar, items]) => ({ dapar, items }));
+  return [...doors.entries()]
+    .sort((x, y) => y[0] - x[0])
+    .map(([dapar, items]) => ({ dapar, items }));
 }
 
 // ---------- profile ladder ----------
@@ -84,7 +99,13 @@ const DIMENSION_OPENS: Record<YomHameahKey, string> = {
   maturity: "תפקידים רגישים, אחריות",
 };
 
-export type DimensionRow = { key: YomHameahKey; label: string; score: number; opens: string; top: boolean };
+export type DimensionRow = {
+  key: YomHameahKey;
+  label: string;
+  score: number;
+  opens: string;
+  top: boolean;
+};
 
 export function dimensionRows(a: AssessmentAnswers): { rows: DimensionRow[]; flat: boolean } {
   const rows = YOM_HAMEAH_KEYS.map((key) => ({
@@ -95,13 +116,23 @@ export function dimensionRows(a: AssessmentAnswers): { rows: DimensionRow[]; fla
     top: false,
   })).sort((x, y) => y.score - x.score);
   const flat = rows.every((r) => r.score === rows[0].score);
-  if (!flat) rows.filter((r) => r.score === rows[0].score && r.score >= 4).slice(0, 3).forEach((r) => (r.top = true));
+  if (!flat)
+    rows
+      .filter((r) => r.score === rows[0].score && r.score >= 4)
+      .slice(0, 3)
+      .forEach((r) => (r.top = true));
   return { rows, flat };
 }
 
 // ---------- commitment timeline ----------
 
-export type CommitmentRow = { label: string; mandatory: number; keva: number; release: Date; end: Date };
+export type CommitmentRow = {
+  label: string;
+  mandatory: number;
+  keva: number;
+  release: Date;
+  end: Date;
+};
 
 const addMonths = (d: Date, m: number) => new Date(d.getFullYear(), d.getMonth() + m, 1);
 
@@ -111,7 +142,12 @@ export function commitmentRows(a: AssessmentAnswers): CommitmentRow[] {
   const female = a.gender === "female";
   const rows: [string, number, number][] = [];
   if (wantsTech(a)) {
-    rows.push(["תוכניתן/ית", 32, 30], ["מגן/ת סייבר", 32, 24], ["DevOps", 32, 12], ["גאמ״א / אמנון", 32, 36]);
+    rows.push(
+      ["תוכניתן/ית", 32, 30],
+      ["מגן/ת סייבר", 32, 24],
+      ["DevOps", 32, 12],
+      ["גאמ״א / אמנון", 32, 36],
+    );
     if (num(a.daparScore) === 90) rows.push(["תלפיות (כולל תואר)", 40, 72]);
   }
   if (wantsCombat(a)) {
@@ -128,15 +164,23 @@ export function commitmentRows(a: AssessmentAnswers): CommitmentRow[] {
   }));
 }
 
-export const formatMonth = (d: Date) => `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+export const formatMonth = (d: Date) =>
+  `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 
 // ---------- roadmap with real dates ----------
 
 export type RoadmapStatus = "past" | "now" | "upcoming";
-export type RoadmapItem = { date: Date; title: string; detail: string; status: RoadmapStatus; approx?: boolean };
+export type RoadmapItem = {
+  date: Date;
+  title: string;
+  detail: string;
+  status: RoadmapStatus;
+  approx?: boolean;
+};
 
 function statusFor(date: Date, today: Date): RoadmapStatus {
-  const months = (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth();
+  const months =
+    (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth();
   if (months < 0) return "past";
   if (months === 0) return "now";
   return "upcoming";
@@ -169,24 +213,51 @@ export function draftRoadmap(a: AssessmentAnswers, today = new Date()): RoadmapI
     if (date) items.push({ date, title, detail, approx });
   };
 
-  push(new Date(g12, 8, 1), "שאלון העדפות נפתח", "דרגו עד 3 יעדים בציון 3 ומעלה; תפקידי איתור דורשים מיון.");
+  push(
+    new Date(g12, 8, 1),
+    "שאלון העדפות נפתח",
+    "דרגו עד 3 יעדים בציון 3 ומעלה; תפקידי איתור דורשים מיון.",
+  );
   if (wantsTech(a) || a.rolesInterested.includes("intelligence")) {
-    push(nextOf([1, 7], thisMonth, draft), "מיוני אשכול מקצועות המחשב", "יום מקוון ויום פרונטלי; תוצאות תוך 3 עד 6 שבועות.", true);
+    push(
+      nextOf([1, 7], thisMonth, draft),
+      "מיוני אשכול מקצועות המחשב",
+      "יום מקוון ויום פרונטלי; תוצאות תוך 3 עד 6 שבועות.",
+      true,
+    );
     if (!isCombatDesignatedMale(a)) {
-      const wave = dm >= 7 && dm <= 11 ? new Date(dy - 1, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 1, 1);
+      const wave =
+        dm >= 7 && dm <= 11 ? new Date(dy - 1, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 1, 1);
       push(wave, "גל מיוני כלל חמ״ן", "לא הוזמנתם? מיטב 1111, שלוחה 1 ואז 2.", true);
     }
-    push(new Date(g12 + 1, 1, 28), "סגירת שאלון העתודה האקדמית", "פסיכומטרי 590+ עד אפריל, רק אם רוצים תואר לפני השירות.");
+    push(
+      new Date(g12 + 1, 1, 28),
+      "סגירת שאלון העתודה האקדמית",
+      "פסיכומטרי 590+ עד אפריל, רק אם רוצים תואר לפני השירות.",
+    );
   }
   if (wantsCombat(a) && medical >= 82) {
-    push(nextOf([10, 1], thisMonth, draft), "יום סיירות", "פרופיל 82, דפ״ר 50; התוצאה קובעת לאיזה גיבוש תוזמנו.");
-    push(nextOf([11, 3], thisMonth, draft), "גיבוש אחוד (מטכ״ל, שלדג)", "5 ימים; מי שסיים ולא התקבל עובר לדראפט 669 וקומנדו.");
+    push(
+      nextOf([10, 1], thisMonth, draft),
+      "יום סיירות",
+      "פרופיל 82, דפ״ר 50; התוצאה קובעת לאיזה גיבוש תוזמנו.",
+    );
+    push(
+      nextOf([11, 3], thisMonth, draft),
+      "גיבוש אחוד (מטכ״ל, שלדג)",
+      "5 ימים; מי שסיים ולא התקבל עובר לדראפט 669 וקומנדו.",
+    );
     push(nextOf([4, 8, 12], thisMonth, draft), "גיבוש צנחנים", "מבחן כניסה: 3 ק״מ מתחת ל-15 דקות.");
   }
   if (a.rolesInterested.includes("air_force") && medical >= 97) {
     push(nextOf([2, 10], thisMonth, draft), "גיבוש טיס", "פרופיל 97, דפ״ר 60; 5 ימים בחצרים.");
   }
-  push(dm >= 7 && dm <= 11 ? new Date(dy, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 9, 1), "הודעת שיבוץ", "כחודש וחצי לפני הגיוס. ערעור: בקשה מנומקת למיטב.", true);
+  push(
+    dm >= 7 && dm <= 11 ? new Date(dy, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 9, 1),
+    "הודעת שיבוץ",
+    "כחודש וחצי לפני הגיוס. ערעור: בקשה מנומקת למיטב.",
+    true,
+  );
   push(new Date(dy, draft.getMonth(), 1), "גיוס", "יום הגיוס שסימנתם.");
 
   return items
@@ -194,4 +265,185 @@ export function draftRoadmap(a: AssessmentAnswers, today = new Date()): RoadmapI
     .map((item) => ({ ...item, status: statusFor(item.date, today) }));
 }
 
-export const HEBREW_MONTHS = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+export const HEBREW_MONTHS = [
+  "ינואר",
+  "פברואר",
+  "מרץ",
+  "אפריל",
+  "מאי",
+  "יוני",
+  "יולי",
+  "אוגוסט",
+  "ספטמבר",
+  "אוקטובר",
+  "נובמבר",
+  "דצמבר",
+];
+
+// ---------- live reflection under each step ----------
+
+const FOCUS_LABEL: Record<string, string> = {
+  Tech: "מיקוד טכנולוגי",
+  Physical: "אתגר פיזי",
+  Research: "מחקר ואנליזה",
+  Medical: "רפואה וטיפול",
+};
+const FITNESS_LABEL: Record<string, string> = { Low: "בסיסית", Medium: "בינונית", High: "גבוהה" };
+const READINESS_LINE: Record<string, string> = {
+  ready: "מוכנות פיזית טובה. המסלולים התובעניים נשארים על השולחן.",
+  needs_improvement: "כושר אפשר לשפר עד הגיוס. נראה גם מסלולים שמתאימים לרמה של היום.",
+  wants_to_improve: "כושר אפשר לשפר עד הגיוס. נראה גם מסלולים שמתאימים לרמה של היום.",
+  unsure: "נשלב מסלולים בכמה רמות קושי, ותראו מה מתאים.",
+};
+const MOTIVATION_LINE: Record<string, string> = {
+  contribution: "תרומה למדינה: נבליט תפקידים שבהם ההשפעה שלכם מורגשת.",
+  challenge: "מחפשים אתגר: נעדיף מסלולים עם מיונים וקורסים תובעניים.",
+  career: "מקצוע להמשך: נעדיף תפקידים עם הכשרה שנחשבת גם אחרי השחרור.",
+  friends_experience: "חוויה וחברים: נעדיף תפקידים עם צוות מגובש.",
+  personal_growth: "לגדול ולהתפתח: נעדיף תפקידים שבהם האחריות גדלה לאורך השירות.",
+  unsure: "זה בסדר לא לדעת עדיין. שאר התשובות מספיקות כדי לדייק.",
+};
+
+/** One short, honest line reacting to what was just answered, or null if nothing to say yet. */
+export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): string | null {
+  const branches = deriveAssessmentBranches(a);
+  switch (step) {
+    case "roles": {
+      if (!a.rolesInterested.length) return null;
+      const count = a.rolesInterested.length;
+      const parts = [
+        a.rolesInterested.includes("undecided")
+          ? "עדיין לא יודעים? בדיוק בשביל זה אנחנו כאן."
+          : count === 1
+            ? "תחום אחד נבחר."
+            : `${count} תחומים נבחרו.`,
+      ];
+      if (branches.wantsTechnical && a.combatPreference !== "TechTrack") {
+        parts.push("נוסיף שלב קצר על ניסיון טכנולוגי.");
+      }
+      if (
+        branches.wantsCombat &&
+        a.combatPreference !== "FieldCombat" &&
+        a.combatPreference !== "Mixed"
+      ) {
+        parts.push("נוסיף כמה שאלות כושר.");
+      }
+      if (a.rolesAvoided.length) {
+        const avoided = ROLE_AVOIDANCE_OPTIONS.filter((o) => a.rolesAvoided.includes(o.value)).map(
+          (o) => o.label,
+        );
+        parts.push(`ניקח בחשבון שתעדיפו להימנע מ: ${avoided.join(", ")}.`);
+      }
+      return parts.join(" ");
+    }
+    case "preferences": {
+      if (!a.focus || !a.physicalActivityLevel) return null;
+      const tail =
+        a.focus === "Physical" && a.physicalActivityLevel === "Low"
+          ? "שילוב מעניין: נחפש תפקידי שטח שלא דורשים כושר קרבי."
+          : a.physicalActivityLevel === "High"
+            ? "כושר גבוה פותח גם מסלולים פיזיים תובעניים."
+            : a.physicalActivityLevel === "Low"
+              ? "נעדיף תפקידים שבהם הראש עובד יותר מהרגליים."
+              : "כאן נמצאים רוב המתגייסים, ויש הרבה מאיפה לבחור.";
+      return `${FOCUS_LABEL[a.focus]} עם רמת פעילות ${FITNESS_LABEL[a.physicalActivityLevel]}. ${tail}`;
+    }
+    case "environment": {
+      if (!a.basePreference) return null;
+      const base =
+        a.basePreference === "open"
+          ? "בסיס פתוח: נעדיף תפקידים שחוזרים מהם הביתה בערב"
+          : a.basePreference === "closed"
+            ? "בסיס סגור פותח את רוב התפקידים המבצעיים והקרביים"
+            : "גמישות בבסיס מרחיבה מאוד את מספר התפקידים שנבדוק";
+      const env =
+        a.environment === "field"
+          ? ", עם עבודה בחוץ"
+          : a.environment === "office"
+            ? ", מול מסך"
+            : a.environment === "mixed"
+              ? ", בשילוב של שטח ומשרד"
+              : "";
+      return `${base}${env}.`;
+    }
+    case "style": {
+      if (!a.leadership) return null;
+      const lead =
+        a.leadership === "want_lead"
+          ? "רוצים לפקד: נשים לב לתפקידים עם המשך לקורס מפקדים וקצונה"
+          : a.leadership === "open"
+            ? "פתוחים לפיקוד אם יציעו: נשאיר את הדלת הזו פתוחה"
+            : "חלק מצוות: נעדיף תפקידים שבהם הכוח הוא בעבודה המשותפת";
+      const stress =
+        a.stress === "high"
+          ? ", ותפקוד טוב בלחץ מתאים לתפקידים מבצעיים."
+          : a.stress === "low"
+            ? ", בסביבה רגועה יחסית."
+            : ".";
+      return lead + stress;
+    }
+    case "combat":
+      return READINESS_LINE[a.combatDetails.readiness] ?? null;
+    case "technical": {
+      const level = a.technicalDetails.level;
+      if (!level) return null;
+      if (level === "advanced" || level === "expert") {
+        return "ניסיון גבוה: מסלולים כמו תוכניתן ומגן סייבר רלוונטיים במיוחד, בכפוף לדפ״ר.";
+      }
+      if (level === "intermediate")
+        return "בסיס טוב. הרבה מסלולי טכנולוגיה בצה״ל מלמדים מאפס בקורס.";
+      return "לא צריך ניסיון קודם: רוב קורסי הטכנולוגיה בצה״ל מתחילים מההתחלה.";
+    }
+    case "scores": {
+      const parts: string[] = [];
+      const dapar = num(a.daparScore);
+      const medical = num(a.medicalProfile);
+      if (dapar != null) {
+        const doors = daparDoors(a);
+        const total = doors.reduce((n, d) => n + d.items.length, 0);
+        const open = doors.filter((d) => d.dapar <= dapar).reduce((n, d) => n + d.items.length, 0);
+        if (total) {
+          parts.push(
+            open === total
+              ? `דפ״ר ${dapar}: כל ${total} מסלולי המיון שקשורים לבחירות שלכם פתוחים.`
+              : `דפ״ר ${dapar}: ${open} מתוך ${total} מסלולי המיון שקשורים לבחירות שלכם פתוחים.`,
+          );
+        }
+      }
+      if (medical != null) {
+        const rung = PROFILE_RUNGS.find((r) => medical >= r.profile);
+        if (rung) parts.push(`פרופיל ${medical} פותח: ${rung.opens}.`);
+      }
+      if (!parts.length && (a.daparScore === "unknown" || a.medicalProfile === "unknown")) {
+        return "אין בעיה. נתאים לפי שאר התשובות, ותוכלו לעדכן כשתקבלו את הנתונים.";
+      }
+      return parts.length ? parts.join(" ") : null;
+    }
+    case "yom": {
+      if (a.yomHameahSource === "unknown") {
+        return "בסדר גמור. ההתאמה תתבסס על שאר התשובות שלכם.";
+      }
+      if (!a.yomHameahSource) return null;
+      const { rows, flat } = dimensionRows(a);
+      if (flat) return "כל הציונים שווים כרגע. הזיזו את החזקים שלכם למעלה כדי שנראה מה בולט.";
+      const top = rows.filter((r) => r.top);
+      if (!top.length) return null;
+      return `החוזקות הבולטות שלכם: ${top.map((r) => r.label).join(", ")}. הן פותחות בעיקר: ${top[0].opens}.`;
+    }
+    case "motivation": {
+      const line = a.motivations[0] ? (MOTIVATION_LINE[a.motivations[0]] ?? null) : null;
+      return line && a.extraNote.trim() ? `${line} והיועץ יענה על הבקשה שלכם בראש התוצאות.` : line;
+    }
+    case "identity": {
+      const name = a.preferredName.trim();
+      if (!name) return null;
+      const draft = new Date(a.draftDate);
+      const months = Number.isNaN(draft.getTime()) ? null : monthsUntil(draft);
+      return months != null && months > 0
+        ? `${name}, נשארו כ־${months} חודשים לגיוס. זה בדיוק הזמן לתכנן נכון.`
+        : `נעים להכיר, ${name}.`;
+    }
+    default:
+      return null;
+  }
+}

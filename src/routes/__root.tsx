@@ -143,6 +143,16 @@ function RootLayout() {
   );
 }
 
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/accessibility",
+  "/cancellation",
+]);
+
 function RootLayoutInner() {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -190,7 +200,8 @@ function RootLayoutInner() {
     navigate({ to: "/" });
   }
 
-  if (!authReady) {
+  // Marketing and legal pages never depend on the session; only gated pages wait for the refresh.
+  if (!authReady && !PUBLIC_PATHS.has(pathname)) {
     return (
       <>
         <main

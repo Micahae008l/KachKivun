@@ -8,7 +8,7 @@ import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto, idfPhotoAt, type IdfPhoto } from "@/lib/idf-images";
 import { getDashboardStats, getPaymentOffer } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getToken, subscribeAuth } from "@/lib/auth";
 import { formatPaymentPrice } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
@@ -18,27 +18,22 @@ export const Route = createFileRoute("/")({
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;
-const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease } },
-};
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
-};
-
 function HomePrimaryCta({ className }: { className: string }) {
   const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [to, setTo] = useState("/post-signup");
   const [label, setLabel] = useState("בדקו התאמה בחינם");
 
   useEffect(() => {
     setMounted(true);
+    setToken(getToken());
+    // The page no longer waits for the session refresh, so pick up a login that lands later.
+    return subscribeAuth(() => setToken(getToken()));
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
-    if (!getToken()) return;
+    if (!token) return;
     let cancelled = false;
     getDashboardStats()
       .then((d) => {
@@ -58,7 +53,7 @@ function HomePrimaryCta({ className }: { className: string }) {
     return () => {
       cancelled = true;
     };
-  }, [mounted]);
+  }, [mounted, token]);
 
   return (
     <Link to={to} className={className}>
@@ -91,38 +86,40 @@ function HomePage() {
 
         <div className="relative z-10 mx-auto grid max-w-7xl items-stretch px-4 sm:px-6 lg:grid-cols-[5fr_7fr] lg:min-h-[calc(100vh-3.5rem)]">
           {/* Text column, right side in RTL */}
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            animate="show"
-            className="flex flex-col justify-center py-16 lg:py-24"
-          >
-            <motion.p
-              variants={fadeUp}
-              className="font-mono text-xs tracking-widest text-dust uppercase mb-6"
+          {/* CSS entrance, not framer: it runs from the first paint, before hydration. */}
+          <div className="flex flex-col justify-center py-16 lg:py-24">
+            <p
+              className="animate-slide-up font-mono text-xs tracking-widest text-dust uppercase mb-6"
+              style={{ animationDelay: "100ms" }}
             >
               פלטפורמת הכנה לשירות צה״ל
-            </motion.p>
+            </p>
 
-            <motion.h1
-              variants={fadeUp}
-              className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
+            <h1
+              className="animate-slide-up text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
+              style={{ animationDelay: "150ms" }}
             >
               שירות מתחיל
               <br />
               <span className="text-primary">בתכנון.</span>
-            </motion.h1>
+            </h1>
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-md text-base leading-[1.7] text-dust">
+            <p
+              className="animate-slide-up mt-6 max-w-md text-base leading-[1.7] text-dust"
+              style={{ animationDelay: "200ms" }}
+            >
               {SITE_NAME_HE} מרכזת את כל מה שצריך לדעת לפני ובמהלך השירות בצה&quot;ל.
               {paywallEnabled
                 ? ` ההערכה האדפטיבית ושלוש התאמות תפקיד אישיות בחינם. חשיפת מקומות 2 ו־1 עולה ${price} סופיים, כולל מע״מ ככל שחל, פעם אחת וללא מנוי.`
                 : betaOpen
                   ? " בתקופת הבטא ההערכה האדפטיבית וכל חמש התאמות התפקיד פתוחות בחינם."
                   : " ההערכה האישית מדרגת חמש התאמות תפקיד; פרטי הגישה יוצגו לפי מצב השירות."}
-            </motion.p>
+            </p>
 
-            <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-3">
+            <div
+              className="animate-slide-up mt-10 flex flex-col gap-3"
+              style={{ animationDelay: "250ms" }}
+            >
               <div className="flex items-center gap-4">
                 <HomePrimaryCta className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
                 <Link
@@ -141,26 +138,27 @@ function HomePage() {
                     ? "בתקופת הבטא כל חמש ההתאמות פתוחות; חשבון נדרש לשמירת התוצאות."
                     : "מתחילים מיד בלי הרשמה; חשבון נדרש לשמירת התוצאות."}
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUp} className="mt-12 flex gap-6 sm:mt-16 sm:gap-10">
+            <div
+              className="animate-slide-up mt-12 flex gap-6 sm:mt-16 sm:gap-10"
+              style={{ animationDelay: "300ms" }}
+            >
               <DataPoint value="+300" label="תפקידים ומסלולים" />
               <DataPoint value="11" label="ממדי מא״ה" />
-              <DataPoint value="3 דק׳" label="זמן הרשמה" />
-            </motion.div>
-          </motion.div>
+              <DataPoint value="5" label="התאמות אישיות" />
+            </div>
+          </div>
 
           {/* Slideshow, left side in RTL */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.15, ease }}
-            className="relative hidden min-h-[420px] lg:block lg:min-h-0"
+          <div
+            className="animate-scale-in relative hidden min-h-[420px] lg:block lg:min-h-0"
+            style={{ animationDelay: "150ms" }}
           >
             <div className="absolute inset-y-0 left-0 right-6">
               <HeroSlideshow className="h-full min-h-[420px] rounded-sm border border-iron/25" />
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 

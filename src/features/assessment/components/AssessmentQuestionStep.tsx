@@ -1,14 +1,12 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { Sparkles } from "lucide-react";
 import { DraftDateField } from "@/components/DraftDateField";
 import { FieldError, FormField } from "@/components/FormField";
 import { PreferenceOptionGrid } from "@/components/PreferenceOptionGrid";
 import { ARIA } from "@/lib/a11y";
-import {
-  defaultYomHameahScores,
-  YOM_HAMEAH_KEYS,
-  YOM_HAMEAH_LABELS_HE,
-} from "@/lib/yom-hameah";
+import { defaultYomHameahScores, YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE } from "@/lib/yom-hameah";
 import { AssessmentCheckpoint } from "./AssessmentCheckpoint";
+import { stepReflection } from "../insights";
 import {
   COMBAT_PREFERENCE_OPTIONS,
   COMBAT_READINESS_OPTIONS,
@@ -41,9 +39,18 @@ type Props = {
   setAnswers: Dispatch<SetStateAction<AssessmentAnswers>>;
   error?: string;
   clearError: () => void;
+  /** Called after an answer on a single-question screen, so the flow can move on by itself. */
+  onAutoAdvance?: () => void;
 };
 
-export function AssessmentQuestionStep({ step, answers, setAnswers, error, clearError }: Props) {
+export function AssessmentQuestionStep({
+  step,
+  answers,
+  setAnswers,
+  error,
+  clearError,
+  onAutoAdvance,
+}: Props) {
   function update(patch: Partial<AssessmentAnswers>) {
     clearError();
     setAnswers((current) => ({ ...current, ...patch }));
@@ -57,7 +64,10 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
         <PreferenceOptionGrid
           options={COMBAT_PREFERENCE_OPTIONS}
           selected={answers.combatPreference}
-          onSelect={(combatPreference) => update({ combatPreference })}
+          onSelect={(combatPreference) => {
+            update({ combatPreference });
+            onAutoAdvance?.();
+          }}
         />
       </OptionSection>
     );
@@ -165,8 +175,8 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
     content = (
       <div className="space-y-7">
         <p className="border-r-2 border-primary bg-primary/5 px-4 py-3 text-sm leading-6 text-dust">
-          השלב הזה הופיע בגלל הכיוון שבחרתם. אין צורך לנחש מספר מדויק — גם ״לא יודע/ת״ היא תשובה
-          מועילה.
+          השלב הזה הופיע בגלל הכיוון שבחרתם. לא צריך מספר מדויק, וגם ״לא יודע/ת״ היא תשובה
+          טובה.
         </p>
         <OptionSection legend="ריצת 3 ק״מ">
           <SingleChoice
@@ -228,76 +238,40 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
   }
 
   if (step === "scores") {
+    const scoreOptions = <T extends number>(values: readonly T[]) => [
+      ...values.map((score) => ({ value: String(score), label: String(score) })),
+      { value: UNKNOWN_SCORE_VALUE as string, label: UNKNOWN_SCORE_LABEL },
+    ];
+    const toScore = <T extends number>(value: string) =>
+      value === UNKNOWN_SCORE_VALUE ? UNKNOWN_SCORE_VALUE : (Number(value) as T);
     content = (
-      <div className="grid gap-5 sm:grid-cols-2">
-        <FormField label="מין">
-          <select
-            value={answers.gender}
-            onChange={(event) =>
-              update({
-                gender:
-                  event.target.value === "male" || event.target.value === "female"
-                    ? event.target.value
-                    : "",
-              })
+      <div className="space-y-7">
+        <OptionSection legend="מין">
+          <SingleChoice
+            options={
+              [
+                { value: "male", label: "זכר" },
+                { value: "female", label: "נקבה" },
+              ] as const
             }
-            className="input-field"
-          >
-            <option value="">בחרו</option>
-            <option value="male">זכר</option>
-            <option value="female">נקבה</option>
-          </select>
-        </FormField>
-        <FormField label='דפ"ר'>
-          <select
-            value={answers.daparScore ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
-              update({
-                daparScore:
-                  value === ""
-                    ? null
-                    : value === UNKNOWN_SCORE_VALUE
-                      ? UNKNOWN_SCORE_VALUE
-                      : (Number(value) as DaparScore),
-              });
-            }}
-            className="input-field"
-          >
-            <option value="">בחרו</option>
-            <option value={UNKNOWN_SCORE_VALUE}>{UNKNOWN_SCORE_LABEL}</option>
-            {DAPAR_SCORES.map((score) => (
-              <option key={score} value={score}>
-                {score}
-              </option>
-            ))}
-          </select>
-        </FormField>
-        <FormField label="פרופיל רפואי" className="sm:col-span-2">
-          <select
-            value={answers.medicalProfile ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
-              update({
-                medicalProfile:
-                  value === ""
-                    ? null
-                    : value === UNKNOWN_SCORE_VALUE
-                      ? UNKNOWN_SCORE_VALUE
-                      : (Number(value) as MedicalProfile),
-              });
-            }}
-            className="input-field"
-          >
-            <option value="">בחרו</option>
-            <option value={UNKNOWN_SCORE_VALUE}>{UNKNOWN_SCORE_LABEL}</option>
-            {MEDICAL_PROFILES.map((score) => (
-              <option key={score} value={score}>
-                {score}
-              </option>
-            ))}
-          </select>
-        </FormField>
+            value={answers.gender}
+            onChange={(gender) => update({ gender })}
+          />
+        </OptionSection>
+        <OptionSection legend='דפ"ר' hint="הציון מהצו הראשון, בקפיצות של 10.">
+          <SingleChoice
+            options={scoreOptions(DAPAR_SCORES)}
+            value={answers.daparScore === null ? "" : String(answers.daparScore)}
+            onChange={(value) => update({ daparScore: toScore<DaparScore>(value) })}
+          />
+        </OptionSection>
+        <OptionSection legend="פרופיל רפואי">
+          <SingleChoice
+            options={scoreOptions(MEDICAL_PROFILES)}
+            value={answers.medicalProfile === null ? "" : String(answers.medicalProfile)}
+            onChange={(value) => update({ medicalProfile: toScore<MedicalProfile>(value) })}
+          />
+        </OptionSection>
       </div>
     );
   }
@@ -320,17 +294,17 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
         </OptionSection>
         <p className="border-r-2 border-primary bg-primary/5 px-4 py-3 text-sm leading-6 text-dust">
           {answers.yomHameahSource === "official"
-            ? "נשתמש בציונים הרשמיים כפי שהזנתם אותם."
+            ? "סמנו את הציון שקיבלתם בכל ממד."
             : answers.yomHameahSource === "self"
-              ? "הערכה עצמית נשמרת בנפרד ותיחשב אות חלש יותר מציון רשמי בהתאמות עתידיות."
+              ? "העריכו בכנות. נתייחס להערכה עצמית בזהירות יותר מציון רשמי."
               : answers.yomHameahSource === "unknown"
-                ? "לא נציג סליידרים. יישמרו ציוני 3 ניטרליים לצורכי תאימות בלבד, והם לא ישמשו לאימות זכאות או כחוזקה."
-                : "בחרו מקור לפני שממשיכים. שום מקור לא נבחר עבורכם מראש."}
+                ? "אפשר להוסיף את הציונים מאוחר יותר, והתוצאות יתעדכנו."
+                : "בחרו מאיפה הציונים כדי להמשיך."}
         </p>
         {answers.yomHameahSource === "official" || answers.yomHameahSource === "self" ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {YOM_HAMEAH_KEYS.map((key) => (
-              <YomSlider
+              <YomScoreRow
                 key={key}
                 title={YOM_HAMEAH_LABELS_HE[key]}
                 value={answers.yomHameah[key]}
@@ -365,8 +339,8 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
         </OptionSection>
         <FormField label="בקשה אישית ליועץ (אופציונלי)">
           <p className="mb-2 text-xs leading-5 text-dust">
-            שאלה או דילמה ספציפית, והיועץ יענה עליה ישירות בתוצאות. לדוגמה: ״יש לי פרופיל 97 אבל אני רוצה
-            טכנולוגיה, מה האפשרויות שלי?״ או ״אני רוצה 8200 אבל הדפ״ר שלי 60״.
+            שאלה או דילמה ספציפית, והיועץ יענה עליה ישירות בתוצאות. לדוגמה: ״יש לי פרופיל 97 אבל אני
+            רוצה טכנולוגיה, מה האפשרויות שלי?״ או ״אני רוצה 8200 אבל הדפ״ר שלי 60״.
           </p>
           <textarea
             value={answers.extraNote}
@@ -411,9 +385,21 @@ export function AssessmentQuestionStep({ step, answers, setAnswers, error, clear
     );
   }
 
+  const reflection = stepReflection(step, answers);
+
   return (
     <div className="space-y-5">
       {content}
+      {reflection ? (
+        <p
+          key={reflection}
+          className="animate-reflection flex items-start gap-2.5 border border-primary/35 bg-primary/10 px-4 py-3 text-sm leading-6 text-foreground"
+          aria-live="polite"
+        >
+          <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          {reflection}
+        </p>
+      ) : null}
       {error ? <FieldError message={error} /> : null}
     </div>
   );
@@ -450,7 +436,7 @@ function SingleChoice<T extends string>({
 }) {
   return (
     <div className={cards ? "grid gap-2" : "flex flex-wrap gap-2"}>
-      {options.map((option) => {
+      {options.map((option, index) => {
         const selected = value === option.value;
         return (
           <button
@@ -458,7 +444,8 @@ function SingleChoice<T extends string>({
             type="button"
             aria-pressed={selected}
             onClick={() => onChange(option.value)}
-            className={`border text-right text-sm transition ${
+            style={{ animationDelay: `${index * 35}ms` }}
+            className={`animate-option border text-right text-sm transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
               cards ? "w-full px-4 py-3" : "rounded-sm px-3 py-2"
             } ${
               selected
@@ -473,7 +460,7 @@ function SingleChoice<T extends string>({
               aria-hidden
             />
             <span>
-              <span className="block">{option.label}</span>
+              <span className={option.description ? "block" : undefined}>{option.label}</span>
               {option.description ? (
                 <span className="mt-1 block text-xs font-normal leading-5 text-dust">
                   {option.description}
@@ -519,7 +506,7 @@ function MultiChoice<T extends string>({
 
   return (
     <div className="flex flex-wrap gap-2">
-      {options.map((option) => {
+      {options.map((option, index) => {
         const selected = values.includes(option.value);
         const disabled =
           !selected &&
@@ -532,7 +519,8 @@ function MultiChoice<T extends string>({
             aria-pressed={selected}
             disabled={disabled}
             onClick={() => toggle(option.value)}
-            className={`rounded-sm border px-3 py-2 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
+            style={{ animationDelay: `${index * 35}ms` }}
+            className={`animate-option rounded-sm border px-3 py-2 text-xs font-medium transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 ${
               selected
                 ? "border-primary bg-primary/15 text-primary"
                 : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
@@ -548,7 +536,7 @@ function MultiChoice<T extends string>({
   );
 }
 
-function YomSlider({
+function YomScoreRow({
   title,
   value,
   onChange,
@@ -558,23 +546,34 @@ function YomSlider({
   onChange: (value: number) => void;
 }) {
   return (
-    <label className="block border border-iron/25 bg-card p-4">
-      <span className="flex items-start justify-between gap-3">
-        <span className="text-sm font-semibold leading-5 text-foreground">{title}</span>
-        <strong className="font-mono text-sm tabular-nums text-primary" aria-hidden>
-          {value}/5
-        </strong>
+    <fieldset className="flex items-center justify-between gap-3 border border-iron/25 bg-card px-3 py-2.5">
+      <legend className="sr-only">{title}</legend>
+      <span className="text-sm font-semibold leading-5 text-foreground" aria-hidden>
+        {title}
       </span>
-      <input
-        type="range"
-        min={1}
-        max={5}
-        step={1}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className="mt-4 w-full accent-primary"
-        aria-valuetext={ARIA.rangeValue(title, value, 5)}
-      />
-    </label>
+      <span className="flex shrink-0 gap-1" dir="ltr">
+        {[1, 2, 3, 4, 5].map((score) => {
+          const selected = value === score;
+          return (
+            <button
+              key={score}
+              type="button"
+              aria-pressed={selected}
+              aria-label={ARIA.rangeValue(title, score, 5)}
+              onClick={() => onChange(score)}
+              className={`h-9 w-9 rounded-sm border font-mono text-sm tabular-nums transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+                selected
+                  ? "border-primary bg-primary font-black text-primary-foreground"
+                  : score < value
+                    ? "border-primary/40 bg-primary/15 text-foreground"
+                    : "border-iron/30 bg-background/40 text-dust hover:border-primary/40"
+              }`}
+            >
+              {score}
+            </button>
+          );
+        })}
+      </span>
+    </fieldset>
   );
 }
