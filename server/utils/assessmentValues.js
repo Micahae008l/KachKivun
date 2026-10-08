@@ -94,6 +94,7 @@ export function deriveAssessmentBranches(answers) {
     wantsTechnical:
       answers.combatPreference === "TechTrack" ||
       answers.focus === "Tech" ||
+      (answers.focusExtra || []).includes("Tech") ||
       answers.rolesInterested.some((role) => TECHNICAL_ROLE_IDS.has(role)),
   };
 }

@@ -173,6 +173,7 @@ export function normalizeAssessmentSignals(input) {
     leadership: typeof source.leadership === "string" ? source.leadership : "",
     stress: typeof source.stress === "string" ? source.stress : "",
     motivations: sortedUniqueStrings(source.motivations, new Set(["unsure"])),
+    focusExtra: sortedUniqueStrings(source.focusExtra),
     technicalDetails: normalizedOptionalDetails(source.technicalDetails, ["level", "areas"]),
     combatDetails: normalizedOptionalDetails(source.combatDetails, [
       "run3kmBand",

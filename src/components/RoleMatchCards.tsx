@@ -94,40 +94,47 @@ function ScoreBreakdownPanel({
 
 function MatchRing({
   percentage,
-  size = 72,
+  size = 84,
   delayMs = 0,
 }: {
   percentage: number;
   size?: number;
   delayMs?: number;
 }) {
+  const gradientId = useId();
   const value = Math.min(100, Math.max(0, Math.round(percentage)));
-  const stroke = size > 80 ? 7 : 5;
-  const radius = (size - stroke) / 2;
+  const big = size > 90;
+  const stroke = big ? 9 : 7;
+  const radius = (size - stroke) / 2 - 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="var(--primary)" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="currentColor"
           strokeWidth={stroke}
-          className="text-iron/30"
+          className="stroke-iron/20"
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="currentColor"
+          stroke={`url(#${gradientId})`}
           strokeWidth={stroke}
           strokeLinecap="round"
-          className="animate-ring text-primary"
+          className="animate-ring drop-shadow-[0_0_6px_color-mix(in_oklch,var(--primary)_45%,transparent)]"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           style={
@@ -139,14 +146,18 @@ function MatchRing({
         />
       </svg>
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center font-mono tabular-nums"
+        className="absolute inset-0 flex flex-col items-center justify-center"
         role="img"
         aria-label={ARIA.matchPct(value)}
       >
-        <span className={`font-black text-foreground ${size > 80 ? "text-2xl" : "text-lg"}`}>
+        <span
+          className={`font-mono font-black leading-none tabular-nums text-foreground ${big ? "text-3xl" : "text-2xl"}`}
+          dir="ltr"
+        >
           {value}
+          <span className={`font-bold text-primary ${big ? "text-base" : "text-sm"}`}>%</span>
         </span>
-        <span className="text-[9px] text-dust">% התאמה</span>
+        <span className="mt-1 text-[11px] font-semibold text-dust">התאמה</span>
       </div>
     </div>
   );
@@ -194,7 +205,7 @@ function LockedRoleCard({ role, delayMs }: { role: LockedRoleMatch; delayMs: num
             <div className="h-3 w-32 rounded-sm bg-iron/20 blur-[3px]" />
           </div>
         </div>
-        <MatchRing percentage={role.matchPercentage} size={featured ? 96 : 72} delayMs={delayMs} />
+        <MatchRing percentage={role.matchPercentage} size={featured ? 108 : 84} delayMs={delayMs} />
       </div>
     </article>
   );
@@ -345,7 +356,7 @@ function UnlockedRoleCard({
             </div>
             <MatchRing
               percentage={role.matchPercentage}
-              size={featured ? 96 : 72}
+              size={featured ? 108 : 84}
               delayMs={delayMs}
             />
           </header>

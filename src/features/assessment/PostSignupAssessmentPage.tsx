@@ -898,30 +898,23 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                 />
               ) : null}
 
-              {currentStep === "email" || reviewSaves ? (
-                <div className={reviewSaves ? "mx-auto mt-8 max-w-md" : ""}>
-                  <FormField label="אימייל לשמירת התוצאות" error={authErrors.email}>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        clearAuthError("email");
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") void sendCode();
-                      }}
-                      placeholder="name@gmail.com"
-                      className="input-field"
-                    />
-                  </FormField>
-                  {reviewSaves ? (
-                    <p className="mt-2 text-xs leading-5 text-dust">
-                      בלי סיסמה. נשלח קוד חד־פעמי, והפרופיל נשמר בחשבון.
-                    </p>
-                  ) : null}
-                </div>
+              {currentStep === "email" ? (
+                <FormField label="אימייל" error={authErrors.email}>
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      clearAuthError("email");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") void sendCode();
+                    }}
+                    placeholder="name@gmail.com"
+                    className="input-field"
+                  />
+                </FormField>
               ) : null}
 
               {currentStep === "otp" ? (
@@ -982,12 +975,45 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
             </motion.div>
 
+            {reviewSaves ? (
+              // Pinned to the bottom so the save action never hides under the long recap.
+              <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-primary/40 bg-background/95 pb-4 pl-4 pr-20 pt-3 shadow-[0_-16px_32px_-16px_oklch(0_0_0/0.9)] backdrop-blur-md sm:-mx-8 sm:px-8">
+                <p className="mb-2 text-sm font-black text-foreground">
+                  שמרו את הפרופיל וקבלו את ההתאמות
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                  <div className="min-w-0 flex-1">
+                    <FormField label="אימייל" error={authErrors.email}>
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(event) => {
+                          setEmail(event.target.value);
+                          clearAuthError("email");
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") void sendCode();
+                        }}
+                        placeholder="name@gmail.com"
+                        className="input-field"
+                      />
+                    </FormField>
+                  </div>
+                  <div className="sm:pt-6">
+                    <PrimaryButton loading={loading} onClick={sendCode}>
+                      שלחו לי קוד ושמרו
+                    </PrimaryButton>
+                  </div>
+                </div>
+                <p className="mt-1.5 text-[11px] leading-4 text-dust">
+                  בלי סיסמה. נשלח קוד חד־פעמי לאימייל.
+                </p>
+              </div>
+            ) : null}
+
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-iron/20 pt-6">
-              {reviewSaves ? (
-                <PrimaryButton loading={loading} onClick={sendCode}>
-                  שלחו לי קוד ושמרו
-                </PrimaryButton>
-              ) : !isAuthStep ? (
+              {reviewSaves ? null : !isAuthStep ? (
                 <PrimaryButton loading={loading} onClick={nextQuestion}>
                   {currentStep === "review" && authenticated ? "שמירה וסיום" : "הבא"}
                 </PrimaryButton>

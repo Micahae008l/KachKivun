@@ -104,11 +104,21 @@ export function AssessmentQuestionStep({
   if (step === "preferences") {
     content = (
       <div className="space-y-8">
-        <OptionSection legend="מה מושך אתכם יותר בעבודה עצמה?">
+        <OptionSection
+          legend="מה מושך אתכם בעבודה עצמה?"
+          hint="אפשר לבחור כמה. הראשון שתבחרו ייחשב העיקרי."
+        >
           <PreferenceOptionGrid
             options={FOCUS_PREFERENCE_OPTIONS}
             selected={answers.focus}
-            onSelect={(focus) => update({ focus })}
+            selectedValues={answers.focus ? [answers.focus, ...answers.focusExtra] : []}
+            onSelect={(value) => {
+              const chosen = answers.focus ? [answers.focus, ...answers.focusExtra] : [];
+              const next = chosen.includes(value)
+                ? chosen.filter((item) => item !== value)
+                : [...chosen, value];
+              update({ focus: next[0] ?? "", focusExtra: next.slice(1) });
+            }}
           />
         </OptionSection>
         <OptionSection legend="איזו רמת פעילות פיזית מתאימה לכם?">

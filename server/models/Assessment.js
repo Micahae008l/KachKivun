@@ -89,6 +89,7 @@ const answersSchema = new mongoose.Schema(
     yomHameahSource: { type: String, enum: YOM_SOURCES, required: true },
     combatPreference: { type: String, enum: COMBAT_PREFERENCES, required: true },
     focus: { type: String, enum: FOCUS_PREFERENCES, required: true },
+    focusExtra: enumArray(FOCUS_PREFERENCES, 3),
     physicalActivityLevel: { type: String, enum: FITNESS_LEVELS, required: true },
     rolesInterested: {
       ...enumArray(ROLE_INTERESTS, 5),

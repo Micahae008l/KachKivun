@@ -13,6 +13,7 @@ export function createDefaultAssessmentAnswers(): AssessmentAnswers {
     yomHameahSource: "",
     combatPreference: "",
     focus: "",
+    focusExtra: [],
     physicalActivityLevel: "",
     rolesInterested: [],
     rolesAvoided: [],

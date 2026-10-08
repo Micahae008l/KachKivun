@@ -80,10 +80,10 @@ function Grow({ pct, delay = 0, className }: { pct: number; delay?: number; clas
 
 function Card({ kicker, title, children, className = "" }: { kicker: string; title: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`relative overflow-hidden border border-iron/25 bg-gradient-to-b from-card to-background/40 p-4 sm:p-6 ${className}`}>
+    <section className={`relative overflow-hidden border border-iron/25 bg-gradient-to-b from-card to-background/40 p-5 sm:p-7 ${className}`}>
       <p className="font-mono text-[11px] tracking-[0.25em] text-primary">{kicker}</p>
-      <h3 className="mt-1.5 text-lg font-black leading-snug text-foreground sm:text-xl">{title}</h3>
-      <div className="mt-4">{children}</div>
+      <h3 className="mt-2 text-lg font-black leading-snug text-foreground sm:text-xl">{title}</h3>
+      <div className="mt-5">{children}</div>
     </section>
   );
 }
@@ -152,10 +152,10 @@ export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
     },
   ];
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {tiles.map((t, i) => (
         <Reveal key={t.label} delay={0.08 * i}>
-          <div className="h-full border border-iron/25 bg-card/70 p-4">
+          <div className="h-full border border-iron/25 bg-card/70 p-5">
             <p className="text-xs text-dust">{t.label}</p>
             <p className="mt-1 font-mono text-4xl font-black leading-none text-primary">
               {t.value == null ? "—" : <CountUp value={t.value} />}
@@ -185,12 +185,12 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
       title={dapar == null ? "אלה השערים בכיוונים שבחרתם" : `עם דפ״ר ${dapar}, זה מה שנפתח בכיוונים שבחרתם`}
     >
       {combatMale ? (
-        <div className="mb-4 border-r-2 border-amber-400 bg-amber-400/10 p-3 text-sm leading-6 text-foreground">
-          <strong>פרופיל {medical} = ייעוד ללוחמה.</strong> שאלון ההעדפות שלך יהיה גרסת יחידות השדה, בלי תפקידי עורף. לטכנולוגיה
-          מגיעים רק דרך מיונים שמקבלים פרופיל קרבי, ומאז יוני 2024 המכסות שלהם ב-8200 ובתקשוב צומצמו.
+        <div className="mb-5 border-r-2 border-amber-400 bg-amber-400/10 p-3 text-sm leading-6 text-foreground">
+          <strong>פרופיל {medical} = ייעוד ללוחמה.</strong> לטכנולוגיה מגיעים רק דרך מיונים שמקבלים פרופיל
+          קרבי, והמכסות שם מצומצמות.
         </div>
       ) : null}
-      <ol className="space-y-1.5">
+      <ol className="space-y-3">
         {doors.map((door, i) => {
           const open = dapar != null && dapar >= door.dapar;
           const gap = dapar == null ? null : door.dapar - dapar;
@@ -214,11 +214,11 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.15 + fromBottom * 0.18, ease: EASE }}
-                className={`flex flex-wrap items-start justify-between gap-2 border p-2.5 ${
+                className={`flex flex-col-reverse items-stretch gap-2 border p-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 ${
                   open ? "border-primary/35 bg-primary/10" : "border-iron/20 bg-card/40"
                 }`}
               >
-                <ul className="min-w-0 flex-1 space-y-0.5 text-sm">
+                <ul className="min-w-0 flex-1 space-y-1 text-sm leading-6">
                   {door.items.map((item) => (
                     <li key={item} className={open ? "text-foreground" : "text-dust"}>
                       {item}
@@ -226,7 +226,7 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
                   ))}
                 </ul>
                 <span
-                  className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-0.5 text-[11px] font-bold ${
+                  className={`inline-flex shrink-0 items-center gap-1 self-end whitespace-nowrap sm:self-auto px-2 py-0.5 text-[11px] font-bold ${
                     open ? "bg-primary text-primary-foreground" : "bg-iron/25 text-dust"
                   }`}
                 >
@@ -256,7 +256,7 @@ export function ProfileLadderCard({ answers }: { answers: AssessmentAnswers }) {
   const current = PROFILE_RUNGS.find((r) => medical >= r.profile)?.profile;
   return (
     <Card kicker="סולם הפרופיל" title={`פרופיל ${medical}: איפה זה שם אתכם`}>
-      <ol className="space-y-1">
+      <ol className="space-y-2">
         {PROFILE_RUNGS.map((rung, i) => {
           const reached = medical >= rung.profile;
           const isCurrent = rung.profile === current;
@@ -267,7 +267,7 @@ export function ProfileLadderCard({ answers }: { answers: AssessmentAnswers }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.35, delay: 0.06 * (PROFILE_RUNGS.length - i), ease: EASE }}
-              className={`grid grid-cols-[2.75rem_1fr] items-center gap-3 border-r-2 px-2 py-1.5 text-sm ${
+              className={`grid grid-cols-[2.75rem_1fr] items-center gap-3 border-r-2 px-3 py-2.5 text-sm leading-6 ${
                 isCurrent ? "border-primary bg-primary/15" : reached ? "border-primary/40" : "border-iron/25"
               }`}
             >

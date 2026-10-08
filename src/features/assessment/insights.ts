@@ -17,6 +17,7 @@ export function wantsTech(a: AssessmentAnswers): boolean {
     a.combatPreference === "TechTrack" ||
     a.focus === "Tech" ||
     a.focus === "Research" ||
+    a.focusExtra.includes("Tech") ||
     a.rolesInterested.some((r) => TECH_INTERESTS.has(r))
   );
 }
@@ -258,7 +259,8 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
             : a.physicalActivityLevel === "Low"
               ? "נעדיף תפקידים שבהם הראש עובד יותר מהרגליים."
               : "כאן נמצאים רוב המתגייסים, ויש הרבה מאיפה לבחור.";
-      return `${FOCUS_LABEL[a.focus]} עם רמת פעילות ${FITNESS_LABEL[a.physicalActivityLevel]}. ${tail}`;
+      const focuses = [a.focus, ...a.focusExtra].map((f) => FOCUS_LABEL[f]).join(" + ");
+      return `${focuses} עם רמת פעילות ${FITNESS_LABEL[a.physicalActivityLevel]}. ${tail}`;
     }
     case "environment": {
       if (!a.basePreference) return null;

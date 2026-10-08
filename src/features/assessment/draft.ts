@@ -146,6 +146,7 @@ export function normalizeAssessmentAnswers(value: unknown): AssessmentAnswers {
     yomHameahSource: enumOrEmpty(source.yomHameahSource, yomSources),
     combatPreference: enumOrEmpty(source.combatPreference, combatPreferences),
     focus: enumOrEmpty(source.focus, focusPreferences),
+    focusExtra: enumArray(source.focusExtra, focusPreferences, 3),
     physicalActivityLevel: enumOrEmpty(source.physicalActivityLevel, fitnessPreferences),
     rolesInterested: enumArray(source.rolesInterested, roleInterests, 5),
     rolesAvoided: enumArray(source.rolesAvoided, roleAvoidances, 6),

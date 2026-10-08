@@ -172,6 +172,7 @@ function parseAnswers(value) {
     "yomHameahSource",
     "combatPreference",
     "focus",
+    "focusExtra",
     "physicalActivityLevel",
     "rolesInterested",
     "rolesAvoided",
@@ -239,6 +240,12 @@ function parseAnswers(value) {
   if (rolesInterested.value.includes("undecided") && rolesInterested.value.length > 1) {
     return fail("rolesInterested cannot combine undecided with other values");
   }
+  // Extra day-to-day focus areas beyond the main one; optional for older clients.
+  const focusExtra =
+    raw.focusExtra === undefined
+      ? { ok: true, value: [] }
+      : parseEnumArray(raw.focusExtra, FOCUS_PREFERENCES, { label: "focusExtra", max: 3 });
+  if (!focusExtra.ok) return focusExtra;
   const rolesAvoided = parseEnumArray(raw.rolesAvoided, ROLE_AVOIDANCES, {
     label: "rolesAvoided",
     max: 6,
@@ -293,6 +300,7 @@ function parseAnswers(value) {
     yomHameahSource: yomSource.value,
     combatPreference: combatPreference.value,
     focus: focus.value,
+    focusExtra: focusExtra.value.filter((value) => value !== focus.value),
     physicalActivityLevel: fitness.value,
     rolesInterested: rolesInterested.value,
     rolesAvoided: rolesAvoided.value,

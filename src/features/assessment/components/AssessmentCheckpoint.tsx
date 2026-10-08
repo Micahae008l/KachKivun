@@ -56,13 +56,11 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
   }
 
   return (
-    <section className={`space-y-5 text-right ${className}`} aria-label="הפרופיל שלכם">
+    <section className={`space-y-8 text-right ${className}`} aria-label="הפרופיל שלכם">
       <AnswerEcho answers={answers} />
       <ProfileHeadline answers={answers} />
-      <div className="grid gap-5 lg:grid-cols-2">
-        <DaparDoorsCard answers={answers} />
-        <ProfileLadderCard answers={answers} />
-      </div>
+      <DaparDoorsCard answers={answers} />
+      <ProfileLadderCard answers={answers} />
       <StrengthsCard answers={answers} />
       <CommitmentCard answers={answers} />
       <p className="text-[11px] leading-5 text-dust">

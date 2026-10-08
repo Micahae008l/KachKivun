@@ -200,3 +200,16 @@ test("self or official מא״ה still requires eleven valid scores", () => {
     assert.equal(validateAssessmentCompletion(request).ok, false);
   }
 });
+
+test("focusExtra is optional, deduped against the main focus, and enum-checked", () => {
+  const legacy = { body: validBody() };
+  assert.deepEqual(validateAssessmentCompletion(legacy), { ok: true });
+  assert.deepEqual(legacy.body.answers.focusExtra, []);
+
+  const multi = { body: validBody({ focusExtra: ["Medical", "Research"] }) };
+  assert.deepEqual(validateAssessmentCompletion(multi), { ok: true });
+  assert.deepEqual(multi.body.answers.focusExtra, ["Medical"]);
+
+  const bad = validateAssessmentCompletion({ body: validBody({ focusExtra: ["Cooking"] }) });
+  assert.equal(bad.ok, false);
+});

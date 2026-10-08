@@ -104,6 +104,8 @@ export type AssessmentAnswers = {
   yomHameahSource: YomHameahSource;
   combatPreference: CombatPreferenceValue | "";
   focus: FocusPreferenceValue | "";
+  /** Extra day-to-day focus areas; `focus` stays the main one. */
+  focusExtra: FocusPreferenceValue[];
   physicalActivityLevel: FitnessPreferenceValue | "";
   rolesInterested: RoleInterest[];
   rolesAvoided: RoleAvoidance[];
