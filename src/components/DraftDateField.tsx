@@ -1,66 +1,112 @@
+import { useState } from "react";
 import { Calendar } from "lucide-react";
 
 type Props = {
   value: string;
   onChange: (value: string) => void;
-  id?: string;
-  min?: string;
-  max?: string;
   invalid?: boolean;
   className?: string;
 };
 
-function formatHebrewDate(iso: string) {
-  try {
-    const d = new Date(`${iso}T12:00:00`);
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleDateString("he-IL", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return null;
-  }
+const MONTHS = [
+  "ינואר",
+  "פברואר",
+  "מרץ",
+  "אפריל",
+  "מאי",
+  "יוני",
+  "יולי",
+  "אוגוסט",
+  "ספטמבר",
+  "אוקטובר",
+  "נובמבר",
+  "דצמבר",
+];
+
+function parse(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) } : null;
 }
 
-/** Styled draft/recruitment date picker — dark-scheme, visible calendar, Hebrew readout. */
-export function DraftDateField({
-  value,
-  onChange,
-  id,
-  min = "2000-01-01",
-  max = "2038-12-31",
-  invalid,
-  className = "",
-}: Props) {
-  const hebrew = value ? formatHebrewDate(value) : null;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Draft date as year chips + a month grid. Teens usually know the draft month, not the day,
+ * so the day is kept if one exists (clamped to the month) and defaults to the 1st.
+ */
+export function DraftDateField({ value, onChange, invalid, className = "" }: Props) {
+  const current = parse(value);
+  const thisYear = new Date().getFullYear();
+  const [pendingYear, setPendingYear] = useState<number | null>(null);
+  const year = pendingYear ?? current?.year ?? null;
+  const years = [
+    ...new Set([thisYear, thisYear + 1, thisYear + 2, thisYear + 3, ...(year ? [year] : [])]),
+  ].sort((a, b) => a - b);
+
+  function commit(nextYear: number, month: number) {
+    const daysInMonth = new Date(nextYear, month, 0).getDate();
+    const day = Math.min(current?.day ?? 1, daysInMonth);
+    setPendingYear(null);
+    onChange(`${nextYear}-${pad(month)}-${pad(day)}`);
+  }
+
+  const chip = (selected: boolean) =>
+    `rounded-sm border px-3 py-2 text-sm font-semibold tabular-nums transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
+      selected
+        ? "border-primary bg-primary text-primary-foreground"
+        : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
+    }`;
 
   return (
-    <div className={`space-y-2 text-right ${className}`.trim()}>
-      <div className="relative max-w-sm">
-        <span className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-primary" aria-hidden>
-          <Calendar className="h-4 w-4" />
-        </span>
-        <input
-          id={id}
-          type="date"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          min={min}
-          max={max}
-          aria-invalid={invalid || undefined}
-          className={`input-field input-field--date w-full pr-11${invalid ? " input-field--invalid" : ""}`}
-        />
-      </div>
-      {hebrew ? (
-        <p className="font-mono text-xs tabular-nums text-dust" dir="rtl">
-          {hebrew}
-        </p>
-      ) : (
-        <p className="text-xs text-dust/70">בחרו תאריך בלוח השנה</p>
-      )}
+    <div className={`space-y-4 text-right ${className}`.trim()} aria-invalid={invalid || undefined}>
+      <fieldset>
+        <legend className="mb-2 text-xs font-bold text-dust">שנה</legend>
+        <div className="flex flex-wrap gap-2">
+          {years.map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={year === option}
+              onClick={() => (current ? commit(option, current.month) : setPendingYear(option))}
+              className={chip(year === option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset disabled={!year} className="disabled:opacity-40">
+        <legend className="mb-2 text-xs font-bold text-dust">חודש</legend>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {MONTHS.map((label, index) => {
+            const month = index + 1;
+            const selected = Boolean(current && current.year === year && current.month === month);
+            return (
+              <button
+                key={label}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => year && commit(year, month)}
+                className={chip(selected)}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <p
+        className={`flex items-center gap-2 text-sm ${current ? "text-foreground" : invalid ? "text-destructive" : "text-dust"}`}
+      >
+        <Calendar className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        {current
+          ? `גיוס משוער: ${MONTHS[current.month - 1]} ${current.year}`
+          : year
+            ? "עכשיו בחרו חודש"
+            : "בחרו שנה וחודש. אפשר לעדכן בהמשך."}
+      </p>
     </div>
   );
 }

@@ -71,6 +71,13 @@ function serializeFullRole(role, rank) {
     requirements: strings(role.requirements),
     locations: strings(role.locations),
     serviceLengthLabel: text(role.serviceLengthLabel),
+    admissionChance: ["high", "medium", "low", "unknown"].includes(role.admissionChance?.level)
+      ? {
+          level: role.admissionChance.level,
+          label: text(role.admissionChance.label),
+          reason: text(role.admissionChance.reason),
+        }
+      : null,
   };
 }
 

@@ -17,7 +17,7 @@ import {
   AnswerEcho,
   CommitmentCard,
   DaparDoorsCard,
-  DraftRoadmap,
+  NextStepsCard,
   ProfileHeadline,
   ProfileLadderCard,
   StrengthsCard,
@@ -205,7 +205,7 @@ function FinalSignalsReview({
         ))}
       </ul>
 
-      <DraftRoadmap answers={answers} />
+      <NextStepsCard answers={answers} />
     </section>
   );
 }

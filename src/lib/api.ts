@@ -635,6 +635,12 @@ export type UnlockedRoleMatch = {
   requirements: string[];
   locations: string[];
   serviceLengthLabel: string;
+  /** Rough chance of getting in; absent on results saved before it existed. */
+  admissionChance?: {
+    level: "high" | "medium" | "low" | "unknown";
+    label: string;
+    reason: string;
+  } | null;
 };
 
 export type LockedRoleMatch = {

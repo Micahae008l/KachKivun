@@ -9,7 +9,7 @@ export const ASSESSMENT_SCHEMA_VERSION = 2 as const;
 
 export type Gender = "male" | "female";
 export type DaparScore = 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90;
-export type MedicalProfile = 21 | 45 | 64 | 70 | 72 | 82 | 97;
+export type MedicalProfile = 21 | 45 | 64 | 72 | 82 | 97;
 export type ExplicitUnknown = "unknown";
 export type DaparAnswer = DaparScore | ExplicitUnknown | null;
 export type MedicalProfileAnswer = MedicalProfile | ExplicitUnknown | null;

@@ -78,7 +78,6 @@ export const PROFILE_RUNGS: ProfileRung[] = [
   { profile: 97, opens: "הכול, כולל 669 וטיס" },
   { profile: 82, opens: "חי״ר, סיירות, הנדסה קרבית, מג״ב, שייטת, מטכ״ל" },
   { profile: 72, opens: "שריון, תותחנים, הגנה אווירית, חילוץ, חי״ר גבולות" },
-  { profile: 70, opens: "תותחנים, הגנה אווירית, חיל האוויר (חדש, 2026)" },
   { profile: 64, opens: "תומכי לחימה, לוחם מעברים, מ״כ" },
   { profile: 45, opens: "תפקידי עורף" },
 ];
@@ -167,118 +166,31 @@ export function commitmentRows(a: AssessmentAnswers): CommitmentRow[] {
 export const formatMonth = (d: Date) =>
   `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 
-// ---------- roadmap with real dates ----------
-
-export type RoadmapStatus = "past" | "now" | "upcoming";
-export type RoadmapItem = {
-  date: Date;
-  title: string;
-  detail: string;
-  status: RoadmapStatus;
-  approx?: boolean;
-};
-
-function statusFor(date: Date, today: Date): RoadmapStatus {
-  const months =
-    (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth();
-  if (months < 0) return "past";
-  if (months === 0) return "now";
-  return "upcoming";
-}
-
-/** Next occurrence of any of the given months (1-12) between `from` and `until`. */
-function nextOf(monthsOfYear: number[], from: Date, until: Date): Date | null {
-  for (let i = 0; i < 24; i++) {
-    const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
-    if (d >= until) return null;
-    if (monthsOfYear.includes(d.getMonth() + 1)) return d;
-  }
-  return null;
-}
-
 export function monthsUntil(date: Date, today = new Date()): number {
   return (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth();
 }
 
-export function draftRoadmap(a: AssessmentAnswers, today = new Date()): RoadmapItem[] {
-  const draft = new Date(a.draftDate);
-  if (Number.isNaN(draft.getTime()) || draft <= today) return [];
-  const dm = draft.getMonth() + 1;
-  const dy = draft.getFullYear();
-  const g12 = dm >= 7 ? dy - 1 : dy - 2; // year grade 12 starts (September)
-  const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const medical = num(a.medicalProfile) ?? 0;
-  const items: Omit<RoadmapItem, "status">[] = [];
-  const push = (date: Date | null, title: string, detail: string, approx = false) => {
-    if (date) items.push({ date, title, detail, approx });
-  };
+// ---------- next steps (review step) ----------
 
-  push(
-    new Date(g12, 8, 1),
-    "שאלון העדפות נפתח",
-    "דרגו עד 3 יעדים בציון 3 ומעלה; תפקידי איתור דורשים מיון.",
-  );
-  if (wantsTech(a) || a.rolesInterested.includes("intelligence")) {
-    push(
-      nextOf([1, 7], thisMonth, draft),
-      "מיוני אשכול מקצועות המחשב",
-      "יום מקוון ויום פרונטלי; תוצאות תוך 3 עד 6 שבועות.",
-      true,
-    );
-    if (!isCombatDesignatedMale(a)) {
-      const wave =
-        dm >= 7 && dm <= 11 ? new Date(dy - 1, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 1, 1);
-      push(wave, "גל מיוני כלל חמ״ן", "לא הוזמנתם? מיטב 1111, שלוחה 1 ואז 2.", true);
-    }
-    push(
-      new Date(g12 + 1, 1, 28),
-      "סגירת שאלון העתודה האקדמית",
-      "פסיכומטרי 590+ עד אפריל, רק אם רוצים תואר לפני השירות.",
-    );
+/** Up to four concrete things to do now, from the answers. No dates: those come from מיטב. */
+export function nextSteps(a: AssessmentAnswers): string[] {
+  const steps: string[] = [];
+  if (a.daparScore === "unknown" || a.medicalProfile === "unknown") {
+    steps.push("בדקו את הדפ״ר והפרופיל הרפואי באזור האישי באתר מתגייסים. בלעדיהם אי אפשר לאמת זכאות לתפקידים.");
   }
-  if (wantsCombat(a) && medical >= 82) {
-    push(
-      nextOf([10, 1], thisMonth, draft),
-      "יום סיירות",
-      "פרופיל 82, דפ״ר 50; התוצאה קובעת לאיזה גיבוש תוזמנו.",
-    );
-    push(
-      nextOf([11, 3], thisMonth, draft),
-      "גיבוש אחוד (מטכ״ל, שלדג)",
-      "5 ימים; מי שסיים ולא התקבל עובר לדראפט 669 וקומנדו.",
-    );
-    push(nextOf([4, 8, 12], thisMonth, draft), "גיבוש צנחנים", "מבחן כניסה: 3 ק״מ מתחת ל-15 דקות.");
+  if (a.yomHameahSource !== "official") {
+    steps.push("אחרי יום המא״ה התוצאות מופיעות באזור האישי. עדכנו כאן את הציונים הרשמיים, וההתאמות יתעדכנו.");
   }
-  if (a.rolesInterested.includes("air_force") && medical >= 97) {
-    push(nextOf([2, 10], thisMonth, draft), "גיבוש טיס", "פרופיל 97, דפ״ר 60; 5 ימים בחצרים.");
+  if (wantsTech(a)) {
+    steps.push("מיוני הטכנולוגיה, כמו אשכול מקצועות המחשב, נפתחים כפעמיים בשנה. עקבו אחרי ההודעות כדי לא לפספס חלון.");
   }
-  push(
-    dm >= 7 && dm <= 11 ? new Date(dy, 5, 1) : new Date(dm === 12 ? dy : dy - 1, 9, 1),
-    "הודעת שיבוץ",
-    "כחודש וחצי לפני הגיוס. ערעור: בקשה מנומקת למיטב.",
-    true,
-  );
-  push(new Date(dy, draft.getMonth(), 1), "גיוס", "יום הגיוס שסימנתם.");
-
-  return items
-    .sort((x, y) => x.date.getTime() - y.date.getTime())
-    .map((item) => ({ ...item, status: statusFor(item.date, today) }));
+  if (wantsCombat(a)) {
+    steps.push("גיבושים בודקים ריצה, מתח ושכיבות סמיכה. אימון קבוע מהיום עושה את ההבדל.");
+  }
+  steps.push("כשנפתח שאלון ההעדפות, דרגו בו את התפקידים שמעניינים אתכם. הוא חלק מרכזי בשיבוץ.");
+  steps.push("חזרו לעדכן כאן אחרי כל שלב בתהליך: כל נתון חדש מדייק את ההתאמות.");
+  return steps.slice(0, 4);
 }
-
-export const HEBREW_MONTHS = [
-  "ינואר",
-  "פברואר",
-  "מרץ",
-  "אפריל",
-  "מאי",
-  "יוני",
-  "יולי",
-  "אוגוסט",
-  "ספטמבר",
-  "אוקטובר",
-  "נובמבר",
-  "דצמבר",
-];
 
 // ---------- live reflection under each step ----------
 
@@ -352,7 +264,7 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
       if (!a.basePreference) return null;
       const base =
         a.basePreference === "open"
-          ? "בסיס פתוח: נעדיף תפקידים שחוזרים מהם הביתה בערב"
+          ? "בסיס פתוח: נעדיף תפקידים עם יומיות"
           : a.basePreference === "closed"
             ? "בסיס סגור פותח את רוב התפקידים המבצעיים והקרביים"
             : "גמישות בבסיס מרחיבה מאוד את מספר התפקידים שנבדוק";

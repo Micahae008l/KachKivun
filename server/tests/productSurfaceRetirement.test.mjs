@@ -37,7 +37,7 @@ test("adaptive assessment keeps OTP last and versioned draft migration", () => {
   const postSignup = read("src/routes/post-signup.tsx");
 
   assert.match(flow, /steps\.push\("scores", "yom", "checkpoint", "motivation", "identity", "review"\)/);
-  assert.match(flow, /if \(includeAuth\) steps\.push\("email", "otp"\)/);
+  assert.match(flow, /if \(includeAuth\) steps\.push\("otp"\)/);
   assert.match(draft, /ASSESSMENT_DRAFT_VERSION = 3/);
   assert.match(draft, /LEGACY_SIGNUP_DRAFT_KEY = "kk_signup_draft_v1"/);
   assert.match(draft, /preferredName: source\.username/);

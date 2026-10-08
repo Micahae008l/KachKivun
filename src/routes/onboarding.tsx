@@ -31,7 +31,7 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
-const MEDICAL_SCORES = [21, 45, 64, 70, 72, 82, 97] as const;
+const MEDICAL_SCORES = [21, 45, 64, 72, 82, 97] as const;
 
 const ease = [0.16, 1, 0.3, 1] as const;
 

@@ -640,15 +640,13 @@ export function buildProfileNotice(profile) {
     );
   }
   if (medical && medical < ABSOLUTE_COMBAT_MEDICAL_MIN) {
-    notes.push(`עם פרופיל רפואי ${medical}, תפקידי לחימה סגורים בפניכם — ההמלצות מתמקדות בתפקידים עורפיים ותומכי-לחימה.`);
+    notes.push(`עם פרופיל רפואי ${medical}, תפקידי לחימה סגורים בפניכם, ולכן ההמלצות מתמקדות בתפקידים עורפיים ותומכי לחימה.`);
   } else if (medical && medical < DEFAULT_COMBAT_MEDICAL_FLOOR) {
-    // Official ladder (mitgaisim): 82 = חי"ר, סיירות, הנדסה קרבית; 72 = all other combat; 70 (Sept 2026) = 72 minus שריון/חי"ר; 64 = תומכי לחימה + מעברים.
+    // Official ladder (mitgaisim): 82 = חי"ר, סיירות, הנדסה קרבית; 72 = all other combat; 64 = תומכי לחימה + מעברים.
     notes.push(
       medical >= 72
         ? `עם פרופיל רפואי ${medical}, חי״ר, סיירות והנדסה קרבית (דורשים 82) סגורים בפניכם, אבל שריון, תותחנים, הגנה אווירית, חילוץ והצלה, חי״ר גבולות ומג״ב פתוחים.`
-        : medical >= 70
-          ? `פרופיל 70 (חדש מספטמבר 2026) פותח תותחנים, הגנה אווירית וחיל האוויר, אך לא חי״ר. ההמלצות מתמקדות בתפקידים שפתוחים לפרופיל שלכם.`
-          : `עם פרופיל רפואי ${medical}, תפקידי לחימה מלאה דורשים 72 ומעלה — פתוחים תומכי לחימה ולוחם מעברים.`,
+        : `עם פרופיל רפואי ${medical}, תפקידי לחימה מלאה דורשים 72 ומעלה, ופתוחים תומכי לחימה ולוחם מעברים.`,
     );
   }
   if (profile.gender === "female") {
@@ -677,7 +675,133 @@ export function blendPercent(basePercent, aiAdjust) {
  * Sort by base01 desc (Hebrew title tie-break), then greedily fill with a
  * per-category cap and a cap on "famous" roles so niche/specific roles get in.
  */
-export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCategory = 2 } = {}) {
+// ---------- personal request → catalog roles ----------
+
+// Synonym groups so a free-text request ("drones", "רחפנים") finds roles named differently (כטמ"ם).
+const REQUEST_SYNONYMS = [
+  ["רחפן", "רחפנים", "כטמ", "כטב", "מלט", "drone", "drones", "uav", "נשלטות"],
+  ["סייבר", "cyber", "האקר", "האקינג", "8200"],
+  ["תכנות", "מתכנת", "תוכניתן", "פיתוח", "programming", "coding", "developer"],
+  ["טיס", "טייס", "טיסה", "pilot"],
+  ["מודיעין", "intelligence"],
+  ["חובש", "פרמדיק", "רפואה", "רפואי", "medic"],
+  ["שייטת", "חובל", "חובלים", "צוללות", "צוללן", "navy"],
+  ["כלבים", "עוקץ"],
+  ["הנדסה", "מהנדס", "engineering"],
+  ["דאטה", "data", "אנליסט"],
+];
+
+// Words that carry no role meaning; matching on them would flood the pool.
+const REQUEST_STOPWORDS = new Set([
+  "רוצה", "רוצים", "מאוד", "ממש", "משהו", "באמת", "תפקיד", "תפקידים", "שירות", "בצבא", "יכול",
+  "אפשר", "להיות", "הייתי", "אוהב", "אוהבת", "מעניין", "מעניינת", "בתחום", "דברים", "לעשות",
+  "שלי", "אבל", "גם", "want", "really", "into", "something", "like", "with",
+]);
+
+function requestTokens(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/["'״׳`]/g, "")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+}
+
+// Hebrew glues ה/ו/ב/ל/מ/ש/כ to the front of words; allow one such prefix.
+function tokenHasTerm(token, term) {
+  return token.startsWith(term) || (token.length > term.length && token.slice(1).startsWith(term));
+}
+
+/**
+ * Terms from a personal request. `group` terms come from a recognised topic (with synonyms) and
+ * rank first; `raw` terms are other meaningful words from the request.
+ */
+export function requestTerms(personalRequest) {
+  const tokens = requestTokens(personalRequest);
+  const group = new Set();
+  for (const synonyms of REQUEST_SYNONYMS) {
+    if (tokens.some((token) => synonyms.some((term) => tokenHasTerm(token, term)))) {
+      synonyms.forEach((term) => group.add(term));
+    }
+  }
+  const raw = tokens.filter(
+    (token) =>
+      token.length >= 4 &&
+      !REQUEST_STOPWORDS.has(token) &&
+      ![...group].some((term) => tokenHasTerm(token, term)),
+  );
+  return { group: [...group], raw: [...new Set(raw)] };
+}
+
+/** Roles whose title, category, tags or day-to-day mention something the request asked for. */
+export function requestMatchedRoles(roles, personalRequest, limit = 5) {
+  const { group, raw } = requestTerms(personalRequest);
+  const hits = (fields, terms) =>
+    terms.length > 0 &&
+    requestTokens(fields.join(" ")).some((token) => terms.some((term) => tokenHasTerm(token, term)));
+  const named = (role, terms) => hits([role.roleTitle, role.category], terms);
+  const described = (role, terms) =>
+    hits([role.roleTitle, role.category, role.dayToDay, ...(role.preferenceTags || [])], terms);
+  // Best first: topic in the role's name, then topic only in its description, then other request words.
+  const tiers = [
+    roles.filter((role) => named(role, group)),
+    roles.filter((role) => described(role, group)),
+    roles.filter((role) => described(role, raw)),
+  ];
+  return [...new Set(tiers.flat())].slice(0, limit);
+}
+
+// ---------- admission chance ----------
+
+const TECH_INTEL_RE = /סייבר|מודיעין|תקשוב|מחשב|שחקים|תוכנה|דאטה|נתונים|8200|טכנולוג/;
+const CHANCE_LABEL = {
+  high: "סיכוי קבלה גבוה",
+  medium: "סיכוי קבלה בינוני",
+  low: "סיכוי קבלה נמוך",
+  unknown: "אי אפשר להעריך סיכוי",
+};
+
+/**
+ * Rough, explainable estimate of getting into a role: selection competitiveness, דפ"ר margin
+ * over the floor, and the reduced tech/intel quotas for men with a combat profile (72+).
+ * ponytail: point heuristic, not a statistical model; replace if real acceptance data appears.
+ */
+export function admissionChance(role, profile) {
+  const dapar = typeof profile.daparScore === "number" ? profile.daparScore : null;
+  const medical = typeof profile.medicalProfile === "number" ? profile.medicalProfile : null;
+  if (dapar == null && medical == null) {
+    return { level: "unknown", label: CHANCE_LABEL.unknown, reason: "בלי דפ״ר ופרופיל רפואי אין על מה לבסס הערכה." };
+  }
+  const reasons = [];
+  let points = { low: 1, medium: 0, high: -1, very_high: -2 }[role.competitiveness] ?? 0;
+  if (role.competitiveness === "very_high") reasons.push("מיון תחרותי מאוד, מעטים מתקבלים");
+  else if (role.competitiveness === "high") reasons.push("מיון תחרותי");
+  else if (role.competitiveness === "low") reasons.push("תפקיד שקל יחסית להתקבל אליו");
+
+  const floor = typeof role.daparFloor === "number" ? role.daparFloor : null;
+  if (dapar != null && floor != null) {
+    const margin = dapar - floor;
+    if (margin >= 20) {
+      points += 1;
+      reasons.push(`הדפ״ר שלכם גבוה ב־${margin} מהסף`);
+    } else if (margin < 10) {
+      points -= 1;
+      reasons.push("הדפ״ר שלכם ממש על הסף");
+    }
+  }
+
+  const combatDesignatedMale = profile.gender === "male" && medical != null && medical >= 72;
+  if (combatDesignatedMale && !role.combat && TECH_INTEL_RE.test(`${role.category} ${role.roleTitle}`)) {
+    points -= 1;
+    reasons.push(
+      "לבעלי פרופיל קרבי המכסות בטכנולוגיה ובמודיעין מצומצמות, ולמיוני מקצועות המחשב נדרשים דפ״ר 80 ו־10 יח״ל טכנולוגיות",
+    );
+  }
+
+  const level = points >= 1 ? "high" : points <= -2 ? "low" : "medium";
+  return { level, label: CHANCE_LABEL[level], reason: reasons.slice(0, 2).join(". ") };
+}
+
+export function buildCandidatePool(roles, profile, { poolSize = 40, maxPerCategory = 4, requestLimit = 12 } = {}) {
   const yomFlat = isFlatYom(profile.yom);
   const ctx = { ...profile, yomFlat };
 
@@ -720,7 +844,19 @@ export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCatego
     if (pool.length >= poolSize) break;
     pool.push(r);
   }
-  return pool;
+  // The personal request can pull in eligible roles the preference score ranked lower
+  // (e.g. "drones" -> כטמ"ם roles), so the AI can actually pick what was asked for.
+  const requested = new Set(
+    requestMatchedRoles(scored, profile.personalRequest, requestLimit).map((r) => r.roleTitle),
+  );
+  for (const r of scored) {
+    if (requested.has(r.roleTitle) && !pool.some((p) => p.roleTitle === r.roleTitle)) pool.push(r);
+  }
+  return pool.map((r) => ({
+    ...r,
+    requestMatch: requested.has(r.roleTitle) || undefined,
+    admissionChance: admissionChance(r, profile),
+  }));
 }
 
 function compareStableText(a, b) {

@@ -28,7 +28,7 @@ const militaryStatsSchema = new mongoose.Schema(
     },
     medicalProfile: {
       type: Number,
-      enum: [21, 45, 64, 70, 72, 82, 97],
+      enum: [21, 45, 64, 72, 82, 97],
       default: null,
     },
     gender: {

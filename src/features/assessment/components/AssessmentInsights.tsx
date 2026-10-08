@@ -4,15 +4,14 @@ import { Check, Lock, Sparkles } from "lucide-react";
 import { COMBAT_PREFERENCE_OPTIONS, FOCUS_PREFERENCE_OPTIONS } from "@/lib/profile-preference-data";
 import { BASE_OPTIONS, ENVIRONMENT_OPTIONS, LEADERSHIP_OPTIONS, ROLE_INTEREST_OPTIONS } from "../options";
 import {
-  HEBREW_MONTHS,
   PROFILE_RUNGS,
   commitmentRows,
   daparDoors,
   dimensionRows,
-  draftRoadmap,
   formatMonth,
   isCombatDesignatedMale,
   monthsUntil,
+  nextSteps,
   wantsCombat,
   wantsTech,
 } from "../insights";
@@ -382,57 +381,43 @@ export function CommitmentCard({ answers }: { answers: AssessmentAnswers }) {
   );
 }
 
-// ---------- 7. roadmap with real dates (review step) ----------
+// ---------- 7. next steps (review step) ----------
 
-const inMonths = (n: number) => (n === 1 ? "בעוד חודש" : n === 2 ? "בעוד חודשיים" : `בעוד ${n} חודשים`);
-
-export function DraftRoadmap({ answers }: { answers: AssessmentAnswers }) {
+export function NextStepsCard({ answers }: { answers: AssessmentAnswers }) {
   const reduce = useReducedMotion();
-  const items = useMemo(() => draftRoadmap(answers), [answers]);
-  if (!items.length) return null;
+  const steps = useMemo(() => nextSteps(answers), [answers]);
   const draft = new Date(answers.draftDate);
-  const months = Math.max(0, monthsUntil(draft));
-  const firstUpcoming = items.findIndex((i) => i.status !== "past");
+  const months = Number.isNaN(draft.getTime()) ? 0 : Math.max(0, monthsUntil(draft));
   return (
-    <Card kicker="מפת הדרך שלכם" title={<><CountUp value={months} /> חודשים לגיוס. זה מה שקורה בדרך</>}>
-      <ol className="relative space-y-3 border-r border-iron/30 pr-5">
-        {items.map((item, i) => (
+    <Card
+      kicker="הצעדים הבאים"
+      title={
+        months > 0 ? (
+          <>
+            <CountUp value={months} /> חודשים לגיוס. מה עושים עכשיו
+          </>
+        ) : (
+          "מה עושים עכשיו"
+        )
+      }
+    >
+      <ol className="space-y-2.5">
+        {steps.map((step, i) => (
           <motion.li
-            key={`${item.title}-${i}`}
-            initial={reduce ? false : { opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            key={step}
+            initial={reduce ? false : { opacity: 0, transform: "translateY(8px)" }}
+            whileInView={{ opacity: 1, transform: "translateY(0px)" }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.05 * i, ease: EASE }}
-            className={`relative ${item.status === "past" ? "opacity-50" : ""}`}
+            transition={{ duration: 0.35, delay: 0.06 * i, ease: EASE }}
+            className="flex items-start gap-3 border border-iron/25 bg-background/40 px-3 py-2.5"
           >
-            {i === firstUpcoming && firstUpcoming > 0 ? (
-              <span className="mb-3 -mr-5 flex items-center gap-2 font-mono text-[10px] tracking-widest text-amber-300">
-                <span className="h-px flex-1 bg-amber-300/40" />היום<span className="h-px w-3 bg-amber-300/40" />
-              </span>
-            ) : null}
-            <span
-              className={`absolute -right-[25px] top-1 h-2.5 w-2.5 rounded-full border ${
-                item.status === "now" ? "animate-pulse border-amber-300 bg-amber-300" : item.status === "past" ? "border-iron bg-iron" : "border-primary bg-background"
-              }`}
-              aria-hidden
-            />
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-mono text-[11px] tabular-nums text-primary">
-                {item.approx ? "בערך " : ""}
-                {HEBREW_MONTHS[item.date.getMonth()]} {item.date.getFullYear()}
-              </span>
-              <span
-                className={`text-[10px] font-bold ${item.status === "now" ? "text-amber-300" : item.status === "past" ? "text-dust" : "text-dust"}`}
-              >
-                {item.status === "now" ? "עכשיו" : item.status === "past" ? "עבר" : inMonths(monthsUntil(item.date))}
-              </span>
-            </div>
-            <p className="text-sm font-bold text-foreground">{item.title}</p>
-            <p className="text-xs leading-5 text-dust">{item.detail}</p>
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[11px] font-bold text-primary">
+              {i + 1}
+            </span>
+            <span className="text-sm leading-6 text-foreground">{step}</span>
           </motion.li>
         ))}
       </ol>
-      <p className="mt-3 text-[11px] text-dust">חלונות לפי הפרסומים הרשמיים; מועדים מדויקים מגיעים מהודעות מיטב.</p>
     </Card>
   );
 }

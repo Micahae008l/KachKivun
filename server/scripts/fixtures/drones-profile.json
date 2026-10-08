@@ -1,0 +1,27 @@
+{
+  "_note": "Owner's own test: wants combat but technology, and wrote about drones in the personal request.",
+  "daparScore": 80,
+  "medicalProfile": 97,
+  "gender": "male",
+  "combatPreference": "Mixed",
+  "focus": "Tech",
+  "physicalActivityLevel": "High",
+  "yomHameahSource": "self",
+  "yomHameah": {
+    "technicalActivation": 5, "spatialPerception": 4, "dataProcessing": 4, "teamwork": 4, "command": 3,
+    "instruction": 3, "interpersonalCare": 3, "diligencePersistence": 4, "managementOrganization": 3,
+    "frameworkBehavior": 4, "maturity": 4
+  },
+  "assessmentSignals": {
+    "rolesInterested": ["combat", "technology_engineering"],
+    "rolesAvoided": [],
+    "basePreference": "no_preference",
+    "environment": "mixed",
+    "leadership": "open",
+    "stress": "high",
+    "motivations": ["challenge", "career"],
+    "technicalDetails": { "level": "intermediate", "areas": ["programming", "hardware_electronics"] },
+    "combatDetails": { "run3kmBand": "13_to_15", "pullUpsBand": "6_to_15", "pushUpsBand": "31_to_60", "readiness": "ready" }
+  },
+  "personalRequest": "אני ממש בקטע של רחפנים. אני רוצה משהו קרבי אבל שקשור לטכנולוגיה"
+}

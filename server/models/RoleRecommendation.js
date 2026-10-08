@@ -40,6 +40,17 @@ const rankedRoleSchema = new mongoose.Schema(
       default: [],
     },
     serviceLengthLabel: { type: String, default: "", trim: true, maxlength: 500 },
+    admissionChance: {
+      type: new mongoose.Schema(
+        {
+          level: { type: String, enum: ["high", "medium", "low", "unknown"], required: true },
+          label: { type: String, default: "", trim: true, maxlength: 80 },
+          reason: { type: String, default: "", trim: true, maxlength: 400 },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
   },
   { _id: false },
 );

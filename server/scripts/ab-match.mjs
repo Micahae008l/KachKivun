@@ -6,7 +6,7 @@
  *   node scripts/ab-match.mjs --models gpt-4o,claude-haiku-5-5 --engines v2,v3 --profile scripts/fixtures/ab-profile.json
  *
  * v3: roles are chosen deterministically, so only the Hebrew copy differs per model.
- * v2: the model picks and ranks 5 out of a 15-role pool, so the roles themselves differ.
+ * v2: the model picks and ranks 5 out of a wide pool (~40-50 roles), so the roles themselves differ.
  */
 import "../env.js";
 import fs from "node:fs";
@@ -63,7 +63,7 @@ for (const engine of engines) {
   const pool =
     engine === "v3"
       ? rankRolesV3(catalog.roles, profileForMatch, { limit: 5 })
-      : buildCandidatePool(catalog.roles, profileForMatch, { poolSize: 15 });
+      : buildCandidatePool(catalog.roles, profileForMatch);
   const system = engine === "v3" ? buildSystemPromptV3(pool) : buildSystemPromptV2(pool);
   const user = buildMatchUserPrompt({
     engine,
@@ -81,7 +81,7 @@ for (const engine of engines) {
   for (const model of models) {
     const startedAt = Date.now();
     try {
-      const completion = await chatJson({ model, system, user, maxTokens: 8000, temperature: 0.1 });
+      const completion = await chatJson({ model, system, user, maxTokens: 8000, temperature: 0 });
       const raw = parseRolesArray(completion.content) || [];
       const personalAnswer = parsePersonalAnswer(completion.content);
       const roles = engine === "v3" ? finalizeRolesV3(raw, pool, profileForMatch) : finalizeRolesV2(raw, pool);

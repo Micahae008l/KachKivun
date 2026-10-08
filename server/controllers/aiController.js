@@ -76,7 +76,11 @@ ${JSON.stringify(
     basePercent: r.basePercent,
     breakdownHe: r.breakdownHe,
     tier: r.tier,
-    dayToDay: r.dayToDay || undefined,
+    requestMatch: r.requestMatch || undefined,
+    admissionChance: r.admissionChance
+      ? `${r.admissionChance.label}${r.admissionChance.reason ? `: ${r.admissionChance.reason}` : ""}`
+      : undefined,
+    dayToDay: r.dayToDay ? String(r.dayToDay).slice(0, 220) : undefined,
     requirements: r.requirements?.length ? r.requirements : undefined,
     serviceLengthLabel: r.serviceLengthLabel || undefined,
     keyDimensions: r.keyDimensions,
@@ -91,7 +95,7 @@ ${JSON.stringify(
 export // Verified against mitgaisim.idf.il and the July 2026 service-length law. See docs/IDF-FACTS-AND-SITE-GAPS.md.
 const VERIFIED_FACTS_HE = `עובדות מאומתות (אוקטובר 2026), השתמש רק בהן ואל תוסיף מספרים משלך:
 - שירות חובה: גברים 32 חודשים (למתגייסים עד יוני 2029). נשים 24 חודשים, או 32 בתפקידי "דין אישה כדין גבר" (כל תפקידי הלחימה ורוב מסלולי הטכנולוגיה והמודיעין).
-- פרופיל: 97 הכול כולל יחידות מובחרות; 82 חי"ר, סיירות והנדסה קרבית; 72 שאר הלחימה (שריון, תותחנים, הגנה אווירית, חילוץ, חי"ר גבולות); 70 (חדש) כמו 72 בלי חי"ר; 64 תומכי לחימה ומעברים; 45 עורפי.
+- פרופיל: 97 הכול כולל יחידות מובחרות; 82 חי"ר, סיירות והנדסה קרבית; 72 שאר הלחימה (שריון, תותחנים, הגנה אווירית, חילוץ, חי"ר גבולות); 64 תומכי לחימה ומעברים; 45 עורפי.
 - דפ"ר: סף נפוץ לטכנולוגיה ומודיעין 60; תוכניתן, מגן סייבר, DevOps ולה"ב 70; שחקים 80-90; תלפיות 90. בנים עם פרופיל קרבי צריכים דפ"ר 80 ו-10 יח"ל טכנולוגיות למיוני אשכול מקצועות המחשב.
 - בן עם פרופיל 72, 82 או 97 הוא "מיועד ללוחמה": הוא מקבל את שאלון ההעדפות של יחידות השדה ותפקידי עורף לא מופיעים בו. פרופיל גבוה אינו "פותח הכול"; לטכנולוגיה הוא מגיע רק דרך מיון שמקבל פרופיל קרבי: אשכול מקצועות המחשב ("מיוני ממר"ם", דורש לבעלי פרופיל קרבי דפ"ר 80 ו-10 יח"ל טכנולוגיות), שחקים, גאמ"א, חבצלות, עתודה, חיל האוויר. יום המיון לכלל חמ"ן אינו מזמין בנים המיועדים ללוחמה. מאז יוני 2024 צומצמו מכסות בעלי פרופיל קרבי ב-8200 ובתקשוב. נשים בוחרות לוחמה מרצון ואין להן מגבלה כזו.
 - "ממר"ם" בפי המועמדים = מיוני אשכול מקצועות המחשב של אגף התקשוב (תוכניתן, מגן סייבר, DevOps, בודק תוכנה, דאטא אנליסט); מתקיימים כפעמיים בשנה.
@@ -228,7 +232,7 @@ const MATCH_ENGINE = ["v1", "v2", "v3"].includes(configuredMatchEngine)
 const MATCH_PROMPT_VERSION =
   MATCH_ENGINE === "v3"
     ? "match-v3-2026-09-integrity-copy-2"
-    : "match-v2-2026-08-medical-gates";
+    : "match-v2-2026-10-request-signals";
 
 /**
  * v2: convert the model's {roleTitle, adjustment, ...} into final RoleMatch objects.
@@ -289,6 +293,7 @@ export function finalizeRolesV2(rawRoles, pool) {
       requirements: [...(baseFact ? [baseFact] : []), ...(poolRole?.requirements || [])].slice(0, 20),
       locations: poolRole?.locations || [],
       serviceLengthLabel: poolRole?.serviceLengthLabel || "",
+      admissionChance: poolRole?.admissionChance || null,
     };
   });
 
@@ -345,6 +350,7 @@ function completeStoredRoles(roles) {
     requirements: Array.isArray(role?.requirements) ? role.requirements : [],
     locations: Array.isArray(role?.locations) ? role.locations : [],
     serviceLengthLabel: String(role?.serviceLengthLabel || "").trim(),
+    admissionChance: role?.admissionChance?.level ? role.admissionChance : null,
   }));
   return normalized.every((role) => role.roleTitle && role.scoreBreakdown)
     ? normalized
@@ -494,14 +500,24 @@ ${requestLine}
 - דפ"ר: ${daparLabel}
 - פרופיל רפואי: ${medicalLabel}
 - מקור ציוני מאה: ${yomSrc}
-- ציוני מאה (כל 12 ממדים):
+- ציוני מאה (כל 11 ממדים):
 ${yomLines}${legacyQ}
 - ${strengthsLine}
 - ${weaknessLine}
 - העדפת קרביות: ${preferences?.combatPreference || "לא הוגדר"}
 - מיקוד: ${preferences?.focus || "כללי"}
 - פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
+- תשובות השאלון המובנה (תחומי עניין, הימנעויות, ניסיון טכנולוגי, מוטיבציות): ${JSON.stringify(assessmentSignals)}
 ${requestLine}
+## סדר עדיפויות בבחירה
+
+1. תנאי סף (דפ"ר, פרופיל) קודמים לכול.
+2. הבקשה האישית ותחומי העניין שנבחרו במפורש (rolesInterested) גוברים על ניחוש מתוך הציונים. אם נכתב בבקשה תחום מסוים (למשל רחפנים), התפקידים שעונים עליו צריכים להופיע בחמישייה.
+3. תפקידים עם requestMatch: true נוספו למאגר בגלל הבקשה האישית. אם הם עומדים בתנאי הסף, כלול לפחות אחד מהם ודרג אותו גבוה, והסבר בתיאור איך הוא עונה על הבקשה.
+4. כשהמועמד/ת מציין/ת שני כיוונים (למשל קרבי וגם טכנולוגיה), העדף תפקידים שמחברים ביניהם על פני תפקידים שעונים רק על אחד.
+5. admissionChance הוא הערכת סיכוי הקבלה. תפקיד עם סיכוי נמוך יכול להיכנס לחמישייה אם הוא עונה על הבקשה, אבל אל תמלא את כל החמישייה בתפקידים כאלה, וציין בכנות בתיאור שהסיכוי נמוך ולמה.
+6. רק אחר כך העדפות כלליות וציוני מא"ה.
+
 בחר 5 תפקידים מהמאגר בלבד. שמות מדויקים כפי שמופיעים במאגר, תיאורים בעברית בלבד.` : `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
 
 החזר אובייקט JSON עם מפתח יחיד "roles" (מערך של 5 תפקידים), בדיוק כפי שמוגדר בהוראות המערכת.
@@ -537,7 +553,7 @@ matchPercentage: סדרו מ-#1 (הגבוה ביותר) ל-#5 (הנמוך). #1 �
 - דפ"ר: ${daparLabel}
 - פרופיל רפואי: ${medicalLabel}
 - מקור ציוני מאה: ${yomSrc}
-- ציוני מאה (כל 12 ממדים):
+- ציוני מאה (כל 11 ממדים):
 ${yomLines}${legacyQ}
 - ${strengthsLine}
 - ${weaknessLine}
@@ -698,9 +714,8 @@ export async function matchRoles(req, res) {
         `[ai/match-roles] engine=v3 deterministic-top=${candidatePool.length} for user ${userId}`,
       );
     } else if (MATCH_ENGINE === "v2") {
-      candidatePool = buildCandidatePool(catalogV3?.roles || [], profileForMatch, {
-        poolSize: 15,
-      });
+      // Wide pool: the AI chooses with the personal request, interests and admission chances in view.
+      candidatePool = buildCandidatePool(catalogV3?.roles || [], profileForMatch);
       filteredRoles = candidatePool;
       filteredRoleCount = candidatePool.length;
       console.log(`[ai/match-roles] engine=v2 pool=${candidatePool.length} for user ${userId}`);
@@ -744,7 +759,8 @@ export async function matchRoles(req, res) {
         system: systemPrompt,
         user: userPrompt,
         maxTokens: 8000,
-        temperature: isV3 || isV2 ? 0.1 : AI_TEMPERATURE,
+        // 0 so the same profile gets the same picks; the profile-hash cache is the hard guarantee.
+        temperature: isV3 || isV2 ? 0 : AI_TEMPERATURE,
         // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
         seed: isV3 || isV2 ? seedFromString(profileHash) : undefined,
       });

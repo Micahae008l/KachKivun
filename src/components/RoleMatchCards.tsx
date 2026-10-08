@@ -5,6 +5,7 @@ import {
   Bot,
   Briefcase,
   ChevronDown,
+  Gauge,
   CircleHelp,
   Clock3,
   Cpu,
@@ -199,9 +200,20 @@ function LockedRoleCard({ role, delayMs }: { role: LockedRoleMatch; delayMs: num
   );
 }
 
+const CHANCE_STYLE = {
+  high: "border-primary/50 bg-primary/15 text-primary",
+  medium: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  low: "border-destructive/45 bg-destructive/10 text-red-200",
+  unknown: "border-iron/30 bg-secondary/60 text-dust",
+} as const;
+
 function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
+  const chance = role.admissionChance;
   const hasFacts =
-    role.requirements.length > 0 || role.locations.length > 0 || Boolean(role.serviceLengthLabel);
+    role.requirements.length > 0 ||
+    role.locations.length > 0 ||
+    Boolean(role.serviceLengthLabel) ||
+    Boolean(chance);
   if (!hasFacts) {
     return (
       <p className="text-xs text-dust">
@@ -214,6 +226,22 @@ function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
       aria-label="נתוני מפתח על התפקיד"
       className="grid gap-3 rounded-sm border border-iron/25 bg-background/40 p-4 text-sm"
     >
+      {chance ? (
+        <div className="flex items-start gap-2.5">
+          <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0">
+            <h4 className="text-xs font-bold text-dust">הערכת סיכוי קבלה</h4>
+            <p
+              className={`mt-1.5 inline-block border px-2 py-0.5 text-xs font-bold ${CHANCE_STYLE[chance.level]}`}
+            >
+              {chance.label}
+            </p>
+            {chance.reason ? (
+              <p className="mt-1 text-xs leading-5 text-dust">{chance.reason}</p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {role.requirements.length ? (
         <div className="flex items-start gap-2.5">
           <ListChecks className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
