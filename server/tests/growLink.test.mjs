@@ -5,6 +5,7 @@ import {
   normalizeGrowLinkWebhook,
   processGrowLinkWebhook,
   unflattenBracketKeys,
+  israeliMobileDigits,
   verifyGrowLinkWebhookSecret,
 } from "../services/payments/growLinkWebhook.js";
 import { createClaimCode } from "../services/payments/paymentService.js";
@@ -175,4 +176,13 @@ test("bracket keys cannot reach the prototype", () => {
   assert.equal({}.polluted, undefined);
   assert.equal(Object.prototype.y, undefined);
   assert.deepEqual(out, { b: { c: "1" } });
+});
+
+test("payer phone normalizes to the 9 local mobile digits", () => {
+  assert.equal(israeliMobileDigits("050-123 4567"), "501234567");
+  assert.equal(israeliMobileDigits("+972501234567"), "501234567");
+  assert.equal(israeliMobileDigits("0501234567"), "501234567");
+  assert.equal(israeliMobileDigits("031234567"), "");
+  assert.equal(israeliMobileDigits(""), "");
+  assert.equal(normalizeGrowLinkWebhook({ "data[payerPhone]": "0521112233" }).payerPhone, "521112233");
 });

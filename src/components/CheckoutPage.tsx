@@ -21,6 +21,7 @@ import {
   createPaymentCheckout,
   getParentPaymentShare,
   getPaymentOffer,
+  getSession,
   type PaymentMethod,
   type PaymentMerchant,
   type PaymentOrderDto,
@@ -173,6 +174,16 @@ export function CheckoutPage({ shareToken }: Props) {
     enabled: mounted,
     retry: 1,
     staleTime: 60_000,
+  });
+
+  // A signed-in buyer pays with their account email, so the order code becomes a fallback.
+  // A shared (parent) checkout has no session of the child, so the code stays primary there.
+  const sessionQuery = useQuery({
+    queryKey: ["session"],
+    queryFn: getSession,
+    enabled: mounted && !isSharedCheckout && Boolean(getToken()),
+    retry: 0,
+    staleTime: 5 * 60_000,
   });
 
   const shareQuery = useQuery<CheckoutInfo>({
@@ -539,7 +550,11 @@ export function CheckoutPage({ shareToken }: Props) {
                   ביטול עסקה ובקשת החזר
                 </Link>
               )}
-              <Link to="/contact" search={{ topic: "payment" }} className="mt-2 mr-4 inline-flex text-primary hover:underline">
+              <Link
+                to="/contact"
+                search={{ topic: "payment" }}
+                className="mt-2 mr-4 inline-flex text-primary hover:underline"
+              >
                 שאלה על התשלום? טופס פנייה
               </Link>
             </div>
@@ -557,6 +572,7 @@ export function CheckoutPage({ shareToken }: Props) {
           {order?.claimCode && order.checkoutUrl ? (
             <GrowLinkHandoff
               claimCode={order.claimCode}
+              accountEmail={isSharedCheckout ? "" : (sessionQuery.data?.email ?? "")}
               checkoutUrl={order.checkoutUrl}
               returnPath={returnPath || `/payment/return?order=${encodeURIComponent(order.id)}`}
               price={price}
@@ -813,6 +829,7 @@ export function CheckoutPage({ shareToken }: Props) {
 
 function GrowLinkHandoff({
   claimCode,
+  accountEmail,
   checkoutUrl,
   returnPath,
   price,
@@ -820,56 +837,106 @@ function GrowLinkHandoff({
   onCopy,
 }: {
   claimCode: string;
+  accountEmail: string;
   checkoutUrl: string;
   returnPath: string;
   price: string;
   methods: PaymentMethod[];
   onCopy: (value: string) => Promise<void>;
 }) {
+  const codeBox = (
+    <div className="flex items-center gap-3 border border-primary/50 bg-primary/10 p-4">
+      <strong
+        className="flex-1 font-mono text-3xl font-black tracking-[0.3em] text-primary"
+        dir="ltr"
+        aria-label={`קוד הזמנה ${claimCode.split("").join(" ")}`}
+      >
+        {claimCode}
+      </strong>
+      <button
+        type="button"
+        onClick={() => void onCopy(claimCode)}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-iron/40 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/50"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden />
+        העתקה
+      </button>
+    </div>
+  );
+  const payStep = (
+    <li>
+      שלמו {price}
+      {methods.length ? ` ב־${methods.map((item) => METHOD_LABELS[item].title).join(" / ")}` : ""}.
+    </li>
+  );
+  const returnStep = (
+    <li>אחרי התשלום חזרו לכאן. הפתיחה מתבצעת אוטומטית כשהאישור מ־Grow מגיע לשרת.</li>
+  );
+
   return (
     <section className="space-y-6 p-5 text-right sm:p-8" aria-labelledby="grow-link-heading">
       <div>
         <p className="font-mono text-[10px] tracking-widest text-primary uppercase">שלב אחרון</p>
         <h2 id="grow-link-heading" className="mt-2 text-xl font-black text-foreground">
-          קוד ההזמנה שלכם
+          {accountEmail ? "שלמו עם האימייל שנרשמתם איתו" : "קוד ההזמנה שלכם"}
         </h2>
       </div>
 
-      <div className="flex items-center gap-3 border border-primary/50 bg-primary/10 p-4">
-        <strong
-          className="flex-1 font-mono text-3xl font-black tracking-[0.3em] text-primary"
-          dir="ltr"
-          aria-label={`קוד הזמנה ${claimCode.split("").join(" ")}`}
-        >
-          {claimCode}
-        </strong>
-        <button
-          type="button"
-          onClick={() => void onCopy(claimCode)}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-iron/40 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/50"
-        >
-          <Copy className="h-3.5 w-3.5" aria-hidden />
-          העתקה
-        </button>
-      </div>
-
-      <ol className="list-decimal space-y-2 pr-5 text-sm leading-6 text-dust">
-        <li>
-          בעמוד התשלום של Grow הזינו את הקוד בשדה{" "}
-          <strong className="text-foreground">קוד הזמנה</strong>.
-        </li>
-        <li>
-          שלמו {price}
-          {methods.length
-            ? ` ב־${methods.map((item) => METHOD_LABELS[item].title).join(" / ")}`
-            : ""}
-          .
-        </li>
-        <li>אחרי התשלום חזרו לכאן. הפתיחה מתבצעת אוטומטית כשהאישור מ־Grow מגיע לשרת.</li>
-      </ol>
-      <p className="text-xs leading-5 text-dust">
-        שכחתם את הקוד? אם תזינו ב־Grow את כתובת האימייל של החשבון, נזהה את התשלום גם בלעדיו.
-      </p>
+      {accountEmail ? (
+        <>
+          <div className="flex items-center gap-3 border border-primary/50 bg-primary/10 p-4">
+            <strong
+              className="min-w-0 flex-1 truncate text-base font-bold text-foreground"
+              dir="ltr"
+            >
+              {accountEmail}
+            </strong>
+            <button
+              type="button"
+              onClick={() => void onCopy(accountEmail)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-iron/40 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/50"
+            >
+              <Copy className="h-3.5 w-3.5" aria-hidden />
+              העתקה
+            </button>
+          </div>
+          <ol className="list-decimal space-y-2 pr-5 text-sm leading-6 text-dust">
+            <li>
+              בעמוד התשלום של Grow הזינו את <strong className="text-foreground">האימייל הזה</strong>
+              . כך נזהה שהתשלום שלכם.
+            </li>
+            {payStep}
+            {returnStep}
+          </ol>
+          <details className="group border border-iron/30 p-4 text-sm">
+            <summary className="cursor-pointer font-semibold text-foreground marker:text-primary">
+              משלמים עם אימייל אחר?
+            </summary>
+            <div className="mt-3 space-y-3">
+              <p className="leading-6 text-dust">
+                הזינו את הקוד הזה בשדה <strong className="text-foreground">קוד הזמנה</strong> בעמוד
+                של Grow, ונחבר את התשלום לחשבון שלכם.
+              </p>
+              {codeBox}
+            </div>
+          </details>
+        </>
+      ) : (
+        <>
+          {codeBox}
+          <ol className="list-decimal space-y-2 pr-5 text-sm leading-6 text-dust">
+            <li>
+              בעמוד התשלום של Grow הזינו את הקוד בשדה{" "}
+              <strong className="text-foreground">קוד הזמנה</strong>.
+            </li>
+            {payStep}
+            {returnStep}
+          </ol>
+          <p className="text-xs leading-5 text-dust">
+            שכחתם את הקוד? נזהה את התשלום גם לפי האימייל או הנייד של החשבון, אם תזינו אותם ב־Grow.
+          </p>
+        </>
+      )}
 
       <a
         href={checkoutUrl}

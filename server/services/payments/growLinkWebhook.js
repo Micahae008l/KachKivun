@@ -121,10 +121,14 @@ export function normalizeGrowLinkWebhook(raw) {
     statusCode: statusCode || (legacy && paid ? "2" : ""),
     amountMinor: normalizeGrowAmountMinor(source.sum ?? source.paymentSum ?? source.amount),
     payerEmail: text(source.payerEmail || source.email, 254).toLowerCase(),
+    payerPhone: israeliMobileDigits(source.payerPhone || source.phone),
     webhookKey: text(root.webhookKey || source.webhookKey, 160),
     claimCodes,
     // Field names only (never values), so an unexpected shape is diagnosable from the log.
-    fieldNames: [...Object.keys(root), ...(data ? Object.keys(data).map((k) => `data.${k}`) : [])].slice(0, 60),
+    fieldNames: [
+      ...Object.keys(root),
+      ...(data ? Object.keys(data).map((k) => `data.${k}`) : []),
+    ].slice(0, 60),
   };
 }
 
@@ -149,10 +153,36 @@ async function findOrderForClaimCodes(claimCodes) {
     .select(PAYMENT_PRIVATE_SELECT);
 }
 
-async function findOrCreateOrderForEmail(email, productKey) {
-  if (!email) return { order: null, reason: "no_payer_email" };
-  const user = await User.findOne({ email }).select("_id").lean();
-  if (!user) return { order: null, reason: "no_account_for_email" };
+/** "050-123 4567", "+972501234567", "0501234567" all become "501234567"; anything else is "". */
+export function israeliMobileDigits(value) {
+  const digits = text(value, 40)
+    .replace(/\D/g, "")
+    .replace(/^(?:972|0)/, "");
+  return /^5\d{8}$/.test(digits) ? digits : "";
+}
+
+/** Grow requires a phone, so it backs up the email when the buyer typed a different one. */
+async function findUserForPayer({ payerEmail, payerPhone }) {
+  if (payerEmail) {
+    const user = await User.findOne({ email: payerEmail }).select("_id").lean();
+    if (user) return { user, via: "email" };
+  }
+  if (payerPhone) {
+    // Stored phones may keep dashes or a +972 prefix. Phones are not unique, so only a single hit counts.
+    const pattern = `^(?:\\+?972-?|0)?${payerPhone.split("").join("-?")}$`;
+    const users = await User.find({ phone: { $regex: pattern } })
+      .select("_id")
+      .limit(2)
+      .lean();
+    if (users.length === 1) return { user: users[0], via: "phone" };
+  }
+  return { user: null, via: "" };
+}
+
+async function findOrCreateOrderForPayer(payer, productKey) {
+  if (!payer.payerEmail && !payer.payerPhone) return { order: null, reason: "no_payer_contact" };
+  const { user, via } = await findUserForPayer(payer);
+  if (!user) return { order: null, reason: "no_account_for_payer" };
 
   const pending = await PaymentOrder.findOne({
     userId: user._id,
@@ -162,7 +192,7 @@ async function findOrCreateOrderForEmail(email, productKey) {
   })
     .sort({ createdAt: -1 })
     .select(PAYMENT_PRIVATE_SELECT);
-  if (pending) return { order: pending, reason: "email_pending_order" };
+  if (pending) return { order: pending, reason: `${via}_pending_order` };
 
   const access = await getRecommendationAccessForUser(user._id);
   if (access.topTwoUnlocked) return { order: null, reason: "already_unlocked" };
@@ -183,7 +213,7 @@ async function findOrCreateOrderForEmail(email, productKey) {
     callbackSecretHash: hashPaymentSecret(createOpaqueSecret()),
     returnSecretHash: hashPaymentSecret(createOpaqueSecret()),
   });
-  return { order, reason: "email_new_order" };
+  return { order, reason: `${via}_new_order` };
 }
 
 /**
@@ -217,7 +247,10 @@ export async function processGrowLinkWebhook({
     hasEmail: Boolean(evidence.payerEmail),
   };
   if (!evidence.transactionId) {
-    logGrowLink("warn", "ignored: missing transaction id", { ...summary, fields: evidence.fieldNames });
+    logGrowLink("warn", "ignored: missing transaction id", {
+      ...summary,
+      fields: evidence.fieldNames,
+    });
     return { state: "ignored", reason: "missing_transaction_id" };
   }
   if (!evidence.paid) {
@@ -236,12 +269,12 @@ export async function processGrowLinkWebhook({
 
   let order = await findOrderForClaimCodes(evidence.claimCodes);
   let reason = order ? "claim_code" : "";
-  if (!order)
-    ({ order, reason } = await findOrCreateOrderForEmail(evidence.payerEmail, productKey));
+  if (!order) ({ order, reason } = await findOrCreateOrderForPayer(evidence, productKey));
   if (!order) {
     logGrowLink("error", `UNMATCHED payment needs manual review (${reason})`, {
       ...summary,
       payerEmail: evidence.payerEmail,
+      payerPhone: evidence.payerPhone,
     });
     return { state: "unmatched", reason };
   }
