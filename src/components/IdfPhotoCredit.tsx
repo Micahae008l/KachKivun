@@ -22,7 +22,7 @@ export function IdfPhotoCredit({ photo, className = "" }: Props) {
           >
             {photo.creditShort}
           </a>
-          <span className="text-dust/50"> · CC BY-SA 3.0</span>
+          <span className="text-dust/50"> · {photo.license}</span>
         </>
       ) : (
         photo.creditShort

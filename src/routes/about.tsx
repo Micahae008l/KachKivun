@@ -14,7 +14,7 @@ import {
   Target,
 } from "lucide-react";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
-import { getIdfPhoto } from "@/lib/idf-images";
+import { getIdfPhoto, IDF_PHOTO_CATALOG } from "@/lib/idf-images";
 import { SITE_NAME_EN, SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 import { MATCH_TOOL_NAME } from "@/lib/voice";
 
@@ -80,8 +80,8 @@ function AboutPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-[1.75] text-dust">
               {SITE_NAME_HE} היא פלטפורמה ישראלית שמאגדת פרופיל, מא״ה והתאמת תפקידים במקום אחד, בלי
-              רעש ובלי מנוי. ההערכה ושלוש התאמות בחינם; שתי ההתאמות המובילות זמינות
-              ב־₪10 סופיים כולל מע״מ ככל שחל, פעם אחת.
+              רעש ובלי מנוי. ההערכה ושלוש התאמות בחינם; שתי ההתאמות המובילות זמינות ב־₪10 סופיים
+              כולל מע״מ ככל שחל, פעם אחת.
             </p>
           </motion.div>
 
@@ -128,8 +128,8 @@ function AboutPage() {
                 אמיתי.
               </p>
               <p className="mt-4 max-w-xl text-sm leading-7 text-dust">
-                ההמלצות אינן רשמיות ואינן מבטיחות זכאות, זימון למיון או שיבוץ.
-                תנאי הסף וההחלטות נקבעים רק על ידי צה״ל.
+                ההמלצות אינן רשמיות ואינן מבטיחות זכאות, זימון למיון או שיבוץ. תנאי הסף וההחלטות
+                נקבעים רק על ידי צה״ל.
               </p>
 
               <blockquote className="mt-8 border-r-2 border-primary/60 pr-5 text-right">
@@ -342,8 +342,8 @@ function AboutPage() {
         >
           <h2 className="text-3xl font-bold sm:text-4xl">מוכנים למצוא את הכיוון שלכם?</h2>
           <p className="mx-auto mt-4 max-w-lg text-base text-dust">
-            הערכה אדפטיבית ושלוש התאמות אישיות בחינם. מקומות 2 ו־1 ב־₪10
-            סופיים כולל מע״מ ככל שחל, בתשלום חד־פעמי וללא מנוי.
+            הערכה אדפטיבית ושלוש התאמות אישיות בחינם. מקומות 2 ו־1 ב־₪10 סופיים כולל מע״מ ככל שחל,
+            בתשלום חד־פעמי וללא מנוי.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
             <div className="flex flex-wrap items-center justify-center gap-4">
@@ -367,6 +367,37 @@ function AboutPage() {
             </p>
           </div>
         </motion.div>
+      </section>
+
+      {/* CC licenses require a credit for every photo, including the ones shown without a caption. */}
+      <section
+        id="photo-credits"
+        className="scroll-mt-24 border-t border-iron/30 py-12"
+        aria-labelledby="photo-credits-heading"
+      >
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <h2 id="photo-credits-heading" className="text-base font-bold">
+            קרדיט צילומים
+          </h2>
+          <p className="mt-2 text-xs leading-5 text-dust">
+            הצילומים באתר הם של דובר צה״ל ו־U.S. Air Force, ברישיונות פתוחים מ־Wikimedia Commons.
+          </p>
+          <ul className="mt-4 space-y-1.5 text-xs leading-5 text-dust" dir="rtl">
+            {IDF_PHOTO_CATALOG.map((photo) => (
+              <li key={photo.id}>
+                {photo.alt}:{" "}
+                <a
+                  href={photo.commonsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/80 hover:text-primary hover:underline"
+                >
+                  <bdi>{photo.credit}</bdi>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
     </div>
   );

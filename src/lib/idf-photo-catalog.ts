@@ -1,6 +1,6 @@
 /**
- * Site photo catalog — hero slideshow assets used across panels, role cards, and backdrops.
- * Add files under src/assets/hero-slideshow/ and register here.
+ * Site photo catalog: hero slideshow assets used across panels, role cards, and backdrops.
+ * Every photo is openly licensed (Wikimedia Commons). Credits and licenses: src/assets/hero-slideshow/CREDITS.md.
  */
 import slide1 from "@/assets/hero-slideshow/slide-1.jpg?url";
 import slide2 from "@/assets/hero-slideshow/slide-2.jpg?url";
@@ -11,9 +11,9 @@ import slide6 from "@/assets/hero-slideshow/slide-6.jpg?url";
 import slide7 from "@/assets/hero-slideshow/slide-7.jpg?url";
 import slide8 from "@/assets/hero-slideshow/slide-8.jpg?url";
 import slide9 from "@/assets/hero-slideshow/slide-9.jpg?url";
-
-const CREDIT_SHORT = "צילום: על מדים";
-const CREDIT = "צילום שטח בצה״ל, ארכיון על מדים";
+import slide10 from "@/assets/hero-slideshow/slide-10.jpg?url";
+import slide11 from "@/assets/hero-slideshow/slide-11.jpg?url";
+import slide12 from "@/assets/hero-slideshow/slide-12.jpg?url";
 
 export type IdfPhoto = {
   id: string;
@@ -23,6 +23,8 @@ export type IdfPhoto = {
   objectPosition?: string;
   credit: string;
   creditShort: string;
+  /** Short license name shown next to the credit, e.g. "CC BY-SA 2.0" */
+  license: string;
   commonsUrl?: string;
   keywords: string[];
 };
@@ -31,96 +33,239 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   {
     id: "s1",
     src: slide1,
-    alt: "לוחמים בשקיעה בשטח",
+    alt: "לוחם בצללית על רקע שקיעה",
     objectPosition: "center 40%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["שקיעה", "שטח", "לוחם", "קרבי", "חי\"ר", "גיוס", "לחימה", "combat", "field", "שלג", "רפואה", "care"],
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 2.0, via Wikimedia Commons",
+    license: "CC BY-SA 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_A_Soldier_of_the_Armored_Brigade%27s_Reconnaissance_Unit_Paving_the_Way.jpg",
+    keywords: [
+      "שקיעה",
+      "שטח",
+      "לוחם",
+      "קרבי",
+      'חי"ר',
+      "גיוס",
+      "לחימה",
+      "combat",
+      "field",
+      "סיור",
+      "רפואה",
+      "care",
+    ],
   },
   {
     id: "s2",
     src: slide2,
-    alt: "טנק מרכבה באימון",
-    objectPosition: "center 45%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["טנק", "שריון", "מרכבה", "אימון", "שטח", "קרבי", "armor", "קצינים", "פיקוד", "admin"],
+    alt: "טנק מרכבה באימון ברמת הגולן",
+    objectPosition: "center 55%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 2.0, via Wikimedia Commons",
+    license: "CC BY-SA 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_401st_Brigade_Training_at_Golan_Heights,_Feb_2010.jpg",
+    keywords: ["טנק", "שריון", "מרכבה", "אימון", "שטח", "קרבי", "armor", "גולן"],
   },
   {
     id: "s3",
     src: slide3,
-    alt: "לוחם בלילה עם ציוד טקטי",
-    objectPosition: "center 35%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["לילה", "טקטי", "לוחם", "סייבר", "מחשב", "טכנולוגיה", "it", "cyber", "data", "מערכות", "תוכנה"],
+    alt: "לוחם משגר רחפן תצפית בשטח פתוח",
+    objectPosition: "center 45%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 3.0, via Wikimedia Commons",
+    license: "CC BY-SA 3.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_Skylark_Drone_Flight_Training_(4).jpg",
+    keywords: [
+      "רחפן",
+      "רחפנים",
+      'מל"ט',
+      "drone",
+      "תצפית",
+      "טכנולוגיה",
+      "סייבר",
+      "מחשב",
+      "it",
+      "cyber",
+      "data",
+      "מערכות",
+      "תוכנה",
+      "מודיעין",
+      "מטאור",
+      "תותחנים",
+    ],
   },
   {
     id: "s4",
     src: slide4,
-    alt: "כוח בשטח ליד הים",
-    objectPosition: "center 50%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["ים", "חיל הים", "ספינה", "חוף", "navy", "sea", "ימי", "שטח"],
+    alt: "צוות על סיפון ספינת טילים בשקיעה",
+    objectPosition: "center 55%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY 2.0, via Wikimedia Commons",
+    license: "CC BY 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_Crew_Cleaning_on_IDF_Missile_Ship.jpg",
+    keywords: ["ים", "חיל הים", "ספינה", "ספינת טילים", "חוף", "navy", "sea", "ימי", "משט"],
   },
   {
     id: "s5",
     src: slide5,
-    alt: "לוחמים וטנק בשטח בנוי",
-    objectPosition: "center 40%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["טנק", "עיר", "שטח", "לוחם", "קרבי", "כפיר", "אימון", "urban", "combat"],
+    alt: "לוחמים מסתערים לצד טנק בשטח",
+    objectPosition: "center 45%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "IDF Spokesperson's Unit photographer, CC BY-SA 3.0, via Wikimedia Commons",
+    license: "CC BY-SA 3.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:High-Ranking_Officers_Training_near_Tze%27elim_(20900623865).jpg",
+    keywords: [
+      "טנק",
+      "שטח",
+      "לוחם",
+      "קרבי",
+      "כפיר",
+      "גבעתי",
+      "גולני",
+      "הסתערות",
+      "אימון",
+      "urban",
+      "combat",
+    ],
   },
   {
     id: "s6",
     src: slide6,
-    alt: "כוח על תלולית אדמה",
-    objectPosition: "center 30%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["גבול", "שמירה", "כוננות", "אבטחה", "שטח", "סיור", "border", "תלולית", "הר"],
+    alt: "לוחם בתצפית על קו הרכס",
+    objectPosition: "center 40%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY 2.0, via Wikimedia Commons",
+    license: "CC BY 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_Guarding_the_Horizon.jpg",
+    keywords: [
+      "גבול",
+      "שמירה",
+      "כוננות",
+      "אבטחה",
+      "שטח",
+      "סיור",
+      "border",
+      "תצפית",
+      "הר",
+      'מג"ב',
+      "קרקל",
+    ],
   },
   {
     id: "s7",
     src: slide7,
-    alt: "טנקים ועשן בשטח",
-    objectPosition: "center 45%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["טנק", "עשן", "אימון", "שטח", "קרבי", "לחימה", "armor", "field"],
+    alt: "טנקים בתרגיל עם עשן צבעוני",
+    objectPosition: "center 50%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY 2.0, via Wikimedia Commons",
+    license: "CC BY 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_7th_Brigade_Batallion_Exercise,_March_2009.jpg",
+    keywords: ["טנק", "עשן", "אימון", "תרגיל", "שטח", "קרבי", "לחימה", "armor", "field", "הנדסה"],
   },
   {
     id: "s8",
     src: slide8,
-    alt: "מסלול לוחמים בהר",
-    objectPosition: "center 40%",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
+    alt: "לוחמים נושאים אלונקה במסע",
+    objectPosition: "center 35%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 2.0, via Wikimedia Commons",
+    license: "CC BY-SA 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_IDF_Soldiers_Practice_Operation_Rescues.jpg",
     keywords: [
-      "הר",
       "מסע",
+      "אלונקה",
       "נחל",
-      "נח\"ל",
+      'נח"ל',
       "צנחנים",
       "צנח",
       "כושר",
-      "מכשולים",
-      "טיפוס",
-      "אלפיני",
-      "לוחם",
+      "חילוץ",
       "מסע כומתה",
+      "פיקוד העורף",
+      "לוחם",
+      "רפואה",
+      "חובש",
     ],
   },
   {
     id: "s9",
     src: slide9,
-    alt: "טנק בראיית לילה",
-    objectPosition: "center center",
-    creditShort: CREDIT_SHORT,
-    credit: CREDIT,
-    keywords: ["לילה", "טנק", "ראיית לילה", "טכנולוגיה", "מודיעין", "סייבר", "it"],
+    alt: "טנק בצללית בשקיעה",
+    objectPosition: "center 60%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 2.0, via Wikimedia Commons",
+    license: "CC BY-SA 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_7th_Brigade_Batallion_Exercise,_March_2009_(1).jpg",
+    keywords: ["לילה", "טנק", "שקיעה", "שריון", "ראיית לילה", "armor"],
+  },
+  {
+    id: "s10",
+    src: slide10,
+    alt: "מטוס F-35I אדיר של חיל האוויר",
+    objectPosition: "center 50%",
+    creditShort: "צילום: U.S. Air Force",
+    credit: "Airman 1st Class Trevor Bell, Public domain, via Wikimedia Commons",
+    license: "Public domain",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:230315-F-WM701-1003_-_F-35I_Adir_at_Red_Flag.jpg",
+    keywords: [
+      "חיל האוויר",
+      "טייס",
+      "טיסה",
+      "מטוס",
+      "אוויר",
+      "טכנאי",
+      "מכונאי",
+      "תעופה",
+      "air force",
+      "pilot",
+      "aircraft",
+    ],
+  },
+  {
+    id: "s11",
+    src: slide11,
+    alt: "טקס סיום מסלול עם כומתות",
+    objectPosition: "center 30%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Israel Defense Forces, CC BY-SA 2.0, via Wikimedia Commons",
+    license: "CC BY-SA 2.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Flickr_-_Israel_Defense_Forces_-_Field_Intelligence_Corps_Recruits%27_Graduation_Ceremony_(1).jpg",
+    keywords: [
+      "טקס",
+      "קצינים",
+      "קצין",
+      "פיקוד",
+      "מודיעין",
+      'אמ"ן',
+      "מנהלה",
+      "admin",
+      'משא"ן',
+      "חינוך",
+      'מש"ק',
+      "כומתה",
+    ],
+  },
+  {
+    id: "s12",
+    src: slide12,
+    alt: "לוחמי נח״ל בזחילה בתרגיל",
+    objectPosition: "center 45%",
+    creditShort: "צילום: דובר צה״ל",
+    credit: "Gadi Yampel / IDF Spokesperson's Unit, CC BY-SA 3.0, via Wikimedia Commons",
+    license: "CC BY-SA 3.0",
+    commonsUrl:
+      "https://commons.wikimedia.org/wiki/File:Nahal_Brigade_Military_Exercise,_October_2014_(15087752174).jpg",
+    keywords: ["נחל", 'נח"ל', 'חי"ר', "זחילה", "תרגיל", "לוחם", "קרבי", "שטח", "גדוד", "infantry"],
   },
 ] as const;
 
@@ -137,9 +282,13 @@ export const LEGACY_PHOTO_ALIASES: Record<string, string> = {
   "soldiers-climbing": "s8",
 };
 
-export const ATTRIBUTION_HE = "צילומי שטח: ארכיון על מדים.";
+export const ATTRIBUTION_HE =
+  "צילומים: דובר צה״ל ו־U.S. Air Force, ברישיונות פתוחים דרך Wikimedia Commons.";
 
-const catalogById = Object.fromEntries(IDF_PHOTO_CATALOG.map((p) => [p.id, p])) as Record<string, IdfPhoto>;
+const catalogById = Object.fromEntries(IDF_PHOTO_CATALOG.map((p) => [p.id, p])) as Record<
+  string,
+  IdfPhoto
+>;
 
 function resolvePhotoId(id: string): string {
   return LEGACY_PHOTO_ALIASES[id] ?? id;
@@ -158,7 +307,7 @@ export function pickRolePhoto(
   tags: string[],
   title: string,
   rank: number,
-  usedIds: Set<string>
+  usedIds: Set<string>,
 ): IdfPhoto {
   const blob = `${tags.join(" ")} ${title}`.toLowerCase();
 
@@ -198,7 +347,8 @@ export function getIdfPhoto(id: string): IdfPhoto {
 
 /** Stable pick for step index, route hash, etc. — spreads across full catalog. */
 export function idfPhotoAt(index: number): IdfPhoto {
-  const i = ((index % IDF_PHOTO_CATALOG.length) + IDF_PHOTO_CATALOG.length) % IDF_PHOTO_CATALOG.length;
+  const i =
+    ((index % IDF_PHOTO_CATALOG.length) + IDF_PHOTO_CATALOG.length) % IDF_PHOTO_CATALOG.length;
   return IDF_PHOTO_CATALOG[i];
 }
 

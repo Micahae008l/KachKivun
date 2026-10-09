@@ -263,6 +263,9 @@ function RootLayoutInner() {
               <Link to="/accessibility" className="transition hover:text-foreground">
                 נגישות
               </Link>
+              <Link to="/about" hash="photo-credits" className="transition hover:text-foreground">
+                קרדיט צילומים
+              </Link>
             </div>
             <span className="text-dust/50">
               &copy; {new Date().getFullYear()} {SITE_NAME_HE}
