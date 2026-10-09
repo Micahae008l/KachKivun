@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { RoleMatchCards } from "@/components/RoleMatchCards";
 import { BuildingMatches } from "@/components/BuildingMatches";
@@ -41,6 +42,7 @@ function AiCounselorPage() {
   const [personalAnswer, setPersonalAnswer] = useState("");
   const [error, setError] = useState("");
   const [historyId, setHistoryId] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -118,6 +120,29 @@ function AiCounselorPage() {
     },
     [aiReady, queryClient],
   );
+
+  // A new five from the same profile. The current results stay put until the new ones arrive.
+  const tryAgain = useCallback(async () => {
+    if (retrying) return;
+    setRetrying(true);
+    trackEvent("match_retry");
+    try {
+      const response = await matchRolesRequest({ retry: true });
+      setRoles(response.roles);
+      setNotice(response.notice || "");
+      setPersonalAnswer(response.personalAnswer || "");
+      setHistoryId(response.recommendationId || null);
+      setGenerationState("success");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["match-history"] }),
+        queryClient.invalidateQueries({ queryKey: ["recommendation"] }),
+      ]);
+    } catch (requestError) {
+      toast.error(getErrorMessage(requestError, "לא הצלחנו ליצור סבב חדש. ההתאמות הקודמות נשארו."));
+    } finally {
+      setRetrying(false);
+    }
+  }, [queryClient, retrying]);
 
   useEffect(() => {
     if (!mounted || !token || !dashboard || !aiReady || autoStarted.current) {
@@ -212,9 +237,7 @@ function AiCounselorPage() {
           </section>
         ) : null}
 
-        {generationState === "loading" ? (
-          <BuildingMatches />
-        ) : null}
+        {generationState === "loading" || retrying ? <BuildingMatches /> : null}
 
         {generationState === "error" ? (
           <section
@@ -239,12 +262,16 @@ function AiCounselorPage() {
           </section>
         ) : null}
 
-        {roles?.length ? (
+        {roles?.length && !retrying ? (
           <>
             {personalAnswer ? (
               <section className="border border-primary/40 bg-primary/10 px-5 py-4 text-right">
-                <p className="font-mono text-[10px] tracking-widest text-primary uppercase">תשובה לבקשה האישית</p>
-                <p className="mt-2 text-sm leading-7 text-foreground whitespace-pre-line">{personalAnswer}</p>
+                <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
+                  תשובה לבקשה האישית
+                </p>
+                <p className="mt-2 text-sm leading-7 text-foreground whitespace-pre-line">
+                  {personalAnswer}
+                </p>
               </section>
             ) : null}
             {notice ? (
@@ -253,6 +280,24 @@ function AiCounselorPage() {
               </p>
             ) : null}
             <RoleMatchCards roles={roles} offer={offerQuery.data} />
+            <section
+              className="flex flex-col items-center gap-3 border border-iron/25 bg-card/40 px-5 py-6 text-center"
+              aria-labelledby="retry-heading"
+            >
+              <h2 id="retry-heading" className="text-base font-bold text-foreground">
+                לא בטוחים בתוצאות?
+              </h2>
+              <p className="text-sm leading-6 text-dust">נבנה לכם חמישייה חדשה מאותו פרופיל.</p>
+              <button
+                type="button"
+                onClick={() => void tryAgain()}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-primary/60 px-5 text-sm font-bold text-primary transition hover:bg-primary/10 active:scale-[0.97]"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden />
+                נסו סבב חדש
+              </button>
+              <p className="text-xs text-dust/70">הסבב הנוכחי נשמר בהיסטוריה למטה.</p>
+            </section>
           </>
         ) : null}
 

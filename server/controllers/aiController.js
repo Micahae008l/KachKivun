@@ -439,6 +439,7 @@ export function buildMatchUserPrompt({
   assessmentSignals,
   filteredRoleCount,
   personalRequest = "",
+  avoidTitles = [],
 }) {
     // The note is untrusted text: strip anything that could close the fence, then mark it as data.
     const fencedRequest = String(personalRequest)
@@ -595,7 +596,28 @@ ${yomLines}${legacyQ}
 - פעילות גופנית: ${preferences?.physicalActivityLevel || "לא צוין"}
 
 המלץ על 5 תפקידי צה"ל. שמות ותיאורים — בעברית בלבד.`;
-    return userPrompt;
+    // "Try again": the titles come from our own catalog, never from user text.
+    const retryLine =
+      engine !== "v3" && avoidTitles.length
+        ? `
+
+## סבב חדש
+המועמד/ת ביקש/ה חמישייה חדשה. התפקידים האלה כבר הוצגו: ${avoidTitles.join(" | ")}.
+הצע חמישייה שונה באמת מאותו מאגר ולפי אותם כללים: לכל היותר 2 מהם יכולים לחזור, ורק אם הם עדיין ההתאמה החזקה ביותר.`
+        : "";
+    return userPrompt + retryLine;
+}
+
+/** Titles shown in this profile's latest result and recent generations, so a retry can steer away from them. */
+async function recentRoleTitles(userId, profileHash, durableMatch) {
+  const recent = await MatchGeneration.find({ userId, profileHash })
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .select("roles.roleTitle")
+    .lean()
+    .catch(() => []);
+  const titles = [durableMatch, ...recent].flatMap((g) => (g?.roles || []).map((r) => r?.roleTitle));
+  return [...new Set(titles.filter(Boolean))].slice(0, 15);
 }
 
 export async function matchRoles(req, res) {
@@ -676,7 +698,9 @@ export async function matchRoles(req, res) {
     ]);
     const durableComplete = durableMatch?.roles?.length === 5;
     const legacyComplete = cachedMatch?.roles?.length >= 5;
-    if (durableComplete || legacyComplete) {
+    // "Try again" skips the cache and asks for a different five; it counts as a new generation.
+    const retry = req.body?.retry === true;
+    if (!retry && (durableComplete || legacyComplete)) {
       await recordAiUsage({
         userId,
         userEmail,
@@ -772,6 +796,7 @@ export async function matchRoles(req, res) {
       assessmentSignals,
       filteredRoleCount: filteredRoles.length,
       personalRequest: profileForMatch.personalRequest,
+      avoidTitles: retry ? await recentRoleTitles(userId, profileHash, durableMatch) : [],
     });
 
     const isV3 = MATCH_ENGINE === "v3";
@@ -791,9 +816,9 @@ export async function matchRoles(req, res) {
         user: userPrompt,
         maxTokens: 8000,
         // 0 so the same profile gets the same picks; the profile-hash cache is the hard guarantee.
-        temperature: isV3 || isV2 ? 0 : AI_TEMPERATURE,
+        temperature: retry ? 0.8 : isV3 || isV2 ? 0 : AI_TEMPERATURE,
         // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
-        seed: isV3 || isV2 ? seedFromString(profileHash) : undefined,
+        seed: (isV3 || isV2) && !retry ? seedFromString(profileHash) : undefined,
       });
       const durationMs = Date.now() - startedAt;
       const modelUsed = completion.model || AI_MODEL;

@@ -652,7 +652,7 @@ export type LockedRoleMatch = {
 
 export type RoleMatch = UnlockedRoleMatch | LockedRoleMatch;
 
-export function matchRolesRequest() {
+export function matchRolesRequest(options: { retry?: boolean } = {}) {
   return apiFetch<{
     recommendationId?: string;
     roles: RoleMatch[];
@@ -662,7 +662,7 @@ export function matchRolesRequest() {
     personalAnswer?: string;
   }>("/api/ai/match-roles", {
     method: "POST",
-    body: JSON.stringify({}),
+    body: JSON.stringify(options.retry ? { retry: true } : {}),
   });
 }
 

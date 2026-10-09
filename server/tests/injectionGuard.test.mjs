@@ -38,3 +38,12 @@ test("the personal note cannot close its fence", () => {
   assert.ok(!inside.includes('"""'));
   assert.ok(inside.includes("רחפנים"));
 });
+
+test("try again lists the roles already shown (v2) and leaves the v3 copy prompt alone", () => {
+  const base = { profileForMatch: { daparScore: 80, medicalProfile: 97 }, preferences: {}, yom: null, stats: {}, assessmentSignals: {}, filteredRoleCount: 6 };
+  const avoidTitles = ["לוחם שריון", "תוכניתן/ית"];
+  const v2 = buildMatchUserPrompt({ ...base, engine: "v2", avoidTitles });
+  assert.ok(v2.includes("## סבב חדש") && v2.includes("לוחם שריון | תוכניתן/ית"));
+  assert.ok(!buildMatchUserPrompt({ ...base, engine: "v2" }).includes("## סבב חדש"));
+  assert.ok(!buildMatchUserPrompt({ ...base, engine: "v3", avoidTitles }).includes("## סבב חדש"));
+});
