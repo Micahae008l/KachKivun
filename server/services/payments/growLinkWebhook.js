@@ -21,6 +21,18 @@ function text(value, maxLength = 500) {
     .slice(0, maxLength);
 }
 
+/** Best-effort ping to the owner's Slack (SLACK_WEBHOOK_URL); never delays or fails the webhook. */
+function notifySlack(env, message) {
+  const url = text(env.SLACK_WEBHOOK_URL, 500);
+  if (!url.startsWith("https://hooks.slack.com/")) return;
+  fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text: message }),
+    signal: AbortSignal.timeout(5000),
+  }).catch((error) => logGrowLink("warn", "slack notify failed", { error: error.message }));
+}
+
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -259,6 +271,10 @@ export async function processGrowLinkWebhook({
   const product = getPaymentProduct(productKey);
   if (evidence.amountMinor !== product.amountMinor) {
     logGrowLink("warn", "ignored: amount mismatch", summary);
+    notifySlack(
+      env,
+      `:warning: Grow payment with an unexpected amount (${(evidence.amountMinor ?? 0) / 100} ILS, transaction ${evidence.transactionId}). Nothing was unlocked; check it in Grow.`,
+    );
     return { state: "ignored", reason: "amount_mismatch" };
   }
 
@@ -276,6 +292,10 @@ export async function processGrowLinkWebhook({
       payerEmail: evidence.payerEmail,
       payerPhone: evidence.payerPhone,
     });
+    notifySlack(
+      env,
+      `:rotating_light: ₪${product.amountMinor / 100} paid but NOT matched to an account (${reason}). Transaction ${evidence.transactionId}, payer ${evidence.payerEmail || "no email"}. Unlock it by hand or refund.`,
+    );
     return { state: "unmatched", reason };
   }
 
@@ -287,6 +307,12 @@ export async function processGrowLinkWebhook({
     },
   });
   logGrowLink("info", "paid", { ...summary, order: order.publicId, matchedBy: reason });
+  if (!finalized.duplicate) {
+    notifySlack(
+      env,
+      `:moneybag: New payment: ₪${product.amountMinor / 100}, places 2 and 1 unlocked (matched by ${reason.replace(/_/g, " ")}). Transaction ${evidence.transactionId}.`,
+    );
+  }
   return {
     state: finalized.status || "paid",
     duplicate: Boolean(finalized.duplicate),
