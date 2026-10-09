@@ -903,7 +903,8 @@ function GrowLinkHandoff({
           <ol className="list-decimal space-y-2 pr-5 text-sm leading-6 text-dust">
             <li>
               בעמוד התשלום של Grow הזינו את <strong className="text-foreground">האימייל הזה</strong>
-              . כך נזהה שהתשלום שלכם.
+              . כך נזהה שהתשלום שלכם. את השדה <strong className="text-foreground">קוד הזמנה</strong>{" "}
+              אפשר להשאיר ריק, הוא לא חובה.
             </li>
             {payStep}
             {returnStep}
