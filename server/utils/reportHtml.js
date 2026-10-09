@@ -46,7 +46,7 @@ export function buildReportHtml(report, userName) {
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>${esc(SITE_NAME_HE)} — דוח</title>
+  <title>${esc(SITE_NAME_HE)} | דוח</title>
   <style>
     body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; direction: rtl; margin: 24px; color: #1a1a1a; line-height: 1.5; }
     h1 { color: #6b7c52; font-size: 24px; }

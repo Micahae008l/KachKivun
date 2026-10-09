@@ -1,7 +1,12 @@
 import { sanitizeScoreBreakdown } from "./roleScoring.js";
 
+// The owner's style: no em dashes in anything a user reads, including AI-written role text.
 function cleanText(value, maxLength) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/\s*—\s*/g, ", ")
+    .trim()
+    .slice(0, maxLength);
 }
 
 function cleanStringArray(value, { maxItems, maxLength }) {

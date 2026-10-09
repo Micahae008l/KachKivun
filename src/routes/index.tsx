@@ -119,7 +119,7 @@ function HomePage() {
                 <HomePrimaryCta className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
                 <Link
                   to="/about"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-dust transition hover:text-foreground"
+                  className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-dust transition hover:text-foreground"
                 >
                   איך זה עובד
                   <ArrowUpLeft className="h-3.5 w-3.5" />
@@ -245,13 +245,13 @@ function HomePage() {
                   ? `מקומות 5–3 מוצגים בחינם; מקומות 2 ו־1 נפתחים ב־${price} בתשלום חד־פעמי וללא מנוי.`
                   : betaOpen
                     ? "בתקופת הבטא כל חמש ההתאמות פתוחות בחינם."
-                    : "פרטי הגישה לכל חמש ההתאמות יוצגו לפי מצב השירות."}
+                    : "חמש ההתאמות מדורגות ממקום 5 עד מקום 1, עם הסבר לכל אחת."}
               </p>
 
               <div className="mt-10 grid grid-cols-1 gap-4 border-t border-iron/30 pt-8 sm:grid-cols-3 sm:gap-6">
-                <StepBlock num="01" title="הרשמה" desc="חשבון חינמי תוך 3 דקות" idx={0} />
+                <StepBlock num="01" title="מתחילים" desc="בלי הרשמה, ישר לשאלון" idx={0} />
                 <StepBlock num="02" title="נתונים" desc="דפ״ר, רפואי, מא״ה והעדפות" idx={1} />
-                <StepBlock num="03" title="תובנות" desc="התאמה + המלצות AI" idx={2} />
+                <StepBlock num="03" title="התאמות" desc="5 תפקידים, עם הסבר למה" idx={2} />
               </div>
             </motion.div>
           </div>
@@ -287,13 +287,13 @@ function HomePage() {
             />
             <TrustBlock
               icon={<Target className="h-5 w-5" />}
-              title={paywallEnabled ? "מחיר שקוף" : betaOpen ? "בטא פתוחה" : "גישה שקופה"}
+              title={paywallEnabled ? "מחיר שקוף" : betaOpen ? "בטא פתוחה" : "הסבר לכל התאמה"}
               desc={
                 paywallEnabled
                   ? `ההערכה ושלוש התאמות בחינם; מקומות 2 ו־1 ב־${price} סופיים כולל מע״מ ככל שחל, ללא מנוי.`
                   : betaOpen
                     ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
-                    : "פרטי הגישה מוצגים לפי מצב השירות בזמן אמת."
+                    : "לכל תפקיד תראו למה הוא מתאים לכם, ומה הסיכוי להתקבל."
               }
               idx={2}
             />
@@ -330,12 +330,12 @@ function HomePage() {
                 ? `ההערכה ושלוש התאמות בחינם. פתיחת שתי המובילות ב־${price} סופיים כולל מע״מ ככל שחל, פעם אחת וללא מנוי.`
                 : betaOpen
                   ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
-                  : "התחילו בהערכה האישית; פרטי הגישה יוצגו לפי מצב השירות."}
+                  : "שאלון אחד, חמש התאמות, והסבר ברור לכל אחת."}
             </p>
             <HomePrimaryCta className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
             <p className="mt-3 flex items-center gap-1.5 text-xs text-dust/70">
               <Lock className="h-3 w-3" />
-              המלצות לא רשמיות — אין הבטחת זכאות, מיון או שיבוץ בצה״ל
+              המלצות לא רשמיות. אין הבטחת זכאות, מיון או שיבוץ בצה״ל
             </p>
           </div>
         </motion.div>

@@ -192,7 +192,7 @@ function OrderCard({
           }
         : {
             icon: ReceiptText,
-            title: "תשלום מאושר — ניתן לבקש ביטול",
+            title: "תשלום מאושר: ניתן לבקש ביטול",
             detail: "שליחת הבקשה אינה מבטלת את הגישה לפני אישור ההחזר.",
           };
   const StateIcon = state.icon;

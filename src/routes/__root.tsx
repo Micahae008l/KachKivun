@@ -235,7 +235,7 @@ function RootLayoutInner() {
       {!isBareShell && (
         <footer className="border-t border-iron/30 mt-20" aria-label={ARIA.footer}>
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 text-xs text-dust/60 sm:flex-row sm:justify-between sm:px-6 sm:py-8">
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <div className="flex flex-wrap justify-center gap-x-4 sm:gap-6 [&_a]:py-2.5 sm:[&_a]:py-0">
               <Link to="/" className="transition hover:text-foreground">
                 ראשי
               </Link>
@@ -373,7 +373,7 @@ function SiteHeader({
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-9 w-9 items-center justify-center text-dust transition hover:text-foreground"
+              className="flex h-11 w-11 items-center justify-center text-dust transition hover:text-foreground"
               aria-label={mobileOpen ? ARIA.closeMenu : ARIA.openMenu}
               aria-expanded={mobileOpen}
               aria-controls={MOBILE_NAV_ID}
@@ -385,7 +385,11 @@ function SiteHeader({
               )}
             </button>
           ) : (
-            <Link to="/post-signup" hash="login" className="btn-primary px-3 py-1.5 text-xs">
+            <Link
+              to="/post-signup"
+              hash="login"
+              className="btn-primary inline-flex min-h-10 items-center px-4 text-sm"
+            >
               התחברו
             </Link>
           )}
