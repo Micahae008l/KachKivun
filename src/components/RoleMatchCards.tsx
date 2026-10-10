@@ -12,6 +12,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
   BookOpen,
   Briefcase,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -184,44 +185,6 @@ function RankBadge({ rank, featured }: { rank: number; featured: boolean }) {
     );
   }
   return <p className="font-mono text-xs font-bold text-primary">מקום {rank}</p>;
-}
-
-function LockedRoleCard({ role, delayMs }: { role: LockedRoleMatch; delayMs: number }) {
-  const headingId = useId();
-  const featured = role.rank === 1;
-  return (
-    <article
-      className={`animate-slide-up relative h-full overflow-hidden p-6 text-right ${
-        featured
-          ? "animate-top-glow border border-primary/60 bg-primary/5"
-          : "border border-iron/30 bg-card"
-      }`}
-      style={{ animationDelay: `${delayMs}ms` }}
-      dir="rtl"
-      aria-labelledby={headingId}
-    >
-      <div className="relative flex items-start justify-between gap-5">
-        <div className="min-w-0">
-          <RankBadge rank={role.rank} featured={featured} />
-          <h3
-            id={headingId}
-            className="mt-3 flex items-center gap-2 text-base font-black text-foreground"
-          >
-            {featured ? "ההתאמה הכי חזקה שלכם" : "התאמה חזקה עוד יותר"}
-          </h3>
-          <p className="mt-1 text-xs text-dust">
-            {featured ? "התפקיד שהכי מתאים לכל מה שסיפרתם" : "מעל שלוש ההתאמות שראיתם"}
-          </p>
-          <div className="mt-3 space-y-2 opacity-50" aria-hidden>
-            <div className="h-4 w-40 rounded-sm bg-iron/30 blur-[3px]" />
-            <div className="h-3 w-56 max-w-full rounded-sm bg-iron/20 blur-[3px]" />
-            <div className="h-3 w-32 rounded-sm bg-iron/20 blur-[3px]" />
-          </div>
-        </div>
-        <MatchRing percentage={role.matchPercentage} size={featured ? 108 : 84} delayMs={delayMs} />
-      </div>
-    </article>
-  );
 }
 
 const CHANCE_STYLE = {
@@ -488,48 +451,123 @@ function UnlockedRoleCard({
   );
 }
 
-function PaywallCta({ offer }: { offer: PaymentOffer | null | undefined }) {
+const VAULT_PERKS = [
+  "שם התפקיד, והסבר למה הוא מתאים דווקא לכם",
+  "סיכויי קבלה ועובדות מפתח על התפקיד",
+  "נפתח לתמיד, גם בכל סבב התאמות חדש",
+  "תשלום אחד, בלי מנוי",
+];
+
+/** Places 2 and 1 together on one slide, with the offer inside it: the payoff of the 5-to-1 climb. */
+function TopTwoVault({
+  locked,
+  bestFreeMatch,
+  offer,
+}: {
+  locked: LockedRoleMatch[];
+  bestFreeMatch: number | null;
+  offer: PaymentOffer | null | undefined;
+}) {
+  const headingId = useId();
   useEffect(() => {
     if (offer?.enabled) trackEvent("paywall_viewed");
   }, [offer?.enabled]);
-
-  if (!offer?.enabled) {
-    return (
-      <aside className="border border-iron/35 bg-card p-6 text-center sm:p-8" dir="rtl">
-        <Lock className="mx-auto h-6 w-6 text-dust" aria-hidden />
-        <h3 className="mt-3 text-lg font-black text-foreground">
-          לא ניתן לפתוח את שתי ההתאמות כרגע
-        </h3>
-        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-dust">
-          הקופה אינה זמינה, ולכן לא מוצג כאן מחיר או קישור חיוב.
-        </p>
-      </aside>
-    );
-  }
-
-  const price = formatPaymentPrice(offer.product);
+  const top = locked.find((role) => role.rank === 1);
+  const lift = top && bestFreeMatch != null ? top.matchPercentage - bestFreeMatch : 0;
+  const price = offer?.enabled ? formatPaymentPrice(offer.product) : null;
 
   return (
-    <aside
-      className="border border-primary/45 bg-primary/10 p-6 text-center sm:p-8"
-      aria-labelledby="top-two-paywall-heading"
-      dir="rtl"
-    >
-      <Lock className="mx-auto h-6 w-6 text-primary" aria-hidden />
-      <h3 id="top-two-paywall-heading" className="mt-3 text-lg font-black text-foreground">
-        רוצים לראות את מקומות 2 ו־1?
-      </h3>
-      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-dust">
-        תשלום חד־פעמי של {price}, כולל מע״מ ככל שחל. נפתח לצמיתות בחשבון, גם בחישובים הבאים. בלי
-        מנוי.
-      </p>
-      <Link
-        to="/checkout"
-        className="mt-5 inline-flex rounded-md bg-primary px-5 py-3 text-sm font-black text-primary-foreground transition hover:brightness-110"
-      >
-        פתיחת מקומות 2 ו־1 ב־{price} פעם אחת, ללא מנוי
-      </Link>
-    </aside>
+    <article className="vault-border rounded-xl p-[2px]" aria-labelledby={headingId} dir="rtl">
+      <div className="rounded-[10px] bg-card p-5 text-right sm:p-7">
+        <p className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden />
+          מקומות 2 ו־1
+        </p>
+        <h3 id={headingId} className="mt-2 text-2xl leading-tight font-black text-foreground">
+          שתי ההתאמות הכי חזקות שלכם מחכות כאן
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-dust">
+          {lift > 0
+            ? `ההתאמה במקום 1 גבוהה ב־${lift}% מהטובה ביותר שראיתם עד עכשיו.`
+            : "התפקידים שהכי מתאימים לכל מה שסיפרתם."}
+        </p>
+
+        <ul className="mt-5 space-y-3">
+          {[...locked]
+            .sort((a, b) => b.rank - a.rank)
+            .map((role, i) => {
+              const featured = role.rank === 1;
+              return (
+                <li
+                  key={role.rank}
+                  className={`animate-slide-up flex items-center gap-4 rounded-lg border p-4 ${
+                    featured
+                      ? "animate-top-glow border-primary/60 bg-primary/10"
+                      : "border-iron/30 bg-background/40"
+                  }`}
+                  style={{ animationDelay: `${120 + i * 140}ms` }}
+                >
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-mono text-lg font-black ${
+                      featured ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
+                    }`}
+                  >
+                    {role.rank}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-1.5 text-sm font-black text-foreground">
+                      <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
+                      {featured ? "ההתאמה הכי חזקה שלכם" : "התאמה חזקה עוד יותר"}
+                    </p>
+                    <div className="mt-2 space-y-1.5 opacity-60" aria-hidden>
+                      <div className="h-3.5 w-36 max-w-full rounded-sm bg-iron/40 blur-[3px]" />
+                      <div className="h-2.5 w-52 max-w-full rounded-sm bg-iron/25 blur-[3px]" />
+                    </div>
+                  </div>
+                  <MatchRing
+                    percentage={role.matchPercentage}
+                    size={featured ? 88 : 80}
+                    delayMs={200 + i * 140}
+                  />
+                </li>
+              );
+            })}
+        </ul>
+
+        {price ? (
+          <>
+            <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+              {VAULT_PERKS.map((perk) => (
+                <li key={perk} className="flex items-start gap-2 text-sm leading-6 text-foreground">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-col gap-4 border-t border-iron/25 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-baseline gap-2">
+                <span className="text-4xl font-black text-foreground">{price}</span>
+                <span className="text-sm text-dust">פעם אחת · בלי מנוי</span>
+              </p>
+              <Link
+                to="/checkout"
+                className="cta-shine inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-base font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
+              >
+                <Lock className="h-4 w-4" aria-hidden />
+                פתחו את מקומות 2 ו־1
+              </Link>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-dust/80">
+              תשלום מאובטח דרך Grow, כולל מע״מ ככל שחל. נשאר פתוח בחשבון לתמיד.
+            </p>
+          </>
+        ) : (
+          <p className="mt-5 border-t border-iron/25 pt-4 text-sm leading-6 text-dust">
+            הקופה אינה זמינה כרגע, ולכן לא מוצג כאן מחיר או קישור חיוב.
+          </p>
+        )}
+      </div>
+    </article>
   );
 }
 
@@ -572,27 +610,39 @@ export function RoleMatchCards({
 
   if (!ordered.length) return null;
 
-  const current = ordered[Math.min(index, ordered.length - 1)];
-  const nextRole = ordered[index + 1];
+  // 5, 4, 3 one at a time; whatever is still locked (2 and 1) shares the last slide.
+  const locked = ordered.filter((role): role is LockedRoleMatch => role.kind === "locked");
+  const slides: (UnlockedRoleMatch | "vault")[] = [
+    ...ordered.filter((role): role is UnlockedRoleMatch => role.kind === "role"),
+    ...(locked.length ? (["vault"] as const) : []),
+  ];
+  const bestFreeMatch = ordered.reduce<number | null>(
+    (best, role) => (role.kind === "role" ? Math.max(best ?? 0, role.matchPercentage) : best),
+    null,
+  );
+  const slideKey = (slide: UnlockedRoleMatch | "vault") =>
+    slide === "vault" ? "vault" : `role-${slide.rank}`;
+  const current = slides[Math.min(index, slides.length - 1)];
+  const nextSlide = slides[index + 1];
 
   function go(target: number) {
-    const clamped = Math.max(0, Math.min(ordered.length - 1, target));
+    const clamped = Math.max(0, Math.min(slides.length - 1, target));
     if (clamped === index) return;
     setDir(clamped > index ? 1 : -1);
     setIndex(clamped);
     sectionRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
   }
 
-  const renderCard = (role: RoleMatch) =>
-    role.kind === "role" ? (
-      <UnlockedRoleCard
-        role={role}
-        photo={photos.get(role.rank) ?? null}
-        delayMs={0}
-        onMoreInfo={() => setInfoSlug(roleInsightSlug(role.roleTitle))}
-      />
+  const renderSlide = (slide: UnlockedRoleMatch | "vault") =>
+    slide === "vault" ? (
+      <TopTwoVault locked={locked} bestFreeMatch={bestFreeMatch} offer={offer} />
     ) : (
-      <LockedRoleCard role={role} delayMs={0} />
+      <UnlockedRoleCard
+        role={slide}
+        photo={photos.get(slide.rank) ?? null}
+        delayMs={0}
+        onMoreInfo={() => setInfoSlug(roleInsightSlug(slide.roleTitle))}
+      />
     );
 
   return (
@@ -607,14 +657,14 @@ export function RoleMatchCards({
       </h2>
 
       <nav aria-label="מעבר בין ההתאמות" className="flex items-center justify-center gap-2">
-        {ordered.map((role, i) => (
+        {slides.map((slide, i) => (
           <button
-            key={`${role.kind}-${role.rank}`}
+            key={slideKey(slide)}
             type="button"
             onClick={() => go(i)}
             aria-current={i === index ? "step" : undefined}
-            aria-label={`מקום ${role.rank}`}
-            className={`flex h-11 w-11 items-center justify-center rounded-full border font-mono text-sm font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+            aria-label={slide === "vault" ? "מקומות 2 ו־1" : `מקום ${slide.rank}`}
+            className={`flex h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-3 font-mono text-sm font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
               i === index
                 ? "border-primary bg-primary text-primary-foreground"
                 : i < index
@@ -622,7 +672,14 @@ export function RoleMatchCards({
                   : "border-iron/30 text-dust"
             }`}
           >
-            {role.rank}
+            {slide === "vault" ? (
+              <>
+                <Lock className="h-3.5 w-3.5" aria-hidden />
+                2·1
+              </>
+            ) : (
+              slide.rank
+            )}
           </button>
         ))}
       </nav>
@@ -630,7 +687,7 @@ export function RoleMatchCards({
       {/* One match at a time, 5 to 1. Swipe right or press "next" to move toward place 1. */}
       <div className="-mx-1 overflow-x-clip px-1 py-1">
         <motion.div
-          key={`${current.kind}-${current.rank}`}
+          key={slideKey(current)}
           initial={
             reduce ? false : { opacity: 0, transform: `translateX(${dir > 0 ? -40 : 40}px)` }
           }
@@ -645,9 +702,7 @@ export function RoleMatchCards({
           }}
           className="space-y-4"
         >
-          {renderCard(current)}
-          {/* The payment shows the moment the person reaches a locked place (2 or 1). */}
-          {current.kind === "locked" ? <PaywallCta offer={offer} /> : null}
+          {renderSlide(current)}
         </motion.div>
       </div>
 
@@ -661,13 +716,13 @@ export function RoleMatchCards({
           <ChevronRight className="h-4 w-4" aria-hidden />
           הקודם
         </button>
-        {nextRole ? (
+        {nextSlide ? (
           <button
             type="button"
             onClick={() => go(index + 1)}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
           >
-            למקום {nextRole.rank}
+            {nextSlide === "vault" ? "למקומות 2 ו־1" : `למקום ${nextSlide.rank}`}
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
         ) : null}
