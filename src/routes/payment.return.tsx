@@ -265,7 +265,7 @@ function PaymentReturnPage() {
     return (
       <ReturnShell>
         <CheckCircle2 className="mx-auto h-11 w-11 text-primary" aria-hidden />
-        <p className="mt-4 font-mono text-[10px] tracking-widest text-primary uppercase">
+        <p className="mt-4 font-mono text-[10px] tracking-wide text-primary uppercase">
           התשלום אושר בשרת
         </p>
         <h1 className="mt-2 text-2xl font-black text-foreground">

@@ -89,7 +89,7 @@ function HomePage() {
           {/* CSS entrance, not framer: it runs from the first paint, before hydration. */}
           <div className="flex flex-col justify-center py-16 lg:py-24">
             <p
-              className="animate-slide-up font-mono text-xs tracking-widest text-dust uppercase mb-6"
+              className="animate-slide-up font-mono text-xs tracking-wide text-dust uppercase mb-6"
               style={{ animationDelay: "100ms" }}
             >
               פלטפורמת הכנה לשירות צה״ל
@@ -160,7 +160,7 @@ function HomePage() {
       <div className="section-divider" />
 
       {/* ── Capabilities, staggered asymmetric cards ── */}
-      <section className="py-20 sm:py-28">
+      <section className="py-14 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -169,7 +169,7 @@ function HomePage() {
             transition={{ duration: 0.4, ease }}
             className="mb-14 max-w-xl text-right"
           >
-            <p className="font-mono text-xs tracking-widest text-primary uppercase mb-3">כלים</p>
+            <p className="font-mono text-xs tracking-wide text-primary uppercase mb-3">כלים</p>
             <h2 className="text-3xl font-bold leading-tight sm:text-4xl">שלושה כלים, מסך אחד</h2>
             <p className="mt-3 text-base text-dust leading-relaxed">
               כל מה שצריך כדי להתכונן לשירות, מרוכז ונגיש.
@@ -205,7 +205,7 @@ function HomePage() {
       <div className="section-divider" />
 
       {/* ── Evidence: photo + text, offset grid ── */}
-      <section className="py-20 sm:py-28">
+      <section className="py-14 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid items-center gap-12 lg:grid-cols-[2fr_3fr] lg:gap-20">
             <motion.div
@@ -232,7 +232,7 @@ function HomePage() {
               transition={{ duration: 0.4, delay: 0.1, ease }}
               className="text-right"
             >
-              <p className="font-mono text-xs tracking-widest text-olive uppercase mb-3">
+              <p className="font-mono text-xs tracking-wide text-olive uppercase mb-3">
                 איך זה עובד
               </p>
               <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
@@ -261,14 +261,14 @@ function HomePage() {
       <div className="section-divider" />
 
       {/* ── Trust, horizontal bar ── */}
-      <section className="py-20 sm:py-28">
+      <section className="py-14 sm:py-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.4 }}
-            className="mb-10 text-center font-mono text-xs tracking-widest text-dust/60 uppercase"
+            className="mb-10 text-center font-mono text-xs tracking-wide text-dust/60 uppercase"
           >
             למה לסמוך עלינו
           </motion.p>

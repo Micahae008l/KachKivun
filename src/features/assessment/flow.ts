@@ -34,8 +34,8 @@ export function buildAssessmentFlow(
   if (branches.wantsTechnical) steps.push("technical");
 
   steps.push("scores", "yom", "checkpoint", "motivation", "identity", "review");
-  // Signed-out users enter their email on the review screen, so only the code step follows.
-  if (includeAuth) steps.push("otp");
+  // Signed-out users save on a screen of its own: email, then the one-time code.
+  if (includeAuth) steps.push("email", "otp");
   return steps;
 }
 

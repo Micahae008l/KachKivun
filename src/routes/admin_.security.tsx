@@ -301,7 +301,7 @@ function SecurityPage() {
             className="flex flex-col-reverse gap-4 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="text-right">
-              <p className="mb-2 font-mono text-xs tracking-widest text-dust uppercase">
+              <p className="mb-2 font-mono text-xs tracking-wide text-dust uppercase">
                 ניטור התקפות ומודרציית שרת
               </p>
               <h1 className="text-2xl font-black sm:text-4xl">מרכז אבטחה</h1>
@@ -375,7 +375,7 @@ function SecurityPage() {
               </motion.div>
 
               <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
-                <p className="mb-4 font-mono text-xs tracking-widest text-dust uppercase">
+                <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                   אירועי אבטחה · 48 שעות אחרונות
                 </p>
                 <div dir="ltr" ref={chartRef} className="h-64 w-full">
@@ -458,7 +458,7 @@ function SecurityPage() {
 
               <motion.div variants={fadeUp} className="grid gap-4 lg:grid-cols-2">
                 <div className="border border-iron/30 bg-card p-5 sm:p-6">
-                  <p className="mb-4 font-mono text-xs tracking-widest text-dust uppercase">
+                  <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                     סוגי אירועים · 7 ימים
                   </p>
                   {ov.byType.length === 0 ? (
@@ -492,7 +492,7 @@ function SecurityPage() {
                 </div>
 
                 <div className="border border-iron/30 bg-card p-5 sm:p-6">
-                  <p className="mb-4 font-mono text-xs tracking-widest text-dust uppercase">
+                  <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                     כתובות IP מובילות · 7 ימים
                   </p>
                   {ov.topIps.length === 0 ? (
@@ -579,7 +579,7 @@ function SecurityPage() {
 
           <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <p className="font-mono text-xs tracking-widest text-dust uppercase">יומן אירועים</p>
+              <p className="font-mono text-xs tracking-wide text-dust uppercase">יומן אירועים</p>
               <div className="flex flex-wrap items-center gap-2">
                 <select
                   value={typeFilter}
@@ -701,7 +701,7 @@ function SecurityPage() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
-            <p className="mb-4 font-mono text-xs tracking-widest text-dust uppercase">
+            <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
               חסימת כתובות IP
             </p>
             <form
@@ -816,7 +816,7 @@ function MetricCard({
   return (
     <div className="border border-iron/30 bg-card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-widest text-dust uppercase">{label}</span>
+        <span className="font-mono text-[10px] tracking-wide text-dust uppercase">{label}</span>
         <Icon className="h-4 w-4 text-primary/80" />
       </div>
       <p className="font-mono text-2xl font-black tabular-nums text-foreground">{value}</p>

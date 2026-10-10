@@ -214,7 +214,7 @@ function AdminPage() {
             className="flex flex-col-reverse gap-4 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="text-right">
-              <p className="mb-2 font-mono text-xs tracking-widest text-dust uppercase">ניהול מערכת</p>
+              <p className="mb-2 font-mono text-xs tracking-wide text-dust uppercase">ניהול מערכת</p>
               <h1 className="text-2xl font-black sm:text-4xl">פאנל מנהל</h1>
               <p className="mt-2 text-sm text-dust">
                 {me?.preferredName?.trim() || me?.email} · גישה מלאה למשתמשים ועלויות AI
@@ -282,7 +282,7 @@ function AdminPage() {
               </motion.div>
 
               <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
-                <p className="mb-4 font-mono text-xs tracking-widest text-dust uppercase">
+                <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                   פעילות AI אחרונה
                 </p>
                 {ov.recentUsage.length === 0 ? (
@@ -324,7 +324,7 @@ function AdminPage() {
 
           <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="font-mono text-xs tracking-widest text-dust uppercase">ניהול משתמשים</p>
+              <p className="font-mono text-xs tracking-wide text-dust uppercase">ניהול משתמשים</p>
               <div className="relative max-w-md flex-1">
                 <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
                 <input
@@ -387,7 +387,7 @@ function AdminPage() {
           <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6" dir="rtl">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-mono text-xs tracking-widest text-dust uppercase">
+                <p className="font-mono text-xs tracking-wide text-dust uppercase">
                   ביקורות תפקידים
                 </p>
                 <h2 className="mt-1 flex items-center gap-2 text-base font-bold text-foreground">
@@ -523,7 +523,7 @@ function MetricCard({
   return (
     <div className="border border-iron/30 bg-card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-widest text-dust uppercase">{label}</span>
+        <span className="font-mono text-[10px] tracking-wide text-dust uppercase">{label}</span>
         <Icon className="h-4 w-4 text-primary/80" />
       </div>
       <p className="font-mono text-2xl font-black tabular-nums text-foreground">{value}</p>

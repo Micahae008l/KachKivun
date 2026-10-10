@@ -61,7 +61,7 @@ type Props = {
 
 export function DashboardAccountPreferences({ data }: Props) {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [preferredName, setPreferredName] = useState("");
@@ -141,7 +141,7 @@ export function DashboardAccountPreferences({ data }: Props) {
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Settings2 className="h-5 w-5 shrink-0 text-primary" aria-hidden />
           <div className="text-right">
-            <p className="font-mono text-[10px] tracking-widest text-primary uppercase">חשבון</p>
+            <p className="font-mono text-[10px] tracking-wide text-primary uppercase">חשבון</p>
             <h2 id="account-preferences-heading" className="text-base font-bold text-foreground sm:text-lg">
               העדפות ופרטים אישיים
             </h2>

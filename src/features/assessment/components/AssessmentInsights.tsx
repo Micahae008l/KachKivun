@@ -20,7 +20,15 @@ const num = (v: number | "unknown" | null) => (typeof v === "number" ? v : null)
 
 // ---------- motion primitives ----------
 
-function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   const reduce = useReducedMotion();
   return (
     <motion.div
@@ -75,10 +83,22 @@ function Grow({ pct, delay = 0, className }: { pct: number; delay?: number; clas
   );
 }
 
-function Card({ kicker, title, children, className = "" }: { kicker: string; title: ReactNode; children: ReactNode; className?: string }) {
+function Card({
+  kicker,
+  title,
+  children,
+  className = "",
+}: {
+  kicker: string;
+  title: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <section className={`relative overflow-hidden border border-iron/25 bg-gradient-to-b from-card to-background/40 p-5 sm:p-7 ${className}`}>
-      <p className="font-mono text-[11px] tracking-[0.25em] text-primary">{kicker}</p>
+    <section
+      className={`relative overflow-hidden border border-iron/25 bg-gradient-to-b from-card to-background/40 p-5 sm:p-7 ${className}`}
+    >
+      <p className="font-mono text-[11px] tracking-wide text-primary">{kicker}</p>
       <h3 className="mt-2 text-lg font-black leading-snug text-foreground sm:text-xl">{title}</h3>
       <div className="mt-5">{children}</div>
     </section>
@@ -92,14 +112,22 @@ export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
   const medical = num(answers.medicalProfile);
   const doors = daparDoors(answers);
   const total = doors.reduce((s, d) => s + d.items.length, 0);
-  const open = dapar == null ? 0 : doors.filter((d) => dapar >= d.dapar).reduce((s, d) => s + d.items.length, 0);
+  const open =
+    dapar == null
+      ? 0
+      : doors.filter((d) => dapar >= d.dapar).reduce((s, d) => s + d.items.length, 0);
   const rung = medical == null ? null : PROFILE_RUNGS.find((r) => medical >= r.profile);
 
   const tiles = [
     {
       label: "דפ״ר",
       value: dapar,
-      note: dapar == null ? "לא ידוע עדיין" : total ? `${open} מתוך ${total} השערים שבחרתם פתוחים` : "מעל הממוצע הוא 50",
+      note:
+        dapar == null
+          ? "לא ידוע עדיין"
+          : total
+            ? `${open} מתוך ${total} השערים שבחרתם פתוחים`
+            : "מעל הממוצע הוא 50",
     },
     { label: "פרופיל", value: medical, note: rung ? rung.opens : "לא ידוע עדיין" },
   ];
@@ -122,6 +150,10 @@ export function ProfileHeadline({ answers }: { answers: AssessmentAnswers }) {
 
 // ---------- 3. דפ"ר doors ----------
 
+const DAPAR_MIN = 10;
+const DAPAR_MAX = 90;
+const daparPct = (value: number) => ((value - DAPAR_MIN) / (DAPAR_MAX - DAPAR_MIN)) * 100;
+
 export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
   const reduce = useReducedMotion();
   const dapar = num(answers.daparScore);
@@ -129,47 +161,93 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
   const doors = daparDoors(answers);
   if (!doors.length) return null;
   const combatMale = isCombatDesignatedMale(answers) && wantsTech(answers);
+  const openCount = dapar == null ? 0 : doors.filter((door) => dapar >= door.dapar).length;
 
   return (
     <Card
       kicker="השערים לפי דפ״ר"
-      title={dapar == null ? "אלה השערים בכיוונים שבחרתם" : `עם דפ״ר ${dapar}, זה מה שנפתח בכיוונים שבחרתם`}
+      title={
+        dapar == null
+          ? "אלה השערים בכיוונים שבחרתם"
+          : `עם דפ״ר ${dapar}, זה מה שנפתח בכיוונים שבחרתם`
+      }
     >
       {combatMale ? (
         <div className="mb-5 border-r-2 border-amber-400 bg-amber-400/10 p-3 text-sm leading-6 text-foreground">
-          <strong>פרופיל {medical} = ייעוד ללוחמה.</strong> לטכנולוגיה מגיעים רק דרך מיונים שמקבלים פרופיל
-          קרבי, והמכסות שם מצומצמות.
+          <strong>פרופיל {medical} = ייעוד ללוחמה.</strong> לטכנולוגיה מגיעים רק דרך מיונים שמקבלים
+          פרופיל קרבי, והמכסות שם מצומצמות.
         </div>
       ) : null}
-      <ol className="space-y-3">
+
+      {/* One 10 to 90 scale: where you stand, and the score each door needs. */}
+      <div className="px-2 pt-8" dir="ltr" aria-hidden>
+        <div className="relative h-2 rounded-full bg-primary/15">
+          {dapar != null ? (
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full bg-primary"
+              initial={reduce ? false : { width: 0 }}
+              whileInView={{ width: `${daparPct(dapar)}%` }}
+              viewport={{ once: true }}
+              style={reduce ? { width: `${daparPct(dapar)}%` } : undefined}
+              transition={{ duration: 0.9, ease: EASE }}
+            />
+          ) : null}
+          {doors.map((door) => (
+            <span
+              key={door.dapar}
+              className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-card ${
+                dapar != null && dapar >= door.dapar ? "bg-primary" : "bg-iron/70"
+              }`}
+              style={{ left: `${daparPct(door.dapar)}%` }}
+            />
+          ))}
+          {dapar != null ? (
+            <span
+              className="absolute -top-8 -translate-x-1/2 whitespace-nowrap rounded-sm bg-foreground px-2 py-0.5 text-[11px] font-black text-background"
+              style={{ left: `${Math.min(90, Math.max(10, daparPct(dapar)))}%` }}
+              dir="rtl"
+            >
+              אתם · {dapar}
+            </span>
+          ) : null}
+        </div>
+        <div className="mt-2.5 flex justify-between font-mono text-[11px] text-dust">
+          <span>10</span>
+          <span>50</span>
+          <span>90</span>
+        </div>
+      </div>
+
+      {dapar != null ? (
+        <p className="mt-5 text-sm text-dust">
+          <strong className="text-base font-black text-foreground">{openCount}</strong> מתוך{" "}
+          {doors.length} השערים בכיוונים שלכם פתוחים
+        </p>
+      ) : null}
+
+      <ul className="mt-3 divide-y divide-iron/15 border border-iron/20">
         {doors.map((door, i) => {
           const open = dapar != null && dapar >= door.dapar;
           const gap = dapar == null ? null : door.dapar - dapar;
-          const fromBottom = doors.length - 1 - i;
           return (
-            <li key={door.dapar} className="grid grid-cols-[2.75rem_6px_1fr] items-stretch gap-3">
-              <span className={`pt-2 font-mono text-lg font-black tabular-nums ${open ? "text-primary" : "text-dust"}`}>{door.dapar}</span>
-              <span className="relative overflow-hidden bg-iron/25">
-                {open ? (
-                  <motion.span
-                    className="absolute inset-0 origin-bottom bg-primary"
-                    initial={reduce ? false : { scaleY: 0 }}
-                    whileInView={{ scaleY: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.35, delay: 0.15 + fromBottom * 0.18, ease: EASE }}
-                  />
-                ) : null}
-              </span>
-              <motion.div
-                initial={reduce ? false : { opacity: 0, x: -8 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.15 + fromBottom * 0.18, ease: EASE }}
-                className={`flex flex-col-reverse items-stretch gap-2 border p-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 ${
-                  open ? "border-primary/35 bg-primary/10" : "border-iron/20 bg-card/40"
+            <motion.li
+              key={door.dapar}
+              initial={reduce ? false : { opacity: 0, transform: "translateY(6px)" }}
+              whileInView={{ opacity: 1, transform: "translateY(0px)" }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: 0.05 * i, ease: EASE }}
+              className={`flex items-start gap-3 p-3.5 ${open ? "bg-primary/[0.07]" : ""}`}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-sm font-black ${
+                  open ? "bg-primary text-primary-foreground" : "bg-iron/20 text-dust"
                 }`}
               >
-                <ul className="min-w-0 flex-1 space-y-1 text-sm leading-6">
+                {door.dapar}
+              </span>
+              {/* Tag under the names, so long role names get the full row width. */}
+              <div className="min-w-0 flex-1 pt-1.5">
+                <ul className="space-y-0.5 text-sm leading-6">
                   {door.items.map((item) => (
                     <li key={item} className={open ? "text-foreground" : "text-dust"}>
                       {item}
@@ -177,20 +255,25 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
                   ))}
                 </ul>
                 <span
-                  className={`inline-flex shrink-0 items-center gap-1 self-end whitespace-nowrap sm:self-auto px-2 py-0.5 text-[11px] font-bold ${
-                    open ? "bg-primary text-primary-foreground" : "bg-iron/25 text-dust"
+                  className={`mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                    open ? "bg-primary/15 text-primary" : "bg-iron/20 text-dust"
                   }`}
                 >
-                  {open ? <Check className="h-3 w-3" aria-hidden /> : <Lock className="h-3 w-3" aria-hidden />}
-                  {open ? "פתוח" : gap == null ? "לא ידוע" : `חסרות ${gap} נק׳`}
+                  {open ? (
+                    <Check className="h-3 w-3" aria-hidden />
+                  ) : (
+                    <Lock className="h-3 w-3" aria-hidden />
+                  )}
+                  {open ? "פתוח לכם" : gap == null ? "לא ידוע" : `חסרות ${gap} נק׳`}
                 </span>
-              </motion.div>
-            </li>
+              </div>
+            </motion.li>
           );
         })}
-      </ol>
+      </ul>
       <p className="mt-3 text-[11px] leading-5 text-dust">
-        דפ״ר הוא רק השער. מעבר לו יש מיונים, ראיון וסיווג ביטחוני. מבחן חוזר אפשרי רק למי שיש לו 70 ומטה.
+        דפ״ר הוא רק השער. מעבר לו יש מיונים, ראיון וסיווג ביטחוני. מבחן חוזר אפשרי רק למי שיש לו 70
+        ומטה.
       </p>
     </Card>
   );
@@ -245,7 +328,17 @@ export function CommitmentCard({ answers }: { answers: AssessmentAnswers }) {
   const draft = new Date(answers.draftDate);
   return (
     <Card kicker="כמה זמן זה באמת" title={`מגיוס ב-${formatMonth(draft)}: מתי משתחררים בכל מסלול`}>
-      <ul className="space-y-3">
+      <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[11px] text-dust">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-4 rounded-full bg-primary" aria-hidden />
+          שירות חובה
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-4 rounded-full bg-primary/40" aria-hidden />
+          שירות קבע
+        </span>
+      </div>
+      <ul className="space-y-4">
         {rows.map((r, i) => (
           <li key={r.label}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
@@ -255,23 +348,27 @@ export function CommitmentCard({ answers }: { answers: AssessmentAnswers }) {
                 {r.keva ? ` · סוף קבע ${formatMonth(r.end)}` : ""}
               </span>
             </div>
-            <div className="mt-1.5 flex h-3 overflow-hidden bg-iron/20" aria-hidden>
-              <Grow pct={(r.mandatory / max) * 100} delay={0.1 * i} className="h-full bg-primary" />
+            {/* Mandatory then career service, split by a 2px gap; rounded only at the far end. */}
+            <div className="mt-2 flex h-2.5 gap-[2px]" aria-hidden>
+              <Grow
+                pct={(r.mandatory / max) * 100}
+                delay={0.08 * i}
+                className={`h-full bg-primary ${r.keva ? "" : "rounded-e-[4px]"}`}
+              />
               {r.keva ? (
                 <Grow
                   pct={(r.keva / max) * 100}
-                  delay={0.1 * i + 0.5}
-                  className="h-full bg-[repeating-linear-gradient(135deg,var(--primary)_0_4px,transparent_4px_8px)] opacity-70"
+                  delay={0.08 * i + 0.45}
+                  className="h-full rounded-e-[4px] bg-primary/40"
                 />
               ) : null}
             </div>
           </li>
         ))}
       </ul>
-      <div className="mt-3 flex gap-4 text-[11px] text-dust">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-3 bg-primary" />חובה (32 חודשים לגברים ולתפקידי ״דין אישה כדין גבר״)</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-3 bg-[repeating-linear-gradient(135deg,var(--primary)_0_3px,transparent_3px_6px)]" />קבע</span>
-      </div>
+      <p className="mt-4 text-[11px] leading-5 text-dust">
+        חובה: 32 חודשים לגברים ולתפקידי ״דין אישה כדין גבר״.
+      </p>
     </Card>
   );
 }
@@ -286,15 +383,7 @@ export function NextStepsCard({ answers }: { answers: AssessmentAnswers }) {
   return (
     <Card
       kicker="הצעדים הבאים"
-      title={
-        months > 0 ? (
-          <>
-            <CountUp value={months} /> חודשים לגיוס. מה עושים עכשיו
-          </>
-        ) : (
-          "מה עושים עכשיו"
-        )
-      }
+      title={months > 0 ? `${months} חודשים לגיוס. מה עושים עכשיו` : "מה עושים עכשיו"}
     >
       <ol className="space-y-2.5">
         {steps.map((step, i) => (

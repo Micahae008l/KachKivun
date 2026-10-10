@@ -172,7 +172,7 @@ function AiCounselorPage() {
         </div>
 
         <header className="border-b border-iron/30 pb-6 text-right">
-          <p className="mb-2 font-mono text-xs tracking-widest text-primary uppercase">
+          <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">
             היועץ האישי
           </p>
           <h1 className="text-2xl font-black text-foreground sm:text-3xl">
@@ -266,7 +266,7 @@ function AiCounselorPage() {
           <>
             {personalAnswer ? (
               <section className="border border-primary/40 bg-primary/10 px-5 py-4 text-right">
-                <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
+                <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
                   תשובה לבקשה האישית
                 </p>
                 <p className="mt-2 text-sm leading-7 text-foreground whitespace-pre-line">

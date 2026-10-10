@@ -104,6 +104,10 @@ function ScoreBreakdownPanel({
   );
 }
 
+/**
+ * The match % as a meter: a same-hue track, the value arc, and the number in the middle.
+ * Type scales with the ring so nothing collides at small sizes; no CSS filters (they drew a dark box).
+ */
 function MatchRing({
   percentage,
   size = 84,
@@ -113,40 +117,45 @@ function MatchRing({
   size?: number;
   delayMs?: number;
 }) {
-  const gradientId = useId();
   const value = Math.min(100, Math.max(0, Math.round(percentage)));
-  const big = size > 90;
-  const stroke = big ? 9 : 7;
-  const radius = (size - stroke) / 2 - 2;
+  const stroke = size >= 100 ? 8 : size >= 80 ? 6 : 5;
+  const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
+  const showLabel = size >= 80;
+  const numberPx = Math.round(size * (showLabel ? 0.27 : 0.3));
 
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="var(--primary)" />
-          </linearGradient>
-        </defs>
+    <div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={ARIA.matchPct(value)}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+        aria-hidden
+      >
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
           strokeWidth={stroke}
-          className="stroke-iron/20"
+          className="stroke-primary/15"
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={`url(#${gradientId})`}
+          stroke="var(--primary)"
           strokeWidth={stroke}
           strokeLinecap="round"
-          className="animate-ring drop-shadow-[0_0_6px_color-mix(in_oklch,var(--primary)_45%,transparent)]"
+          className="animate-ring"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           style={
@@ -157,19 +166,20 @@ function MatchRing({
           }
         />
       </svg>
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center"
-        role="img"
-        aria-label={ARIA.matchPct(value)}
-      >
+      <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden>
         <span
-          className={`font-mono font-black leading-none tabular-nums text-foreground ${big ? "text-3xl" : "text-2xl"}`}
+          className="font-black leading-none text-foreground"
+          style={{ fontSize: numberPx }}
           dir="ltr"
         >
           {value}
-          <span className={`font-bold text-primary ${big ? "text-base" : "text-sm"}`}>%</span>
+          <span className="font-bold text-primary" style={{ fontSize: Math.round(numberPx * 0.5) }}>
+            %
+          </span>
         </span>
-        <span className="mt-1 text-[11px] font-semibold text-dust">התאמה</span>
+        {showLabel ? (
+          <span className="mt-1 text-[10px] font-semibold leading-none text-dust">התאמה</span>
+        ) : null}
       </div>
     </div>
   );
@@ -517,7 +527,7 @@ function TopTwoVault({
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1.5 text-sm font-black text-foreground">
                       <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
-                      {featured ? "ההתאמה הכי חזקה שלכם" : "התאמה חזקה עוד יותר"}
+                      {featured ? "הכי חזקה שלכם" : "חזקה עוד יותר"}
                     </p>
                     <div className="mt-2 space-y-1.5 opacity-60" aria-hidden>
                       <div className="h-3.5 w-36 max-w-full rounded-sm bg-iron/40 blur-[3px]" />
@@ -526,7 +536,7 @@ function TopTwoVault({
                   </div>
                   <MatchRing
                     percentage={role.matchPercentage}
-                    size={featured ? 88 : 80}
+                    size={featured ? 80 : 72}
                     delayMs={200 + i * 140}
                   />
                 </li>

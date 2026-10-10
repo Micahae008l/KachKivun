@@ -23,7 +23,7 @@ export function LegalDoc({
         </Link>
 
         <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h1>
-        <p className="mt-3 font-mono text-xs tracking-widest text-dust/60 uppercase">
+        <p className="mt-3 font-mono text-xs tracking-wide text-dust/60 uppercase">
           עדכון אחרון: {lastUpdated}
         </p>
 

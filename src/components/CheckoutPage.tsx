@@ -424,7 +424,7 @@ export function CheckoutPage({ shareToken }: Props) {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12" dir="rtl">
       <div className="border border-iron/30 bg-card">
         <header className="border-b border-iron/25 px-5 py-6 text-right sm:px-8">
-          <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
+          <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
             תשלום מאובטח
           </p>
           <h1 className="mt-2 text-2xl font-black text-foreground">פתיחת מקומות 2 ו־1</h1>
@@ -765,7 +765,7 @@ export function CheckoutPage({ shareToken }: Props) {
 
               {order?.requiresMockConfirmation && import.meta.env.DEV ? (
                 <div className="border border-amber-500/40 bg-amber-500/10 p-4 text-right">
-                  <p className="font-mono text-[10px] font-bold tracking-widest text-amber-300 uppercase">
+                  <p className="font-mono text-[10px] font-bold tracking-wide text-amber-300 uppercase">
                     פיתוח בלבד · תשלום מדומה
                   </p>
                   <p className="mt-2 text-sm text-dust">
@@ -876,7 +876,7 @@ function GrowLinkHandoff({
   return (
     <section className="space-y-6 p-5 text-right sm:p-8" aria-labelledby="grow-link-heading">
       <div>
-        <p className="font-mono text-[10px] tracking-widest text-primary uppercase">שלב אחרון</p>
+        <p className="font-mono text-[10px] tracking-wide text-primary uppercase">שלב אחרון</p>
         <h2 id="grow-link-heading" className="mt-2 text-xl font-black text-foreground">
           {accountEmail ? "שלמו עם האימייל שנרשמתם איתו" : "קוד ההזמנה שלכם"}
         </h2>

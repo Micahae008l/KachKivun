@@ -103,7 +103,7 @@ function RoleInsightsPage() {
           imgClassName="object-[center_30%]"
         />
         <div className="relative space-y-3">
-          <p className="font-mono text-xs tracking-widest text-primary uppercase">קטלוג תפקידים</p>
+          <p className="font-mono text-xs tracking-wide text-primary uppercase">קטלוג תפקידים</p>
           <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
             תובנות תפקידים
           </h1>

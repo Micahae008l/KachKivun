@@ -84,7 +84,8 @@ export function AccessibilityMenu() {
   return (
     <div
       ref={rootRef}
-      className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-[70] flex flex-col items-start"
+      // Bottom-left: in RTL pages that is where lines end, so the button covers the least content.
+      className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-[70] flex flex-col items-end sm:bottom-[max(1rem,env(safe-area-inset-bottom))] sm:left-[max(1rem,env(safe-area-inset-left))]"
       dir="rtl"
     >
       {open ? (
@@ -178,7 +179,7 @@ export function AccessibilityMenu() {
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex h-11 items-center gap-2 rounded-sm border bg-background/90 px-3 shadow-[0_6px_20px_oklch(0_0_0/0.5)] backdrop-blur-sm transition-colors ${
+        className={`group flex h-10 w-10 items-center justify-center gap-2 rounded-full border bg-background/90 shadow-[0_6px_20px_oklch(0_0_0/0.5)] backdrop-blur-sm transition-colors sm:h-11 sm:w-auto sm:rounded-sm sm:px-3 ${
           open ? "border-primary/70" : "border-iron/60 hover:border-primary/60"
         }`}
         aria-label={open ? ARIA.closeA11yMenu : ARIA.openA11yMenu}

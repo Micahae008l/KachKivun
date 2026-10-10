@@ -10,10 +10,12 @@ import {
   Compass,
   Dumbbell,
   Heart,
+  KeyRound,
   Mail,
   MapPin,
   Monitor,
   Shield,
+  ShieldCheck,
   Sparkles,
   Target,
   User,
@@ -164,8 +166,8 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   email: {
     icon: Mail,
-    title: "הפרופיל מוכן לשמירה",
-    subtitle: "אימייל אחד, בלי סיסמה. נשלח קוד חד־פעמי.",
+    title: "לאן לשלוח את הקוד?",
+    subtitle: "אימייל אחד שומר את הפרופיל ואת ההתאמות. בלי סיסמה.",
   },
   otp: {
     icon: Mail,
@@ -174,8 +176,11 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
 };
 
-const REVIEW_SAVE_TITLE = "הפרופיל שלכם מוכן";
-const REVIEW_SAVE_SUBTITLE = "בדקו שהכול נכון, והזינו אימייל כדי לשמור. אפשר לחזור ולתקן כל שלב.";
+const SAVE_PERKS: { icon: LucideIcon; text: string }[] = [
+  { icon: KeyRound, text: "בלי סיסמה: נכנסים עם קוד חד־פעמי למייל" },
+  { icon: Sparkles, text: "חמש ההתאמות שלכם נבנות מיד אחרי האימות" },
+  { icon: ShieldCheck, text: "לא מוכרים ולא מעבירים את המידע למפרסמים" },
+];
 
 type AuthField = "email" | "code";
 
@@ -776,8 +781,6 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   if (!bootstrapped) return <PostSignupBootstrapSkeleton />;
 
   const isAuthStep = currentStep === "email" || currentStep === "otp";
-  // Signed-out users save straight from the review screen: recap above, email below.
-  const reviewSaves = currentStep === "review" && !authenticated && !loginIntent && !legacyMode;
   const showLoginShortcut = !authenticated && !loginIntent && !isAuthStep && !authedRef.current;
   const photo = idfPhotoAt(currentIndex + 1);
 
@@ -826,7 +829,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
         >
           <div className="border-b border-iron/20 px-4 py-4 sm:px-6">
             <div className="mb-2 flex items-center justify-between gap-4 text-[11px] text-dust">
-              <span className="font-mono tracking-widest uppercase">
+              <span className="font-mono tracking-wide uppercase">
                 {loginIntent
                   ? "התחברות"
                   : legacyMode
@@ -884,11 +887,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                   id="assessment-step-title"
                   className="text-xl font-black text-foreground sm:text-2xl"
                 >
-                  {reviewSaves ? REVIEW_SAVE_TITLE : meta.title}
+                  {meta.title}
                 </h1>
-                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust">
-                  {reviewSaves ? REVIEW_SAVE_SUBTITLE : meta.subtitle}
-                </p>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust">{meta.subtitle}</p>
               </header>
 
               {!isAuthStep ? (
@@ -903,22 +904,41 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
 
               {currentStep === "email" ? (
-                <FormField label="אימייל" error={authErrors.email}>
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      clearAuthError("email");
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") void sendCode();
-                    }}
-                    placeholder="name@gmail.com"
-                    className="input-field"
-                  />
-                </FormField>
+                <div className="mx-auto max-w-md space-y-5">
+                  <FormField label="אימייל" error={authErrors.email}>
+                    <input
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      dir="ltr"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        clearAuthError("email");
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") void sendCode();
+                      }}
+                      placeholder="name@gmail.com"
+                      className="input-field text-left"
+                    />
+                  </FormField>
+                  {!loginIntent && !legacyMode ? (
+                    <ul className="space-y-3 border border-iron/25 bg-card/60 p-4">
+                      {SAVE_PERKS.map(({ icon: Icon, text }) => (
+                        <li
+                          key={text}
+                          className="flex items-center gap-3 text-sm leading-6 text-foreground"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" aria-hidden />
+                          </span>
+                          {text}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
 
               {currentStep === "otp" ? (
@@ -979,45 +999,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
             </motion.div>
 
-            {reviewSaves ? (
-              // Pinned to the bottom so the save action never hides under the long recap.
-              <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-primary/40 bg-background/95 pb-4 pl-4 pr-20 pt-3 shadow-[0_-16px_32px_-16px_oklch(0_0_0/0.9)] backdrop-blur-md sm:-mx-8 sm:px-8">
-                <p className="mb-2 text-sm font-black text-foreground">
-                  שמרו את הפרופיל וקבלו את ההתאמות
-                </p>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="min-w-0 flex-1">
-                    <FormField label="אימייל" error={authErrors.email}>
-                      <input
-                        type="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(event) => {
-                          setEmail(event.target.value);
-                          clearAuthError("email");
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") void sendCode();
-                        }}
-                        placeholder="name@gmail.com"
-                        className="input-field"
-                      />
-                    </FormField>
-                  </div>
-                  <div className="sm:pt-6">
-                    <PrimaryButton loading={loading} onClick={sendCode}>
-                      שלחו לי קוד ושמרו
-                    </PrimaryButton>
-                  </div>
-                </div>
-                <p className="mt-1.5 text-[11px] leading-4 text-dust">
-                  בלי סיסמה. נשלח קוד חד־פעמי לאימייל.
-                </p>
-              </div>
-            ) : null}
-
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-iron/20 pt-6">
-              {reviewSaves ? null : !isAuthStep ? (
+              {!isAuthStep ? (
                 <PrimaryButton loading={loading} onClick={nextQuestion}>
                   {currentStep === "review" && authenticated ? "שמירה וסיום" : "הבא"}
                 </PrimaryButton>
@@ -1047,7 +1030,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                   כבר יש לי חשבון
                 </button>
               ) : null}
-              {legacyMode && !loginIntent && currentStep === "email" ? (
+              {!loginIntent && currentStep === "email" ? (
                 <button
                   type="button"
                   disabled={loading}
@@ -1070,7 +1053,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             </div>
             {!loginIntent && currentStep === "direction" ? (
               <p className="mt-5 text-xs leading-5 text-dust/80">
-                {offer?.enabled ? "ההערכה בחינם." : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
+                {offer?.enabled
+                  ? "ההערכה בחינם."
+                  : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
                 ההמלצות אינן רשמיות ואינן מבטיחות זכאות, מיון או שיבוץ בצה״ל.
               </p>
             ) : null}

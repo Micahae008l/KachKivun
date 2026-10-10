@@ -75,7 +75,7 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-iron/40 sm:hidden" aria-hidden />
             <div className="mb-4 flex items-start justify-between gap-3" dir="ltr">
               <div className="min-w-0 flex-1 text-right" dir="rtl">
-                <p className="font-mono text-[11px] tracking-widest text-primary uppercase">
+                <p className="font-mono text-[11px] tracking-wide text-primary uppercase">
                   {detail?.category || "תפקיד"}
                 </p>
                 <h2 id="role-insight-title" className="text-xl font-black text-foreground sm:text-2xl">

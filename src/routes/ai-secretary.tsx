@@ -26,7 +26,7 @@ function AiSecretaryPage() {
         <div className="mb-6 inline-flex h-12 w-12 items-center justify-center border border-primary/30 text-primary">
           <Bot className="h-6 w-6" aria-hidden />
         </div>
-        <p className="font-mono text-[10px] tracking-widest text-primary uppercase mb-2">מזכיר AI</p>
+        <p className="font-mono text-[10px] tracking-wide text-primary uppercase mb-2">מזכיר AI</p>
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">בקרוב</h1>
         <p className="mt-3 text-sm leading-relaxed text-dust">
           מזכיר אישי שיענה על שאלות על הגיוס, הפרופיל והתהליך, בשיחה חופשית, בעברית.

@@ -107,7 +107,7 @@ export function ProfileMenu({
   if (variant === "list") {
     return (
       <div className="border-t border-iron/20 pt-2 mt-1">
-        <p className="px-2 pb-1 font-mono text-[10px] tracking-widest text-dust/60 uppercase">פרופיל</p>
+        <p className="px-2 pb-1 font-mono text-[10px] tracking-wide text-dust/60 uppercase">פרופיל</p>
         {items}
       </div>
     );

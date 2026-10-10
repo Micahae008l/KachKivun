@@ -74,7 +74,7 @@ export function MatchHistoryPanel({ onSelect, activeId }: Props) {
     >
       <div className="mb-3 flex items-center justify-start gap-2 text-right">
         <History className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-        <h2 id="match-history-heading" className="font-mono text-xs tracking-widest text-dust uppercase">
+        <h2 id="match-history-heading" className="font-mono text-xs tracking-wide text-dust uppercase">
           {ARIA.matchHistory}
         </h2>
       </div>

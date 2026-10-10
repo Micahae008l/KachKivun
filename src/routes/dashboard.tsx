@@ -19,7 +19,10 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "דשבורד | קח כיוון" },
-      { name: "description", content: "דשבורד אישי: דפ״ר, פרופיל רפואי, ספירה לאחור ליום הגיוס, והתאמת תפקידים." },
+      {
+        name: "description",
+        content: "דשבורד אישי: דפ״ר, פרופיל רפואי, ספירה לאחור ליום הגיוס, והתאמת תפקידים.",
+      },
     ],
   }),
 });
@@ -50,8 +53,7 @@ function useCountdown(target: Date | null, windowStart: Date | null) {
   const seconds = Math.floor((diff % 60_000) / 1000);
 
   const fallbackStart = new Date(now.getTime() - 365 * 86_400_000);
-  const start =
-    windowStart && !Number.isNaN(windowStart.getTime()) ? windowStart : fallbackStart;
+  const start = windowStart && !Number.isNaN(windowStart.getTime()) ? windowStart : fallbackStart;
   const total = target.getTime() - start.getTime();
   const towardPct =
     total <= 0
@@ -71,8 +73,8 @@ function yomSummary(yom: unknown) {
   const m = migrateLegacyYomHameah(yom);
   if (!m) return { label: "-", pct: 0 };
   const sum = YOM_HAMEAH_KEYS.reduce((acc, k) => acc + m[k], 0);
-  const avg = sum / 12;
-  return { label: `${avg.toFixed(1)}/5`, pct: Math.min(100, Math.round((avg / 5) * 100)) };
+  const avg = sum / YOM_HAMEAH_KEYS.length;
+  return { label: avg.toFixed(1), pct: Math.min(100, Math.round((avg / 5) * 100)) };
 }
 
 function displayName(email: string) {
@@ -149,13 +151,26 @@ function DashboardPage() {
           >
             נסו שוב
           </button>
-          <Link to="/post-signup" hash="login" className="mt-3 block text-sm text-primary hover:underline">
+          <Link
+            to="/post-signup"
+            hash="login"
+            className="mt-3 block text-sm text-primary hover:underline"
+          >
             התחברות מחדש
           </Link>
         </div>
       ) : (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8" dir="rtl">
-          <motion.div variants={fadeUp} className="overflow-hidden rounded-sm border border-iron/30">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+          className="space-y-8"
+          dir="rtl"
+        >
+          <motion.div
+            variants={fadeUp}
+            className="overflow-hidden rounded-sm border border-iron/30"
+          >
             <IdfPhotoPanel
               photo={getIdfPhoto("s1")}
               aspectClassName="aspect-[24/7] sm:aspect-[32/7]"
@@ -164,9 +179,12 @@ function DashboardPage() {
           </motion.div>
 
           {/* Header bar */}
-          <motion.div variants={fadeUp} className="flex flex-col-reverse gap-3 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <motion.div
+            variants={fadeUp}
+            className="flex flex-col-reverse gap-3 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
+          >
             <div className="text-right">
-              <p className="font-mono text-xs tracking-widest text-dust uppercase mb-2">דשבורד</p>
+              <p className="font-mono text-xs tracking-wide text-dust uppercase mb-2">דשבורד</p>
               <h1 className="text-2xl font-black sm:text-4xl">
                 שלום,{" "}
                 <span className="text-primary">
@@ -180,7 +198,9 @@ function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 self-end rounded-sm border border-olive/30 bg-olive/10 px-3 py-1.5 sm:self-auto">
               <span className="h-2 w-2 rounded-full bg-olive" />
-              <span className="text-xs font-semibold text-olive-foreground">{statusHebrew(data.user.status)}</span>
+              <span className="text-xs font-semibold text-olive-foreground">
+                {statusHebrew(data.user.status)}
+              </span>
             </div>
           </motion.div>
 
@@ -190,7 +210,11 @@ function DashboardPage() {
             <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-8">
               <div className="flex items-center gap-2 text-xs text-dust mb-6">
                 <Calendar className="h-3.5 w-3.5" />
-                {data.user.status === "Active Duty" ? "עד השחרור" : data.user.status === "Discharged" ? "סטטוס" : "עד הגיוס"}
+                {data.user.status === "Active Duty"
+                  ? "עד השחרור"
+                  : data.user.status === "Discharged"
+                    ? "סטטוס"
+                    : "עד הגיוס"}
               </div>
 
               {data.user.status === "Discharged" ? (
@@ -208,13 +232,22 @@ function DashboardPage() {
                   </div>
                   <div className="mt-4 flex flex-wrap gap-4 font-mono text-sm tabular-nums text-dust sm:gap-6">
                     <span>
-                      <span className="font-bold text-foreground/80">{String(hours).padStart(2, "0")}</span> שעות
+                      <span className="font-bold text-foreground/80">
+                        {String(hours).padStart(2, "0")}
+                      </span>{" "}
+                      שעות
                     </span>
                     <span>
-                      <span className="font-bold text-foreground/80">{String(minutes).padStart(2, "0")}</span> דקות
+                      <span className="font-bold text-foreground/80">
+                        {String(minutes).padStart(2, "0")}
+                      </span>{" "}
+                      דקות
                     </span>
                     <span>
-                      <span className="font-bold text-foreground/80">{String(seconds).padStart(2, "0")}</span> שניות
+                      <span className="font-bold text-foreground/80">
+                        {String(seconds).padStart(2, "0")}
+                      </span>{" "}
+                      שניות
                     </span>
                   </div>
                   <div className="mt-8 space-y-2.5">
@@ -238,43 +271,43 @@ function DashboardPage() {
             </motion.div>
 
             {/* Metrics */}
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-col border border-iron/30 bg-card divide-y divide-iron/20"
-            >
-              <MetricRow label="ממדי מאה (ממוצע)" value={yom.label} pct={yom.pct} />
-              <MetricRow
-                label="פרופיל רפואי"
-                value={medical != null ? String(medical) : "-"}
-                pct={medical != null ? Math.min(100, Math.round(((medical - 21) / (97 - 21)) * 100)) : 0}
-              />
-              <MetricRow
+            <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3 sm:gap-4">
+              <StatTile
                 label='דפ"ר'
                 value={dapar != null ? String(dapar) : "-"}
                 pct={dapar != null ? Math.min(100, Math.round(((dapar - 10) / 80) * 100)) : 0}
+                note="מתוך 90"
               />
+              <StatTile
+                label="פרופיל"
+                value={medical != null ? String(medical) : "-"}
+                pct={
+                  medical != null
+                    ? Math.min(100, Math.round(((medical - 21) / (97 - 21)) * 100))
+                    : 0
+                }
+                note="מתוך 97"
+              />
+              <StatTile label="מא״ה" value={yom.label} pct={yom.pct} note="ממוצע מתוך 5" />
             </motion.div>
           </div>
 
-          <motion.div variants={fadeUp}>
-            <DashboardAccountPreferences data={data} />
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="flex justify-start" dir="rtl">
-            <Link
-              to="/onboarding"
-              className="text-sm text-dust transition hover:text-primary hover:underline"
-            >
-              עריכת מא״ה מלאה (11 ממדים) →
-            </Link>
-          </motion.div>
-
           {/* Hub: התאמת תפקידים */}
-          <motion.section variants={fadeUp} className="space-y-4" aria-labelledby="dashboard-tools-heading">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between" dir="rtl">
+          <motion.section
+            variants={fadeUp}
+            className="space-y-4"
+            aria-labelledby="dashboard-tools-heading"
+          >
+            <div
+              className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+              dir="rtl"
+            >
               <div className="min-w-0 text-right">
-                <p className="font-mono text-[10px] tracking-widest text-dust uppercase">כלי AI</p>
-                <h2 id="dashboard-tools-heading" className="text-lg font-bold text-foreground sm:text-xl">
+                <p className="font-mono text-[10px] tracking-wide text-dust uppercase">כלי AI</p>
+                <h2
+                  id="dashboard-tools-heading"
+                  className="text-lg font-bold text-foreground sm:text-xl"
+                >
                   יועץ התאמת תפקידים
                 </h2>
                 <p className="mt-1 text-sm text-dust">
@@ -294,7 +327,9 @@ function DashboardPage() {
               />
             ) : (
               <div className="border border-iron/30 bg-card p-5 text-right sm:p-8" dir="rtl">
-                <p className="font-mono text-[10px] tracking-widest text-dust uppercase mb-2">התאמת תפקידים</p>
+                <p className="font-mono text-[10px] tracking-wide text-dust uppercase mb-2">
+                  התאמת תפקידים
+                </p>
                 <h3 className="flex flex-row items-center justify-start gap-2 text-base font-bold text-foreground sm:text-lg">
                   <Target className="h-5 w-5 shrink-0 text-dust" aria-hidden />
                   <span>השלימו פרטים כדי להפעיל את היוצר</span>
@@ -311,6 +346,19 @@ function DashboardPage() {
               </div>
             )}
           </motion.section>
+
+          <motion.div variants={fadeUp}>
+            <DashboardAccountPreferences data={data} />
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="flex justify-start" dir="rtl">
+            <Link
+              to="/onboarding"
+              className="text-sm text-dust transition hover:text-primary hover:underline"
+            >
+              עריכת מא״ה מלאה (11 ממדים) →
+            </Link>
+          </motion.div>
         </motion.div>
       )}
     </div>
@@ -329,11 +377,11 @@ function DashboardProgress({
   const clamped = Math.min(100, Math.max(0, value));
   return (
     <div
-      className={`w-full overflow-hidden rounded-sm bg-iron/25 ${size === "lg" ? "h-3.5" : "h-3"}`}
+      className={`w-full overflow-hidden rounded-full bg-primary/15 ${size === "lg" ? "h-2.5" : "h-1.5"}`}
       {...progressBarProps(clamped, label)}
     >
       <motion.div
-        className="h-full rounded-sm bg-primary shadow-[0_0_14px_color-mix(in_oklch,var(--primary)_45%,transparent)]"
+        className="h-full rounded-full bg-primary"
         initial={{ width: 0 }}
         animate={{ width: `${clamped}%` }}
         transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
@@ -342,25 +390,25 @@ function DashboardProgress({
   );
 }
 
-function MetricRow({
+function StatTile({
   label,
   value,
   pct,
+  note,
 }: {
   label: string;
   value: string;
   pct: number;
+  note: string;
 }) {
   return (
-    <div className="flex flex-1 flex-col justify-center gap-4 p-4 text-right sm:p-7">
-      <div className="flex flex-row items-end justify-between gap-4">
-        <div className="min-w-0 text-right">
-          <p className="text-xs text-dust">{label}</p>
-          <p className="font-mono text-3xl font-black tabular-nums leading-none text-foreground">{value}</p>
-        </div>
-        <span className="shrink-0 font-mono text-sm tabular-nums text-primary">{pct}%</span>
-      </div>
-      <DashboardProgress value={pct} label={label} />
+    <div className="flex flex-col gap-3 border border-iron/30 bg-card p-3 text-right sm:p-5">
+      <p className="text-xs text-dust">{label}</p>
+      <p className="font-mono text-3xl font-black leading-none text-foreground sm:text-4xl">
+        {value}
+      </p>
+      <DashboardProgress value={pct} label={`${label}: ${value}`} />
+      <p className="text-[11px] leading-4 text-dust">{note}</p>
     </div>
   );
 }

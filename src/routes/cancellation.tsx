@@ -64,7 +64,7 @@ function CancellationPage() {
   return (
     <div className="topo-lines min-h-[65vh]" dir="rtl">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-        <p className="font-mono text-xs tracking-widest text-primary uppercase">שירות לקוחות</p>
+        <p className="font-mono text-xs tracking-wide text-primary uppercase">שירות לקוחות</p>
         <h1 className="mt-2 text-3xl font-black text-foreground">ביטול עסקה והחזרים</h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-dust">
           כאן אפשר לראות תשלומים, קבלות ומצב החזר, ולבקש ביטול של רכישה חד־פעמית. בקשה אינה מבטלת

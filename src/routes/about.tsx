@@ -70,7 +70,7 @@ function AboutPage() {
               <ChevronRight className="h-4 w-4" aria-hidden />
               חזרה לאתר
             </Link>
-            <p className="mb-3 font-mono text-xs tracking-widest text-primary uppercase">
+            <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">
               הסיפור מאחורי המוצר
             </p>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem]">
@@ -102,7 +102,7 @@ function AboutPage() {
       </section>
 
       {/* ── Mission: editorial split ── */}
-      <section className="py-20 sm:py-28" aria-labelledby="mission-heading">
+      <section className="py-14 sm:py-28" aria-labelledby="mission-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid items-center gap-12 lg:grid-cols-[3fr_2fr] lg:gap-20">
             <motion.div
@@ -112,7 +112,7 @@ function AboutPage() {
               viewport={{ once: true, margin: "-80px" }}
               className="text-right"
             >
-              <p className="mb-3 font-mono text-xs tracking-widest text-olive uppercase">
+              <p className="mb-3 font-mono text-xs tracking-wide text-olive uppercase">
                 מי אנחנו
               </p>
               <h2
@@ -163,7 +163,7 @@ function AboutPage() {
       <div className="section-divider" />
 
       {/* ── Pillars ── */}
-      <section className="py-20 sm:py-28" aria-labelledby="pillars-heading">
+      <section className="py-14 sm:py-28" aria-labelledby="pillars-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <motion.div
             variants={fadeUp}
@@ -172,7 +172,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-14 max-w-xl text-right"
           >
-            <p className="mb-3 font-mono text-xs tracking-widest text-primary uppercase">
+            <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">
               מה מנחה אותנו
             </p>
             <h2 id="pillars-heading" className="text-3xl font-bold leading-tight sm:text-4xl">
@@ -206,7 +206,7 @@ function AboutPage() {
       <div className="section-divider" />
 
       {/* ── Founder ── */}
-      <section className="py-20 sm:py-28" aria-labelledby="ceo-heading">
+      <section className="py-14 sm:py-28" aria-labelledby="ceo-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <motion.div
             variants={fadeUp}
@@ -215,7 +215,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-10 text-right"
           >
-            <p className="mb-2 font-mono text-xs tracking-widest text-olive uppercase">המייסד</p>
+            <p className="mb-2 font-mono text-xs tracking-wide text-olive uppercase">המייסד</p>
             <h2 id="ceo-heading" className="text-3xl font-bold text-foreground sm:text-4xl">
               מאחורי הקלעים
             </h2>
@@ -250,7 +250,7 @@ function AboutPage() {
                 כלים דיגיטליים שמרגישים כמו מוצר אמיתי, לא עוד קבוצת וואטסאפ.
               </p>
               <div className="border-t border-iron/20 pt-5">
-                <p className="font-mono text-[10px] tracking-widest text-primary uppercase">
+                <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
                   CEO / Founder
                 </p>
                 <h3 className="mt-1 text-xl font-bold text-foreground">מייקל חדד</h3>
@@ -282,7 +282,7 @@ function AboutPage() {
       <div className="section-divider" />
 
       {/* ── Contact ── */}
-      <section className="py-20 sm:py-28" aria-labelledby="contact-heading">
+      <section className="py-14 sm:py-28" aria-labelledby="contact-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <motion.div
             variants={fadeUp}
@@ -291,7 +291,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-10 text-right"
           >
-            <p className="mb-2 font-mono text-xs tracking-widest text-primary uppercase">
+            <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">
               יצירת קשר
             </p>
             <h2 id="contact-heading" className="text-3xl font-bold text-foreground sm:text-4xl">
@@ -332,7 +332,7 @@ function AboutPage() {
       </section>
 
       {/* ── Closing CTA ── */}
-      <section className="border-t border-iron/30 py-20 sm:py-28">
+      <section className="border-t border-iron/30 py-14 sm:py-28">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}

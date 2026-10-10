@@ -35,7 +35,8 @@
   --color-dust: var(--dust);
   --color-sand-light: var(--sand-light);
   --font-sans: 'Heebo', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  /* Hebrew has no glyphs in JetBrains Mono: let it fall to Heebo, not Courier New's typewriter look. */
+  --font-mono: 'JetBrains Mono', 'Heebo', monospace;
 }
 
 /*
