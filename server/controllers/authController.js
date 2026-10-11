@@ -20,8 +20,8 @@ import {
   revokeRefreshToken,
 } from "../utils/refreshTokens.js";
 import { logSecurityEvent } from "../utils/securityLog.js";
+import { claimReturnSession } from "../services/payments/paymentService.js";
 import { sendServerError } from "../utils/httpError.js";
-
 
 const OTP_TTL_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
@@ -55,6 +55,34 @@ async function setRefreshCookieForUser(req, res, userId) {
   const session = await createRefreshTokenSession(userId, req);
   res.cookie(REFRESH_TOKEN_COOKIE, session.token, refreshCookieOptions());
   return session;
+}
+
+const ORDER_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const RETURN_TOKEN_PATTERN = /^[A-Za-z0-9_-]{32,256}$/;
+
+/** POST /api/auth/payment-return-session: one login restore per checkout (see claimReturnSession). */
+export async function restorePaymentReturnSession(req, res) {
+  try {
+    const publicId = String(req.body?.order || "");
+    const returnToken = String(req.body?.token || "");
+    if (!ORDER_ID_PATTERN.test(publicId) || !RETURN_TOKEN_PATTERN.test(returnToken)) {
+      return res.status(400).json({ error: "הקישור אינו תקין", code: "RETURN_SESSION_INVALID" });
+    }
+    const { userId, reason } = await claimReturnSession({ publicId, returnToken });
+    const user = userId ? await User.findById(userId).select("_id role status") : null;
+    if (!user) {
+      if (reason === "not_found") logSecurityEvent("return_session_bad_token", req, {});
+      return res
+        .status(reason === "not_found" ? 404 : 409)
+        .json({ error: "יש להתחבר מחדש כדי להמשיך", code: "RETURN_SESSION_UNAVAILABLE" });
+    }
+    await setRefreshCookieForUser(req, res, user._id);
+    console.log(`[auth/payment-return] login restored for user ${user._id}`);
+    return res.json(userSessionPayload(user));
+  } catch (err) {
+    return sendServerError(res, err, "[auth/payment-return]");
+  }
 }
 
 function createOtpCode() {
@@ -153,7 +181,9 @@ const REFRESH_REUSE_GRACE_MS = 30_000;
  * dies too, and log it for the admin security page.
  */
 export async function handleRefreshTokenReuse(tokenHash, req, now = Date.now()) {
-  const used = await RefreshToken.findOne({ tokenHash }).select("userId revokedAt replacedByTokenHash");
+  const used = await RefreshToken.findOne({ tokenHash }).select(
+    "userId revokedAt replacedByTokenHash",
+  );
   if (!used?.revokedAt || !used.replacedByTokenHash) return false;
   if (now - used.revokedAt.getTime() < REFRESH_REUSE_GRACE_MS) return false;
   await RefreshToken.updateMany(
@@ -307,7 +337,9 @@ export async function verifyOtp(req, res) {
     }).sort({ createdAt: -1 });
 
     if (!otp) {
-      console.warn(`[auth/verify-otp] no active code for ${email} (expired, used, or never sent) — codeLen=${code.length}`);
+      console.warn(
+        `[auth/verify-otp] no active code for ${email} (expired, used, or never sent) — codeLen=${code.length}`,
+      );
       return res.status(400).json({
         error: "הקוד פג תוקף או לא נמצא. שלחו קוד חדש.",
         code: "OTP_EXPIRED",
@@ -321,7 +353,9 @@ export async function verifyOtp(req, res) {
         email,
         message: `code locked after ${otp.attempts} failed attempts`,
       });
-      console.warn(`[auth/verify-otp] code locked for ${email} (${otp.attempts} attempts) — auto-sending a fresh code is required`);
+      console.warn(
+        `[auth/verify-otp] code locked for ${email} (${otp.attempts} attempts) — auto-sending a fresh code is required`,
+      );
       return res.status(429).json({
         error: "יותר מדי ניסיונות. שלחו קוד חדש.",
         code: "OTP_MAX_ATTEMPTS",
@@ -337,7 +371,9 @@ export async function verifyOtp(req, res) {
         email,
         message: `wrong code, attempt ${otp.attempts}/${OTP_MAX_ATTEMPTS}`,
       });
-      console.warn(`[auth/verify-otp] MISMATCH for ${email} — entered codeLen=${code.length}, attempt ${otp.attempts}/${OTP_MAX_ATTEMPTS}`);
+      console.warn(
+        `[auth/verify-otp] MISMATCH for ${email} — entered codeLen=${code.length}, attempt ${otp.attempts}/${OTP_MAX_ATTEMPTS}`,
+      );
       return res.status(401).json({ error: "קוד שגוי", code: "OTP_INVALID" });
     }
     console.log(`[auth/verify-otp] OK for ${email}`);

@@ -743,6 +743,42 @@ export async function getAuthenticatedOrderStatus({ userId, publicId, provider, 
   };
 }
 
+export const RETURN_SESSION_TTL_MS = 3 * 60 * 60 * 1000;
+
+/** Why an order's return token may not restore a login; null means it may. */
+export function returnSessionDenial(order, now = new Date()) {
+  if (!order) return "not_found";
+  // A parent paying through a shared link must never receive the child's session.
+  if (order.shareTokenHash) return "shared_checkout";
+  if (order.returnSessionIssuedAt) return "already_used";
+  const started = order.checkoutStartedAt ? new Date(order.checkoutStartedAt).getTime() : NaN;
+  if (!Number.isFinite(started) || now.getTime() - started > RETURN_SESSION_TTL_MS)
+    return "expired";
+  return null;
+}
+
+/**
+ * The browser that started checkout holds the order's return token. Some browsers drop the
+ * login cookie on the way back from the payment page; this gives that same browser its login
+ * back once, without a new code.
+ */
+export async function claimReturnSession({ publicId, returnToken, now = new Date() }) {
+  const order = await findPrivateOrderByPublicId(publicId);
+  if (!order || !paymentSecretMatches(returnToken, order.returnSecretHash)) {
+    return { userId: null, reason: "not_found" };
+  }
+  const reason = returnSessionDenial(order, now);
+  if (reason) return { userId: null, reason };
+  const claimed = await PaymentOrder.findOneAndUpdate(
+    { _id: order._id, returnSessionIssuedAt: null },
+    { $set: { returnSessionIssuedAt: now } },
+    { new: true },
+  ).select("_id userId");
+  return claimed
+    ? { userId: claimed.userId, reason: null }
+    : { userId: null, reason: "already_used" };
+}
+
 export async function getReturnOrderStatus({ publicId, returnToken, provider, persistence }) {
   let order = await findPrivateOrderByPublicId(publicId);
   if (!order || !paymentSecretMatches(returnToken, order.returnSecretHash)) {

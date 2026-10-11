@@ -160,7 +160,6 @@ export function CheckoutPage({ shareToken }: Props) {
 
   const isSharedCheckout = Boolean(shareToken);
   const token = mounted ? getToken() : null;
-  const currentUrl = mounted ? window.location.href : "";
   const inAppBrowser = mounted && isCommonInAppBrowser(navigator.userAgent);
 
   useEffect(() => {
@@ -424,9 +423,7 @@ export function CheckoutPage({ shareToken }: Props) {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12" dir="rtl">
       <div className="border border-iron/30 bg-card">
         <header className="border-b border-iron/25 px-5 py-6 text-right sm:px-8">
-          <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
-            תשלום מאובטח
-          </p>
+          <p className="font-mono text-[10px] tracking-wide text-primary uppercase">תשלום מאובטח</p>
           <h1 className="mt-2 text-2xl font-black text-foreground">פתיחת מקומות 2 ו־1</h1>
           <p className="mt-2 text-sm leading-6 text-dust">
             גישה קבועה לשתי ההתאמות המובילות בחשבון, כולל חישובים מחדש בעתיד. תשלום חד־פעמי, ללא
@@ -434,42 +431,14 @@ export function CheckoutPage({ shareToken }: Props) {
           </p>
         </header>
 
-        {inAppBrowser ? (
-          <section
-            className="m-5 border border-amber-500/40 bg-amber-500/10 p-4 text-right sm:m-8"
-            aria-labelledby="in-app-browser-heading"
-          >
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" aria-hidden />
-              <div className="min-w-0 flex-1">
-                <h2 id="in-app-browser-heading" className="font-bold text-foreground">
-                  פתחו את הקישור ב־Safari או Chrome
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-dust">
-                  הדפדפן הפנימי של Instagram, Facebook או TikTok עלול לא לתמוך בארנק דיגיטלי. העתיקו
-                  את הקישור ופתחו אותו בדפדפן. אפשר גם לבחור Bit או כרטיס אשראי אם הם זמינים.
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    value={currentUrl}
-                    readOnly
-                    dir="ltr"
-                    aria-label="קישור לעמוד התשלום"
-                    className="input-field min-w-0 flex-1 text-left text-xs"
-                    onFocus={(event) => event.currentTarget.select()}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void copyCheckoutLink(currentUrl)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-iron/40 px-3 text-xs font-semibold text-foreground hover:border-primary/50"
-                  >
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
-                    העתקה
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
+        {/* Card payments work inside Instagram/Facebook/TikTok, and leaving for another browser
+            means logging in again there. Only wallets need a note. */}
+        {inAppBrowser && methods.some((item) => item === "apple_pay" || item === "google_pay") ? (
+          <p className="mx-5 mt-5 flex items-start gap-2 border border-iron/30 bg-background/40 p-3 text-right text-xs leading-5 text-dust sm:mx-8">
+            <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+            Apple Pay ו־Google Pay לא עובדים בדפדפן של האפליקציה. כרטיס אשראי עובד כרגיל, אפשר
+            להישאר כאן.
+          </p>
         ) : null}
 
         <div className="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">

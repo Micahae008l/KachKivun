@@ -156,6 +156,8 @@ const paymentOrderSchema = new mongoose.Schema(
       default: "none",
     },
     checkoutStartedAt: { type: Date, default: null },
+    // Set once the return token has restored the buyer's login (single use).
+    returnSessionIssuedAt: { type: Date, default: null },
     processCreatedAt: { type: Date, default: null },
     callbackReceivedAt: { type: Date, default: null },
     callbackAttempts: { type: Number, default: 0, min: 0 },

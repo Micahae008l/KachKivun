@@ -10,9 +10,16 @@ import {
   ReceiptText,
   XCircle,
 } from "lucide-react";
-import { getPaymentOrder, getPaymentReturnStatus, type PaymentOrderDto } from "@/lib/api";
+import {
+  bootstrapAuth,
+  getPaymentOrder,
+  getPaymentReturnStatus,
+  restorePaymentReturnSession,
+  type PaymentOrderDto,
+} from "@/lib/api";
 import { getErrorMessage } from "@/lib/api-errors";
-import { getToken } from "@/lib/auth";
+import { getToken, setAuthSession } from "@/lib/auth";
+import { rememberAuthReturnTarget } from "@/lib/auth-return";
 import { trackEvent } from "@/lib/analytics";
 import { PENDING_PAYMENT_RETURN_KEY } from "@/lib/payment-offer";
 
@@ -87,8 +94,26 @@ function PaymentReturnPage() {
         // fall through to the missing-link message
       }
     }
-    setMounted(true);
-  }, [search.order]);
+    // Instagram's browser and Safari can drop the login cookie on the way back from the payment
+    // page. The return token in this link (only this browser has it) restores the login once.
+    let cancelled = false;
+    async function ensureSession() {
+      if (getToken() || isParentFlow || !search.order || !search.token) return;
+      if (await bootstrapAuth()) return;
+      try {
+        const session = await restorePaymentReturnSession(search.order, search.token);
+        setAuthSession(session.token, session.role);
+      } catch {
+        // The paid screen offers a normal login instead.
+      }
+    }
+    void ensureSession().finally(() => {
+      if (!cancelled) setMounted(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isParentFlow, search.order, search.token]);
 
   useEffect(() => {
     if (!mounted || !search.order) {
@@ -298,7 +323,7 @@ function PaymentReturnPage() {
         ) : isParentFlow ? (
           <BackToSite />
         ) : (
-          <BackToCounselor primary />
+          <LoginToSeeResults />
         )}
       </ReturnShell>
     );
@@ -402,6 +427,25 @@ function BackToCounselor({ primary = false }: { primary?: boolean }) {
     >
       חזרה ליועץ
     </Link>
+  );
+}
+
+/** Paid but signed out (another browser, or the login could not be restored): one tap to log in. */
+function LoginToSeeResults() {
+  return (
+    <div className="mt-6">
+      <p className="text-sm leading-6 text-dust">
+        התחברו עם אותו אימייל כדי לראות את מקומות 2 ו־1. הם כבר פתוחים בחשבון.
+      </p>
+      <Link
+        to="/post-signup"
+        hash="login"
+        onClick={() => rememberAuthReturnTarget("/ai-counselor")}
+        className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+      >
+        התחברות וצפייה בתוצאות
+      </Link>
+    </div>
   );
 }
 

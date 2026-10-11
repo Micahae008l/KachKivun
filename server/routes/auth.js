@@ -9,6 +9,7 @@ import {
   logout,
   refreshSession,
   register,
+  restorePaymentReturnSession,
   requestOtp,
   verifyOtp,
 } from "../controllers/authController.js";
@@ -18,6 +19,7 @@ const router = Router();
 router.get("/me", authenticateToken, getSession);
 router.post("/refresh", refreshSession);
 router.post("/logout", logout);
+router.post("/payment-return-session", authLimiter, restorePaymentReturnSession);
 router.post("/request-otp", authLimiter, validateRequest(validateRequestOtp), requestOtp);
 router.post("/verify-otp", authLimiter, validateRequest(validateVerifyOtp), verifyOtp);
 router.post("/register", authLimiter, register);

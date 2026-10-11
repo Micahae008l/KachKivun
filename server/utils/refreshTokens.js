@@ -38,8 +38,10 @@ export function refreshCookieOptions() {
   return {
     httpOnly: true,
     secure: production,
-    // Same eTLD+1 (kachkivun.com ↔ api.kachkivun.com) still sends Strict cookies.
-    sameSite: "strict",
+    // Lax, not Strict: WebKit (Safari, Instagram's in-app browser) withholds Strict cookies on a
+    // page reached from another site, so coming back from the payment page looked logged out.
+    // Lax is still never sent on cross-site POST/fetch, and /refresh is POST-only.
+    sameSite: "lax",
     path: "/api/auth",
     maxAge: refreshTokenMaxAgeMs(),
   };

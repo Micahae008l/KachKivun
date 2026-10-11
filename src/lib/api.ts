@@ -160,6 +160,16 @@ async function refreshAccessToken(): Promise<string | null> {
   return refreshPromise;
 }
 
+/** Back from the payment page without a login cookie: the order's return token restores it once. */
+export function restorePaymentReturnSession(order: string, token: string) {
+  return apiFetch<LoginResponse>("/api/auth/payment-return-session", {
+    method: "POST",
+    body: JSON.stringify({ order, token }),
+    skipAuth: true,
+    retries: 0,
+  });
+}
+
 /** Restore in-memory access JWT from the httpOnly refresh cookie (page load). */
 export async function bootstrapAuth(): Promise<boolean> {
   if (getToken()) return true;
