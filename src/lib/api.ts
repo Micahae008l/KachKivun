@@ -950,6 +950,59 @@ export function getAdminUserJourney(userId: string) {
   return apiFetch<AdminUserJourney>(`/api/admin/users/${encodeURIComponent(userId)}/journey`);
 }
 
+type CountRow = { value: string; count: number };
+type RoleCount = { roleTitle: string; count: number };
+
+export type AdminInsights = {
+  days: number;
+  series: {
+    date: string;
+    signups: number;
+    assessments: number;
+    runs: number;
+    checkouts: number;
+    paid: number;
+    revenueIls: number;
+    aiCostUsd: number;
+  }[];
+  period: {
+    signups: number;
+    assessments: number;
+    runs: number;
+    checkouts: number;
+    paid: number;
+    revenueIls: number;
+    aiCostUsd: number;
+  };
+  allTime: {
+    funnel: AdminSignupFunnel;
+    revenueIls: number;
+    paidOrders: number;
+    aiCostUsd: number;
+    runsPerUser: number;
+  };
+  orderStatuses: { status: string; count: number }[];
+  topPicks: RoleCount[];
+  topAppearances: RoleCount[];
+  notes: { note: string; name: string; at: string }[];
+  answers: Record<
+    | "interests"
+    | "motivations"
+    | "avoided"
+    | "direction"
+    | "focus"
+    | "dapar"
+    | "medical"
+    | "yomSource"
+    | "gender",
+    CountRow[]
+  >;
+};
+
+export function getAdminInsights(days: 7 | 30 | 90) {
+  return apiFetch<AdminInsights>(`/api/admin/insights?days=${days}`);
+}
+
 export function getAdminMe() {
   return apiFetch<AdminMeResponse>("/api/admin/me");
 }

@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSkeleton, AdminUsersTableSkeleton } from "@/components/skeletons/PageSkeletons";
-import { AdminUserJourney, SignupFunnel, StageBadge } from "@/components/AdminUserJourney";
+import { AdminUserJourney, StageBadge } from "@/components/AdminUserJourney";
+import { AdminInsights } from "@/components/AdminInsights";
 import {
   ApiError,
   deleteAdminUser,
@@ -256,6 +257,10 @@ function AdminPage() {
             </div>
           </motion.div>
 
+          <motion.div variants={fadeUp}>
+            <AdminInsights />
+          </motion.div>
+
           {overview.isError ? (
             <div className="border border-destructive/40 bg-card p-6 text-center text-destructive">
               {overview.error instanceof Error ? overview.error.message : "שגיאה"}
@@ -359,7 +364,6 @@ function AdminPage() {
               </p>
             ) : (
               <>
-                {usersQuery.data?.funnel ? <SignupFunnel funnel={usersQuery.data.funnel} /> : null}
                 <p className="mb-3 text-xs text-dust">
                   {usersQuery.data?.total ?? 0} משתמשים
                   {debouncedQ ? ` · חיפוש: "${debouncedQ}"` : ""}

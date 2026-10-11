@@ -19,6 +19,7 @@ import {
   updateUserTokenCap,
   deleteUser,
 } from "../controllers/adminController.js";
+import { getInsights } from "../controllers/adminInsightsController.js";
 import {
   adminListReviews,
   adminModerateReview,
@@ -37,6 +38,7 @@ router.use(authenticateToken, requireAdmin);
 
 router.get("/me", getAdminMe);
 router.get("/overview", getOverview);
+router.get("/insights", getInsights);
 router.get("/users", validateRequest(validateAdminUsersQuery), listUsers);
 router.get("/users/:id/journey", validateRequest(validateObjectIdParam("id")), getUserJourney);
 router.patch("/users/:id/role", validateRequest(validateAdminUserRole), updateUserRole);
