@@ -21,8 +21,6 @@ import appCss from "../styles.css?url";
 import { queryClient } from "@/lib/query-client";
 import { KachKivunLogo } from "@/components/KachKivunLogo";
 import { SITE_DESCRIPTION, SITE_NAME_HE } from "@/lib/brand";
-
-const SITE_URL = "https://kachkivun.com";
 import { MATCH_TOOL_SHORT } from "@/lib/voice";
 import { ARIA, MAIN_CONTENT_ID, MOBILE_NAV_ID } from "@/lib/a11y";
 import {
@@ -35,6 +33,8 @@ import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
+
+const SITE_URL = "https://kachkivun.com";
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,
@@ -57,7 +57,6 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: SITE_NAME_HE },
       { property: "og:title", content: SITE_DESCRIPTION },
       { property: "og:description", content: SITE_DESCRIPTION },
-      { property: "og:url", content: SITE_URL },
       // Absolute: WhatsApp, Facebook and X ignore relative og:image paths.
       { property: "og:image", content: `${SITE_URL}/og-image.png` },
       { property: "og:image:alt", content: "קח כיוון: לאילו תפקידים בצה״ל אתם באמת מתאימים?" },
