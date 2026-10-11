@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bullets, LegalDoc, Section } from "@/components/LegalDoc";
 import { SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
+import { saveAnalyticsConsent } from "@/lib/third-party-analytics";
 
 const CONTACT_EMAIL = SUPPORT_EMAIL;
 const LAST_UPDATED = "18 בספטמבר 2026";
@@ -144,11 +145,11 @@ function PrivacyPage() {
               <strong className="text-foreground">MongoDB Atlas</strong>, לאחסון הנתונים.
             </>,
             <>
-              <strong className="text-foreground">Render ו־Cloudflare</strong>, להרצת השרת והאתר.
+              <strong className="text-foreground">AWS ו־Cloudflare</strong>, להרצת השרת והאתר.
             </>,
             <>
-              <strong className="text-foreground">Plausible</strong>, למדידת שימוש באתר. הוא אינו משתמש
-              בקוקיז לצורכי המדידה שלנו. פרטי האירועים מתוארים בסעיף הבא.
+              <strong className="text-foreground">Google Analytics ו־Microsoft Clarity</strong>, למדידת
+              שימוש באתר, ורק אם אישרתם קוקיז. פרטים בסעיף הבא.
             </>,
             <>
               <strong className="text-foreground">Grow (משולם)</strong>, לעיבוד עסקה,
@@ -164,7 +165,22 @@ function PrivacyPage() {
 
       <Section heading="מדידת שימוש ללא PII">
         <p>
-          אם Plausible מוגדר, נשלחים אירועי מוצר קטגוריים בלבד: התחלת הערכה, מעבר
+          Google Analytics ו־Microsoft Clarity נטענים רק אחרי שאישרתם קוקיז בהודעה שמופיעה באתר, ולא
+          נטענים בכלל בעמודי תשלום וקישורי שיתוף. Clarity מתעד הקלקות, גלילה ותנועה בעמוד כדי שנבין איפה
+          קשה להשתמש באתר; טקסט שאתם מקלידים מוסתר ואינו נשמר.{" "}
+          <button
+            type="button"
+            onClick={() => {
+              saveAnalyticsConsent("denied");
+              window.location.reload();
+            }}
+            className="font-semibold text-primary hover:underline"
+          >
+            ביטול ההסכמה לקוקיז
+          </button>
+        </p>
+        <p>
+          לכלים האלה נשלחים אירועי מוצר קטגוריים בלבד: התחלת הערכה, מעבר
           בין מקטעים והשלמה; בקשת ואימות OTP; צפייה ביועץ, פתיחת כרטיס התאמה
           חינמי וצפייה בחומת התשלום; התחלת קופה, קטגוריית דפדפן, בחירת אמצעי
           תשלום ומצב תשלום; וצפייה בהתאמות שנפתחו.

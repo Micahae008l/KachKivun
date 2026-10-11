@@ -10,6 +10,7 @@ import {
   sanitizeAnalyticsProps,
   sanitizeAnalyticsUrl,
 } from "./analytics-sanitization.js";
+import { forwardAnalyticsEvent } from "./third-party-analytics";
 
 const PLAUSIBLE_DOMAIN = (import.meta.env.VITE_PLAUSIBLE_DOMAIN as string | undefined)?.trim();
 const PLAUSIBLE_API =
@@ -82,6 +83,8 @@ export function trackEvent<Name extends AnalyticsEventName>(
     name,
     args[0] as Record<string, unknown> | undefined,
   );
+
+  forwardAnalyticsEvent(name, props);
 
   if (PLAUSIBLE_DOMAIN) {
     try {

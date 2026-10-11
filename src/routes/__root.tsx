@@ -30,6 +30,7 @@ import {
   type A11yPrefs,
 } from "@/lib/a11y-prefs";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
+import { CookieConsent } from "@/components/CookieConsent";
 import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
@@ -237,6 +238,7 @@ function RootLayoutInner() {
         <Outlet />
       </main>
       <AccessibilityMenu />
+      <CookieConsent />
       {!isBareShell && (
         <footer className="border-t border-iron/30 mt-20" aria-label={ARIA.footer}>
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 text-xs text-dust/60 sm:flex-row sm:justify-between sm:px-6 sm:py-8">
