@@ -14,6 +14,7 @@ import {
   getAdminMe,
   getOverview,
   listUsers,
+  getUserJourney,
   updateUserRole,
   updateUserTokenCap,
   deleteUser,
@@ -37,6 +38,7 @@ router.use(authenticateToken, requireAdmin);
 router.get("/me", getAdminMe);
 router.get("/overview", getOverview);
 router.get("/users", validateRequest(validateAdminUsersQuery), listUsers);
+router.get("/users/:id/journey", validateRequest(validateObjectIdParam("id")), getUserJourney);
 router.patch("/users/:id/role", validateRequest(validateAdminUserRole), updateUserRole);
 router.patch(
   "/users/:id/token-cap",

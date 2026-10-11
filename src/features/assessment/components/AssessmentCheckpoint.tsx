@@ -1,4 +1,14 @@
-import { Ban, Compass, Flame, Gauge, Heart, Home, MessageSquare, Users, type LucideIcon } from "lucide-react";
+import {
+  Ban,
+  Compass,
+  Flame,
+  Gauge,
+  Heart,
+  Home,
+  MessageSquare,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import {
   BASE_OPTIONS,
   COMBAT_PREFERENCE_OPTIONS,
@@ -24,6 +34,8 @@ type Props = {
   answers: AssessmentAnswers;
   className?: string;
   variant?: "profile" | "review";
+  /** The review recap ends with "next steps" for the user; the admin view leaves them out. */
+  showNextSteps?: boolean;
 };
 
 function optionTitle<T extends string>(
@@ -44,9 +56,16 @@ function thresholdLabel(value: number | "unknown" | null): string {
   return value === "unknown" ? "לא ידוע" : value == null ? "לא נבחר" : String(value);
 }
 
-export function AssessmentCheckpoint({ answers, className = "", variant = "profile" }: Props) {
+export function AssessmentCheckpoint({
+  answers,
+  className = "",
+  variant = "profile",
+  showNextSteps = true,
+}: Props) {
   if (variant === "review") {
-    return <FinalSignalsReview answers={answers} className={className} />;
+    return (
+      <FinalSignalsReview answers={answers} className={className} showNextSteps={showNextSteps} />
+    );
   }
 
   return (
@@ -56,7 +75,8 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
       <StrengthsCard answers={answers} />
       <CommitmentCard answers={answers} />
       <p className="text-[11px] leading-5 text-dust">
-        ספים ומשכי שירות לפי אתר מתגייסים וחוק שירות ביטחון (יולי 2026). זו לא תחזית שיבוץ; אפשר לחזור ולשנות כל תשובה.
+        ספים ומשכי שירות לפי אתר מתגייסים וחוק שירות ביטחון (יולי 2026). זו לא תחזית שיבוץ; אפשר
+        לחזור ולשנות כל תשובה.
       </p>
     </section>
   );
@@ -65,9 +85,11 @@ export function AssessmentCheckpoint({ answers, className = "", variant = "profi
 function FinalSignalsReview({
   answers,
   className,
+  showNextSteps,
 }: {
   answers: AssessmentAnswers;
   className: string;
+  showNextSteps: boolean;
 }) {
   const labels = <T extends string>(options: readonly { value: T; label: string }[], values: T[]) =>
     values.map((value) => optionLabel(options, value));
@@ -92,7 +114,14 @@ function FinalSignalsReview({
     },
     { icon: Heart, title: "מעניין", chips: labels(ROLE_INTEREST_OPTIONS, answers.rolesInterested) },
     ...(answers.rolesAvoided.length
-      ? [{ icon: Ban, title: "להימנע", chips: labels(ROLE_AVOIDANCE_OPTIONS, answers.rolesAvoided), muted: true }]
+      ? [
+          {
+            icon: Ban,
+            title: "להימנע",
+            chips: labels(ROLE_AVOIDANCE_OPTIONS, answers.rolesAvoided),
+            muted: true,
+          },
+        ]
       : []),
     {
       icon: Home,
@@ -105,7 +134,10 @@ function FinalSignalsReview({
     {
       icon: Users,
       title: "סגנון",
-      chips: [optionLabel(LEADERSHIP_OPTIONS, answers.leadership), optionLabel(STRESS_OPTIONS, answers.stress)],
+      chips: [
+        optionLabel(LEADERSHIP_OPTIONS, answers.leadership),
+        optionLabel(STRESS_OPTIONS, answers.stress),
+      ],
     },
     { icon: Flame, title: "מה מניע אתכם", chips: labels(MOTIVATION_OPTIONS, answers.motivations) },
     ...(answers.extraNote.trim()
@@ -114,7 +146,10 @@ function FinalSignalsReview({
   ];
 
   return (
-    <section className={`space-y-5 text-right ${className}`} aria-labelledby="assessment-review-title">
+    <section
+      className={`space-y-5 text-right ${className}`}
+      aria-labelledby="assessment-review-title"
+    >
       <h2 id="assessment-review-title" className="sr-only">
         סיכום הפרופיל
       </h2>
@@ -154,7 +189,7 @@ function FinalSignalsReview({
         ))}
       </ul>
 
-      <NextStepsCard answers={answers} />
+      {showNextSteps ? <NextStepsCard answers={answers} /> : null}
     </section>
   );
 }

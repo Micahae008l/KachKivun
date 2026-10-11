@@ -13,9 +13,11 @@ import {
   Trash2,
   RefreshCw,
   AlertTriangle,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSkeleton, AdminUsersTableSkeleton } from "@/components/skeletons/PageSkeletons";
+import { AdminUserJourney, SignupFunnel, StageBadge } from "@/components/AdminUserJourney";
 import {
   ApiError,
   deleteAdminUser,
@@ -79,7 +81,9 @@ function AdminPage() {
   const [search, setSearch] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
-  const [reviewStatus, setReviewStatus] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [reviewStatus, setReviewStatus] = useState<"pending" | "approved" | "rejected" | "all">(
+    "pending",
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -191,7 +195,8 @@ function AdminPage() {
   const busy =
     (session.isPending && !session.data) ||
     (session.data?.role === "admin" &&
-      ((adminMe.isPending && !adminMe.data) || (adminMe.isSuccess && overview.isPending && !overview.data)));
+      ((adminMe.isPending && !adminMe.data) ||
+        (adminMe.isSuccess && overview.isPending && !overview.data)));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 topo-lines">
@@ -214,7 +219,9 @@ function AdminPage() {
             className="flex flex-col-reverse gap-4 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="text-right">
-              <p className="mb-2 font-mono text-xs tracking-wide text-dust uppercase">ניהול מערכת</p>
+              <p className="mb-2 font-mono text-xs tracking-wide text-dust uppercase">
+                ניהול מערכת
+              </p>
               <h1 className="text-2xl font-black sm:text-4xl">פאנל מנהל</h1>
               <p className="mt-2 text-sm text-dust">
                 {me?.preferredName?.trim() || me?.email} · גישה מלאה למשתמשים ועלויות AI
@@ -286,7 +293,9 @@ function AdminPage() {
                   פעילות AI אחרונה
                 </p>
                 {ov.recentUsage.length === 0 ? (
-                  <p className="text-sm text-dust">אין רישומי שימוש עדיין. עלויות יופיעו אחרי קריאות ליועץ AI.</p>
+                  <p className="text-sm text-dust">
+                    אין רישומי שימוש עדיין. עלויות יופיעו אחרי קריאות ליועץ AI.
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[32rem] text-right text-sm">
@@ -303,9 +312,13 @@ function AdminPage() {
                       <tbody>
                         {ov.recentUsage.map((row, i) => (
                           <tr key={`${row.createdAt}-${i}`} className="border-b border-iron/10">
-                            <td className="py-2.5 pl-4 font-mono text-xs">{row.userEmail || "-"}</td>
+                            <td className="py-2.5 pl-4 font-mono text-xs">
+                              {row.userEmail || "-"}
+                            </td>
                             <td className="py-2.5 pl-4 text-dust">{row.model || "-"}</td>
-                            <td className="py-2.5 pl-4 font-mono tabular-nums">{row.totalTokens}</td>
+                            <td className="py-2.5 pl-4 font-mono tabular-nums">
+                              {row.totalTokens}
+                            </td>
                             <td className="py-2.5 pl-4 font-mono tabular-nums">
                               {formatUsd(Number(row.estimatedCostUsd) || 0)}
                             </td>
@@ -345,15 +358,19 @@ function AdminPage() {
               </p>
             ) : (
               <>
+                {usersQuery.data?.funnel ? <SignupFunnel funnel={usersQuery.data.funnel} /> : null}
                 <p className="mb-3 text-xs text-dust">
                   {usersQuery.data?.total ?? 0} משתמשים
                   {debouncedQ ? ` · חיפוש: "${debouncedQ}"` : ""}
                 </p>
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[40rem] text-right text-sm">
+                  <table className="w-full min-w-[56rem] text-right text-sm">
                     <thead>
                       <tr className="border-b border-iron/20 text-xs text-dust">
+                        <th className="w-8 py-2" aria-label="פירוט" />
                         <th className="py-2 pl-3 font-medium">אימייל</th>
+                        <th className="py-2 pl-3 font-medium">שלב</th>
+                        <th className="py-2 pl-3 font-medium">נרשם</th>
                         <th className="py-2 pl-3 font-medium">שם</th>
                         <th className="py-2 pl-3 font-medium">סטטוס</th>
                         <th className="py-2 pl-3 font-medium">תפקיד</th>
@@ -384,7 +401,11 @@ function AdminPage() {
             )}
           </motion.div>
 
-          <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6" dir="rtl">
+          <motion.div
+            variants={fadeUp}
+            className="border border-iron/30 bg-card p-5 sm:p-6"
+            dir="rtl"
+          >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-mono text-xs tracking-wide text-dust uppercase">
@@ -481,8 +502,9 @@ function AdminPage() {
               <h2 className="text-lg font-bold">מחיקת משתמש</h2>
             </div>
             <p className="text-sm text-dust">
-              למחוק לצמיתות את <span className="font-mono text-foreground">{deleteTarget.email}</span>?
-              יימחקו גם הפרופיל, ההעדפות ורישומי השימוש ב-AI.
+              למחוק לצמיתות את{" "}
+              <span className="font-mono text-foreground">{deleteTarget.email}</span>? יימחקו גם
+              הפרופיל, ההעדפות ורישומי השימוש ב-AI.
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-2">
               <button
@@ -559,9 +581,8 @@ function UserRow({
   tokenCapPending: boolean;
 }) {
   const isSelf = currentAdminId === user.id;
-  const [capInput, setCapInput] = useState(
-    user.tokenCap != null ? String(user.tokenCap) : ""
-  );
+  const [open, setOpen] = useState(false);
+  const [capInput, setCapInput] = useState(user.tokenCap != null ? String(user.tokenCap) : "");
 
   useEffect(() => {
     setCapInput(user.tokenCap != null ? String(user.tokenCap) : "");
@@ -582,89 +603,115 @@ function UserRow({
   }
 
   return (
-    <tr className="border-b border-iron/10">
-      <td className="py-3 pl-3 font-mono text-xs">{user.email}</td>
-      <td className="py-3 pl-3">{user.preferredName || "-"}</td>
-      <td className="py-3 pl-3 text-dust">{statusHebrew(user.status)}</td>
-      <td className="py-3 pl-3">
-        <span
-          className={`rounded-sm px-2 py-0.5 text-xs font-semibold ${
-            user.role === "admin" ? "bg-primary/20 text-primary" : "bg-iron/20 text-dust"
-          }`}
-        >
-          {user.role === "admin" ? "מנהל" : "משתמש"}
-        </span>
-      </td>
-      <td className="py-3 pl-3 text-dust">
-        {user.aiReady ? (
-          <span className="text-olive">מוכן</span>
-        ) : (
-          <span>חסר פרופיל</span>
-        )}
-        <span className="mr-2 font-mono text-[10px] tabular-nums">({user.aiUsage.callCount})</span>
-      </td>
-      <td className="py-3 pl-3">
-        <p className="font-mono text-[11px] tabular-nums text-dust">{tokenCapLabel(user, defaultTokenCap)}</p>
-        {user.role !== "admin" ? (
-          <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1">
-            <input
-              type="number"
-              min={0}
-              value={capInput}
-              onChange={(e) => setCapInput(e.target.value)}
-              placeholder={
-                defaultTokenCap != null ? `ברירת מחדל ${formatTokens(defaultTokenCap)}` : "ללא הגבלה"
-              }
-              className="w-24 rounded border border-iron/30 bg-background px-2 py-1 font-mono text-[11px] text-foreground outline-none focus:border-primary/50"
-              title="ריק = ברירת מחדל מהשרת"
-            />
-            <button
-              type="button"
-              disabled={tokenCapPending}
-              onClick={saveTokenCap}
-              className="rounded border border-iron/30 px-2 py-1 text-[10px] text-dust transition hover:text-foreground disabled:opacity-40"
-            >
-              שמור
-            </button>
-          </div>
-        ) : null}
-      </td>
-      <td className="py-3 pl-3 font-mono text-xs tabular-nums">
-        {formatUsd(user.aiUsage.estimatedCostUsd)}
-      </td>
-      <td className="py-3">
-        <div className="flex flex-wrap items-center justify-end gap-1">
-          {user.role === "admin" ? (
-            <button
-              type="button"
-              disabled={rolePending || isSelf}
-              onClick={() => onRole("user")}
-              className="rounded border border-iron/30 px-2 py-1 text-[11px] text-dust transition hover:text-foreground disabled:opacity-40"
-              title={isSelf ? "לא ניתן להוריד את עצמך" : undefined}
-            >
-              הורד למשתמש
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={rolePending}
-              onClick={() => onRole("admin")}
-              className="rounded border border-primary/30 px-2 py-1 text-[11px] text-primary transition hover:bg-primary/10 disabled:opacity-40"
-            >
-              הפוך למנהל
-            </button>
-          )}
+    <>
+      <tr className={`border-b border-iron/10 ${open ? "bg-primary/[0.04]" : ""}`}>
+        <td className="py-3">
           <button
             type="button"
-            disabled={isSelf}
-            onClick={onDelete}
-            className="rounded border border-destructive/30 p-1 text-destructive transition hover:bg-destructive/10 disabled:opacity-40"
-            title={isSelf ? "לא ניתן למחוק את עצמך" : "מחק משתמש"}
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label={open ? "הסתרת המסע של המשתמש" : "הצגת המסע של המשתמש"}
+            className="flex h-8 w-8 items-center justify-center rounded border border-iron/30 text-dust transition hover:text-foreground"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} aria-hidden />
           </button>
-        </div>
-      </td>
-    </tr>
+        </td>
+        <td className="py-3 pl-3 font-mono text-xs">{user.email}</td>
+        <td className="py-3 pl-3">
+          {user.journey ? <StageBadge stage={user.journey.stage} /> : "-"}
+        </td>
+        <td className="py-3 pl-3 font-mono text-[11px] text-dust">{formatDate(user.createdAt)}</td>
+        <td className="py-3 pl-3">{user.preferredName || "-"}</td>
+        <td className="py-3 pl-3 text-dust">{statusHebrew(user.status)}</td>
+        <td className="py-3 pl-3">
+          <span
+            className={`rounded-sm px-2 py-0.5 text-xs font-semibold ${
+              user.role === "admin" ? "bg-primary/20 text-primary" : "bg-iron/20 text-dust"
+            }`}
+          >
+            {user.role === "admin" ? "מנהל" : "משתמש"}
+          </span>
+        </td>
+        <td className="py-3 pl-3 text-dust">
+          {user.aiReady ? <span className="text-olive">מוכן</span> : <span>חסר פרופיל</span>}
+          <span className="mr-2 font-mono text-[10px] tabular-nums">
+            ({user.aiUsage.callCount})
+          </span>
+        </td>
+        <td className="py-3 pl-3">
+          <p className="font-mono text-[11px] tabular-nums text-dust">
+            {tokenCapLabel(user, defaultTokenCap)}
+          </p>
+          {user.role !== "admin" ? (
+            <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1">
+              <input
+                type="number"
+                min={0}
+                value={capInput}
+                onChange={(e) => setCapInput(e.target.value)}
+                placeholder={
+                  defaultTokenCap != null
+                    ? `ברירת מחדל ${formatTokens(defaultTokenCap)}`
+                    : "ללא הגבלה"
+                }
+                className="w-24 rounded border border-iron/30 bg-background px-2 py-1 font-mono text-[11px] text-foreground outline-none focus:border-primary/50"
+                title="ריק = ברירת מחדל מהשרת"
+              />
+              <button
+                type="button"
+                disabled={tokenCapPending}
+                onClick={saveTokenCap}
+                className="rounded border border-iron/30 px-2 py-1 text-[10px] text-dust transition hover:text-foreground disabled:opacity-40"
+              >
+                שמור
+              </button>
+            </div>
+          ) : null}
+        </td>
+        <td className="py-3 pl-3 font-mono text-xs tabular-nums">
+          {formatUsd(user.aiUsage.estimatedCostUsd)}
+        </td>
+        <td className="py-3">
+          <div className="flex flex-wrap items-center justify-end gap-1">
+            {user.role === "admin" ? (
+              <button
+                type="button"
+                disabled={rolePending || isSelf}
+                onClick={() => onRole("user")}
+                className="rounded border border-iron/30 px-2 py-1 text-[11px] text-dust transition hover:text-foreground disabled:opacity-40"
+                title={isSelf ? "לא ניתן להוריד את עצמך" : undefined}
+              >
+                הורד למשתמש
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={rolePending}
+                onClick={() => onRole("admin")}
+                className="rounded border border-primary/30 px-2 py-1 text-[11px] text-primary transition hover:bg-primary/10 disabled:opacity-40"
+              >
+                הפוך למנהל
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={isSelf}
+              onClick={onDelete}
+              className="rounded border border-destructive/30 p-1 text-destructive transition hover:bg-destructive/10 disabled:opacity-40"
+              title={isSelf ? "לא ניתן למחוק את עצמך" : "מחק משתמש"}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </td>
+      </tr>
+      {open ? (
+        <tr className="border-b border-iron/20 bg-background/40">
+          <td colSpan={11} className="px-3">
+            <AdminUserJourney userId={user.id} />
+          </td>
+        </tr>
+      ) : null}
+    </>
   );
 }

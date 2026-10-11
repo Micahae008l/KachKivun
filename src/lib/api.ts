@@ -884,6 +884,24 @@ export type AdminUserRow = {
     lastCallAt: string | null;
   };
   aiTokens: AiTokenCapStatus;
+  journey?: {
+    stage: AdminJourneyStage;
+    lastResultAt: string | null;
+    orders: number;
+    paidOrders: number;
+    lastOrderAt: string | null;
+    unlocked: boolean;
+  };
+};
+
+export type AdminJourneyStage = "signed_up" | "assessed" | "results" | "checkout" | "paid";
+
+export type AdminSignupFunnel = {
+  signedUp: number;
+  assessed: number;
+  results: number;
+  checkout: number;
+  paid: number;
 };
 
 export type AdminUsersResponse = {
@@ -892,7 +910,45 @@ export type AdminUsersResponse = {
   skip: number;
   limit: number;
   defaults?: { tokenCap: number | null };
+  funnel?: AdminSignupFunnel;
 };
+
+export type AdminUserJourney = {
+  user: {
+    id: string;
+    email: string;
+    preferredName: string;
+    phone: string;
+    status: string;
+    createdAt: string;
+    emailVerifiedAt: string | null;
+    lastSeenAt: string | null;
+  };
+  assessment: { completedAt: string; answers: unknown } | null;
+  runs: {
+    id: string;
+    createdAt: string;
+    roles: { rank: number; roleTitle: string; matchPercentage: number | null }[];
+  }[];
+  personalAnswer: string;
+  orders: {
+    id: string;
+    status: PaymentOrderDto["status"];
+    amountMinor: number;
+    provider: string;
+    claimCode: string;
+    method: string;
+    payerEmail: string;
+    createdAt: string;
+    paidAt: string | null;
+    refundedAt: string | null;
+  }[];
+  entitlement: { status: string; since: string } | null;
+};
+
+export function getAdminUserJourney(userId: string) {
+  return apiFetch<AdminUserJourney>(`/api/admin/users/${encodeURIComponent(userId)}/journey`);
+}
 
 export function getAdminMe() {
   return apiFetch<AdminMeResponse>("/api/admin/me");

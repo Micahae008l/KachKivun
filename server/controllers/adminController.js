@@ -5,6 +5,10 @@ import Assessment from "../models/Assessment.js";
 import EmailOtp from "../models/EmailOtp.js";
 import AiUsageLog from "../models/AiUsageLog.js";
 import RefreshToken from "../models/RefreshToken.js";
+import MatchGeneration from "../models/MatchGeneration.js";
+import RoleRecommendation from "../models/RoleRecommendation.js";
+import PaymentOrder from "../models/PaymentOrder.js";
+import Entitlement from "../models/Entitlement.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import { pricingMeta } from "../utils/openaiPricing.js";
 import { sendServerError } from "../utils/httpError.js";
@@ -137,7 +141,8 @@ export async function listUsers(req, res) {
     ]);
 
     const userIds = users.map((u) => u._id);
-    const [statsList, prefsList, assessmentList, usageByUser] = await Promise.all([
+    const [statsList, prefsList, assessmentList, usageByUser, resultsByUser, ordersByUser, unlockedIds] =
+      await Promise.all([
       MilitaryStats.find({ userId: { $in: userIds } }).lean(),
       Preferences.find({ userId: { $in: userIds } }).lean(),
       Assessment.find({ userId: { $in: userIds } })
@@ -156,6 +161,25 @@ export async function listUsers(req, res) {
           },
         },
       ]),
+      RoleRecommendation.aggregate([
+        { $match: { userId: { $in: userIds } } },
+        { $group: { _id: "$userId", lastResultAt: { $max: "$updatedAt" } } },
+      ]),
+      PaymentOrder.aggregate([
+        { $match: { userId: { $in: userIds } } },
+        {
+          $group: {
+            _id: "$userId",
+            orders: { $sum: 1 },
+            paid: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
+            lastOrderAt: { $max: "$createdAt" },
+          },
+        },
+      ]),
+      Entitlement.distinct("userId", {
+        userId: { $in: userIds },
+        status: { $in: ["active", "grandfathered"] },
+      }),
     ]);
 
     const statsMap = new Map(statsList.map((s) => [String(s.userId), s]));
@@ -166,6 +190,9 @@ export async function listUsers(req, res) {
       if (!assessmentMap.has(id)) assessmentMap.set(id, assessment);
     }
     const usageMap = new Map(usageByUser.map((u) => [String(u._id), u]));
+    const resultsMap = new Map(resultsByUser.map((r) => [String(r._id), r]));
+    const ordersMap = new Map(ordersByUser.map((o) => [String(o._id), o]));
+    const unlockedSet = new Set(unlockedIds.map(String));
 
     const rows = users.map((u) => {
       const id = String(u._id);
@@ -201,6 +228,12 @@ export async function listUsers(req, res) {
           lastCallAt: usage?.lastCallAt ?? null,
         },
         aiTokens: tokenStatus,
+        journey: journeyStage({
+          assessed: assessmentMap.has(id),
+          result: resultsMap.get(id),
+          orders: ordersMap.get(id),
+          unlocked: unlockedSet.has(id),
+        }),
       };
     });
 
@@ -210,9 +243,125 @@ export async function listUsers(req, res) {
       skip,
       limit,
       defaults: { tokenCap: getDefaultTokenCap() },
+      funnel: await signupFunnel(),
     });
   } catch (err) {
     return sendServerError(res, err, "[admin/users]");
+  }
+}
+
+/** Furthest step a user reached: signed up -> assessed -> got results -> started payment -> paid. */
+function journeyStage({ assessed, result, orders, unlocked }) {
+  const paid = unlocked || (orders?.paid ?? 0) > 0;
+  const stage = paid
+    ? "paid"
+    : orders?.orders
+      ? "checkout"
+      : result
+        ? "results"
+        : assessed
+          ? "assessed"
+          : "signed_up";
+  return {
+    stage,
+    lastResultAt: result?.lastResultAt ?? null,
+    orders: orders?.orders ?? 0,
+    paidOrders: orders?.paid ?? 0,
+    lastOrderAt: orders?.lastOrderAt ?? null,
+    unlocked: Boolean(unlocked),
+  };
+}
+
+/** How many people reached each step, over everyone (not just one page of users). */
+async function signupFunnel() {
+  const [signedUp, assessed, results, checkout, paidOrders, unlocked] = await Promise.all([
+    User.countDocuments({ role: { $ne: "admin" } }),
+    Assessment.distinct("userId"),
+    RoleRecommendation.distinct("userId"),
+    PaymentOrder.distinct("userId"),
+    PaymentOrder.distinct("userId", { status: "paid" }),
+    Entitlement.distinct("userId", { status: "active" }),
+  ]);
+  const paid = new Set([...paidOrders, ...unlocked].map(String));
+  return {
+    signedUp,
+    assessed: assessed.length,
+    results: results.length,
+    checkout: checkout.length,
+    paid: paid.size,
+  };
+}
+
+/** GET /api/admin/users/:id/journey: everything one user did, for the admin dropdown. */
+export async function getUserJourney(req, res) {
+  try {
+    const userId = req.params.id;
+    const [user, assessment, generations, recommendation, orders, entitlement, lastSession] =
+      await Promise.all([
+        User.findById(userId)
+          .select("email preferredName phone status createdAt emailVerifiedAt")
+          .lean(),
+        Assessment.findOne({ userId }).sort({ completedAt: -1 }).select("answers completedAt").lean(),
+        MatchGeneration.find({ userId }).sort({ createdAt: -1 }).limit(20).lean(),
+        RoleRecommendation.findOne({ userId })
+          .sort({ updatedAt: -1 })
+          .select("roles personalAnswer updatedAt")
+          .lean(),
+        PaymentOrder.find({ userId })
+          .sort({ createdAt: -1 })
+          .limit(20)
+          .select("publicId status amountMinor provider claimCode chosenMethod payerEmail createdAt paidAt refundedAt")
+          .lean(),
+        Entitlement.findOne({ userId }).select("status createdAt").lean(),
+        RefreshToken.findOne({ userId }).sort({ createdAt: -1 }).select("createdAt").lean(),
+      ]);
+    if (!user) return res.status(404).json({ error: "המשתמש לא נמצא" });
+
+    const toRoles = (roles) =>
+      (Array.isArray(roles) ? roles : []).map((role, index) => ({
+        rank: Number(role?.rank) || index + 1,
+        roleTitle: String(role?.roleTitle || ""),
+        matchPercentage: Number.isFinite(Number(role?.matchPercentage))
+          ? Math.round(Number(role.matchPercentage))
+          : null,
+      }));
+    // History expires after 90 days; the current result is durable, so it fills in when history is empty.
+    const runs = generations.length
+      ? generations.map((g) => ({ id: String(g._id), createdAt: g.createdAt, roles: toRoles(g.roles) }))
+      : recommendation
+        ? [{ id: String(recommendation._id), createdAt: recommendation.updatedAt, roles: toRoles(recommendation.roles) }]
+        : [];
+
+    return res.json({
+      user: {
+        id: String(user._id),
+        email: user.email,
+        preferredName: user.preferredName || "",
+        phone: user.phone || "",
+        status: user.status,
+        createdAt: user.createdAt,
+        emailVerifiedAt: user.emailVerifiedAt ?? null,
+        lastSeenAt: lastSession?.createdAt ?? null,
+      },
+      assessment: assessment ? { completedAt: assessment.completedAt, answers: assessment.answers } : null,
+      runs,
+      personalAnswer: recommendation?.personalAnswer || "",
+      orders: orders.map((o) => ({
+        id: o.publicId,
+        status: o.status,
+        amountMinor: o.amountMinor,
+        provider: o.provider,
+        claimCode: o.claimCode || "",
+        method: o.chosenMethod || "",
+        payerEmail: o.payerEmail || "",
+        createdAt: o.createdAt,
+        paidAt: o.paidAt ?? null,
+        refundedAt: o.refundedAt ?? null,
+      })),
+      entitlement: entitlement ? { status: entitlement.status, since: entitlement.createdAt } : null,
+    });
+  } catch (err) {
+    return sendServerError(res, err, "[admin/user-journey]");
   }
 }
 
