@@ -7,7 +7,7 @@ import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-function IntensityBar({ label, value }: { label: string; value: number | null }) {
+export function IntensityBar({ label, value }: { label: string; value: number | null }) {
   if (value == null) return null;
   const pct = Math.round((Math.min(5, Math.max(1, value)) / 5) * 100);
   return (

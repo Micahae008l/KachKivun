@@ -11,6 +11,7 @@ const LAST_UPDATED = "18 בספטמבר 2026";
 export const Route = createFileRoute("/terms")({
   component: TermsPage,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/terms" }],
     meta: [
       { title: `תנאי שימוש | ${SITE_NAME_HE}` },
       {

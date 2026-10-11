@@ -9,101 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as RoleInsightsRouteImport } from './routes/role-insights'
-import { Route as ReportRouteImport } from './routes/report'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PostSignupRouteImport } from './routes/post-signup'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CancellationRouteImport } from './routes/cancellation'
-import { Route as AiSecretaryRouteImport } from './routes/ai-secretary'
-import { Route as AiCounselorRouteImport } from './routes/ai-counselor'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AccessibilityRouteImport } from './routes/accessibility'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ReportReportIdRouteImport } from './routes/report.$reportId'
-import { Route as PaymentReturnRouteImport } from './routes/payment.return'
-import { Route as CheckoutShareTokenRouteImport } from './routes/checkout_.$shareToken'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AccessibilityRouteImport } from './routes/accessibility'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AiCounselorRouteImport } from './routes/ai-counselor'
+import { Route as AiSecretaryRouteImport } from './routes/ai-secretary'
+import { Route as CancellationRouteImport } from './routes/cancellation'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PostSignupRouteImport } from './routes/post-signup'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ReportRouteImport } from './routes/report'
+import { Route as RoleInsightsRouteImport } from './routes/role-insights'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminSecurityRouteImport } from './routes/admin_.security'
+import { Route as CheckoutShareTokenRouteImport } from './routes/checkout_.$shareToken'
+import { Route as PaymentReturnRouteImport } from './routes/payment.return'
+import { Route as ReportReportIdRouteImport } from './routes/report.$reportId'
+import { Route as RolesSlugRouteImport } from './routes/roles.$slug'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RoleInsightsRoute = RoleInsightsRouteImport.update({
-  id: '/role-insights',
-  path: '/role-insights',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportRoute = ReportRouteImport.update({
-  id: '/report',
-  path: '/report',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostSignupRoute = PostSignupRouteImport.update({
-  id: '/post-signup',
-  path: '/post-signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CancellationRoute = CancellationRouteImport.update({
-  id: '/cancellation',
-  path: '/cancellation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AiSecretaryRoute = AiSecretaryRouteImport.update({
-  id: '/ai-secretary',
-  path: '/ai-secretary',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AiCounselorRoute = AiCounselorRouteImport.update({
-  id: '/ai-counselor',
-  path: '/ai-counselor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AccessibilityRoute = AccessibilityRouteImport.update({
-  id: '/accessibility',
-  path: '/accessibility',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -111,19 +42,84 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AccessibilityRoute = AccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReportReportIdRoute = ReportReportIdRouteImport.update({
-  id: '/$reportId',
-  path: '/$reportId',
-  getParentRoute: () => ReportRoute,
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PaymentReturnRoute = PaymentReturnRouteImport.update({
-  id: '/payment/return',
-  path: '/payment/return',
+const AiCounselorRoute = AiCounselorRouteImport.update({
+  id: '/ai-counselor',
+  path: '/ai-counselor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiSecretaryRoute = AiSecretaryRouteImport.update({
+  id: '/ai-secretary',
+  path: '/ai-secretary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationRoute = CancellationRouteImport.update({
+  id: '/cancellation',
+  path: '/cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostSignupRoute = PostSignupRouteImport.update({
+  id: '/post-signup',
+  path: '/post-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoleInsightsRoute = RoleInsightsRouteImport.update({
+  id: '/role-insights',
+  path: '/role-insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSecurityRoute = AdminSecurityRouteImport.update({
+  id: '/admin_/security',
+  path: '/admin/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutShareTokenRoute = CheckoutShareTokenRouteImport.update({
@@ -131,9 +127,19 @@ const CheckoutShareTokenRoute = CheckoutShareTokenRouteImport.update({
   path: '/checkout/$shareToken',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSecurityRoute = AdminSecurityRouteImport.update({
-  id: '/admin_/security',
-  path: '/admin/security',
+const PaymentReturnRoute = PaymentReturnRouteImport.update({
+  id: '/payment/return',
+  path: '/payment/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportReportIdRoute = ReportReportIdRouteImport.update({
+  id: '/$reportId',
+  path: '/$reportId',
+  getParentRoute: () => ReportRoute,
+} as any)
+const RolesSlugRoute = RolesSlugRouteImport.update({
+  id: '/roles/$slug',
+  path: '/roles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/checkout/$shareToken': typeof CheckoutShareTokenRoute
   '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
+  '/roles/$slug': typeof RolesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/checkout/$shareToken': typeof CheckoutShareTokenRoute
   '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
+  '/roles/$slug': typeof RolesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/checkout_/$shareToken': typeof CheckoutShareTokenRoute
   '/payment/return': typeof PaymentReturnRoute
   '/report/$reportId': typeof ReportReportIdRoute
+  '/roles/$slug': typeof RolesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/checkout/$shareToken'
     | '/payment/return'
     | '/report/$reportId'
+    | '/roles/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/checkout/$shareToken'
     | '/payment/return'
     | '/report/$reportId'
+    | '/roles/$slug'
   id:
     | '__root__'
     | '/'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/checkout_/$shareToken'
     | '/payment/return'
     | '/report/$reportId'
+    | '/roles/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -300,113 +312,16 @@ export interface RootRouteChildren {
   AdminSecurityRoute: typeof AdminSecurityRoute
   CheckoutShareTokenRoute: typeof CheckoutShareTokenRoute
   PaymentReturnRoute: typeof PaymentReturnRoute
+  RolesSlugRoute: typeof RolesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/role-insights': {
-      id: '/role-insights'
-      path: '/role-insights'
-      fullPath: '/role-insights'
-      preLoaderRoute: typeof RoleInsightsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/report': {
-      id: '/report'
-      path: '/report'
-      fullPath: '/report'
-      preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/post-signup': {
-      id: '/post-signup'
-      path: '/post-signup'
-      fullPath: '/post-signup'
-      preLoaderRoute: typeof PostSignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cancellation': {
-      id: '/cancellation'
-      path: '/cancellation'
-      fullPath: '/cancellation'
-      preLoaderRoute: typeof CancellationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ai-secretary': {
-      id: '/ai-secretary'
-      path: '/ai-secretary'
-      fullPath: '/ai-secretary'
-      preLoaderRoute: typeof AiSecretaryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ai-counselor': {
-      id: '/ai-counselor'
-      path: '/ai-counselor'
-      fullPath: '/ai-counselor'
-      preLoaderRoute: typeof AiCounselorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/accessibility': {
-      id: '/accessibility'
-      path: '/accessibility'
-      fullPath: '/accessibility'
-      preLoaderRoute: typeof AccessibilityRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -416,25 +331,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/accessibility': {
+      id: '/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof AccessibilityRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/report/$reportId': {
-      id: '/report/$reportId'
-      path: '/$reportId'
-      fullPath: '/report/$reportId'
-      preLoaderRoute: typeof ReportReportIdRouteImport
-      parentRoute: typeof ReportRoute
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/payment/return': {
-      id: '/payment/return'
-      path: '/payment/return'
-      fullPath: '/payment/return'
-      preLoaderRoute: typeof PaymentReturnRouteImport
+    '/ai-counselor': {
+      id: '/ai-counselor'
+      path: '/ai-counselor'
+      fullPath: '/ai-counselor'
+      preLoaderRoute: typeof AiCounselorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-secretary': {
+      id: '/ai-secretary'
+      path: '/ai-secretary'
+      fullPath: '/ai-secretary'
+      preLoaderRoute: typeof AiSecretaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation': {
+      id: '/cancellation'
+      path: '/cancellation'
+      fullPath: '/cancellation'
+      preLoaderRoute: typeof CancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post-signup': {
+      id: '/post-signup'
+      path: '/post-signup'
+      fullPath: '/post-signup'
+      preLoaderRoute: typeof PostSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/role-insights': {
+      id: '/role-insights'
+      path: '/role-insights'
+      fullPath: '/role-insights'
+      preLoaderRoute: typeof RoleInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/security': {
+      id: '/admin_/security'
+      path: '/admin/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AdminSecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout_/$shareToken': {
@@ -444,11 +450,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/security': {
-      id: '/admin_/security'
-      path: '/admin/security'
-      fullPath: '/admin/security'
-      preLoaderRoute: typeof AdminSecurityRouteImport
+    '/payment/return': {
+      id: '/payment/return'
+      path: '/payment/return'
+      fullPath: '/payment/return'
+      preLoaderRoute: typeof PaymentReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report/$reportId': {
+      id: '/report/$reportId'
+      path: '/$reportId'
+      fullPath: '/report/$reportId'
+      preLoaderRoute: typeof ReportReportIdRouteImport
+      parentRoute: typeof ReportRoute
+    }
+    '/roles/$slug': {
+      id: '/roles/$slug'
+      path: '/roles/$slug'
+      fullPath: '/roles/$slug'
+      preLoaderRoute: typeof RolesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -486,6 +506,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSecurityRoute: AdminSecurityRoute,
   CheckoutShareTokenRoute: CheckoutShareTokenRoute,
   PaymentReturnRoute: PaymentReturnRoute,
+  RolesSlugRoute: RolesSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

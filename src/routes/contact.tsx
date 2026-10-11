@@ -22,6 +22,7 @@ export const Route = createFileRoute("/contact")({
     order: typeof search.order === "string" ? search.order.slice(0, 64) : undefined,
   }),
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/contact" }],
     meta: [
       { title: `צור קשר | ${SITE_NAME_HE}` },
       { name: "description", content: "פנייה בכתב לצוות: ביטול עסקה, תשלומים, תקלות ושאלות. עונים במייל." },

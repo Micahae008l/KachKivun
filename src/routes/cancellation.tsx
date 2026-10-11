@@ -15,6 +15,7 @@ const CONTACT_EMAIL = SUPPORT_EMAIL;
 export const Route = createFileRoute("/cancellation")({
   component: CancellationPage,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/cancellation" }],
     meta: [
       { title: `ביטול עסקה והחזרים | ${SITE_NAME_HE}` },
       {

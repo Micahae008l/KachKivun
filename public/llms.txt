@@ -1,0 +1,24 @@
+# קח כיוון (Kach Kivun)
+
+> Hebrew site that helps Israeli pre-draft teens (16-18) find IDF roles that fit them. One personal questionnaire (דפ״ר, medical profile, יום המא״ה scores, interests and preferences) is matched against 300+ IDF roles and returns 5 ranked matches with an explanation and an admission-chance estimate. Unofficial; not affiliated with the IDF.
+
+## Main pages
+
+- [Home](https://kachkivun.com/): what the service does and how the matching works
+- [All IDF roles](https://kachkivun.com/role-insights): catalog of 300+ roles with requirements, minimum דפ״ר and medical profile, service length and locations
+- [Role pages](https://kachkivun.com/sitemap.xml): one page per role at https://kachkivun.com/roles/<role-slug>
+- [About](https://kachkivun.com/about): who runs the project and how to contact us
+
+## Pricing
+
+- The questionnaire and places 5 and 4 of the results are free.
+- Places 3, 2 and 1 unlock with a one-time payment of ₪24.99 (no subscription).
+
+## Policies
+
+- [Terms](https://kachkivun.com/terms)
+- [Privacy](https://kachkivun.com/privacy)
+- [Cancellation and refunds](https://kachkivun.com/cancellation)
+- [Accessibility](https://kachkivun.com/accessibility)
+
+Recommendations are not official and do not guarantee eligibility, screening or placement. Role data changes; verify on the official IDF site (mitgaisim.idf.il).

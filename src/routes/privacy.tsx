@@ -12,6 +12,7 @@ const LAST_UPDATED = "18 בספטמבר 2026";
 export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/privacy" }],
     meta: [
       { title: `מדיניות פרטיות | ${SITE_NAME_HE}` },
       {

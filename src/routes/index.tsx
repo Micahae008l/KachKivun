@@ -13,8 +13,46 @@ import { formatPaymentPrice } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
 
+const HOME_TITLE = "קח כיוון | לאיזה תפקיד בצה״ל אתם מתאימים?";
+const HOME_DESCRIPTION =
+  "שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי וציוני מא״ה מול יותר מ־300 תפקידים בצה״ל, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. מתחילים בחינם.";
+
 export const Route = createFileRoute("/")({
   component: HomePage,
+  head: () => ({
+    meta: [
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESCRIPTION },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESCRIPTION },
+      { name: "twitter:title", content: HOME_TITLE },
+      { name: "twitter:description", content: HOME_DESCRIPTION },
+    ],
+    links: [{ rel: "canonical", href: "https://kachkivun.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "קח כיוון",
+              url: "https://kachkivun.com/",
+              logo: "https://kachkivun.com/favicon.png",
+              email: "support@kachkivun.com",
+            },
+            {
+              "@type": "WebSite",
+              name: "קח כיוון",
+              url: "https://kachkivun.com/",
+              inLanguage: "he-IL",
+            },
+          ],
+        }),
+      },
+    ],
+  }),
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;

@@ -5,6 +5,7 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutRoute,
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "תשלום מאובטח | קח כיוון" },
       {
         name: "description",

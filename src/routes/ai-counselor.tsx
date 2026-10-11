@@ -20,6 +20,7 @@ export const Route = createFileRoute("/ai-counselor")({
   component: AiCounselorPage,
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "יועץ AI | קח כיוון" },
       {
         name: "description",

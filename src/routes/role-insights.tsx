@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useDeferredValue, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Search, Shield, Sparkles } from "lucide-react";
 import { listRoles, roleInsightSlug } from "@/lib/api";
-import { RoleInsightSheet } from "@/components/RoleInsightSheet";
+import { fetchRoleCatalog } from "@/lib/roles-public";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
 
@@ -20,22 +20,30 @@ export const Route = createFileRoute("/role-insights")({
     q: typeof raw.q === "string" && raw.q.trim() ? raw.q.trim() : undefined,
     category: typeof raw.category === "string" && raw.category.trim() ? raw.category.trim() : undefined,
   }),
+  // Old shared links opened a role as ?role=; each role now has its own page.
+  beforeLoad: ({ search }) => {
+    if (search.role) {
+      throw redirect({
+        to: "/roles/$slug",
+        params: { slug: roleInsightSlug(decodeURIComponent(search.role)) },
+        statusCode: 301,
+      });
+    }
+  },
+  loader: () => fetchRoleCatalog(),
   component: RoleInsightsPage,
-  head: ({ match }) => {
-    const role = match.search.role;
+  head: ({ loaderData }) => {
+    const title = `תפקידים בצה״ל: ${loaderData?.total ?? 300}+ תפקידים, דרישות ודפ״ר | קח כיוון`;
+    const description =
+      "כל התפקידים בצה״ל במקום אחד: מה עושים ביומיום, דפ״ר ופרופיל מינימליים, משך שירות ואיפה משרתים. חיפוש לפי שם, חיל או תחום.";
     return {
       meta: [
-        {
-          title: role
-            ? `תובנות: ${decodeURIComponent(role)} | קח כיוון`
-            : "תובנות תפקידים | קח כיוון",
-        },
-        {
-          name: "description",
-          content:
-            "מידע על תפקידים בצה״ל: מה עושים ביום־יום, למי זה מתאים, וקישור לאתר מתגייסים הרשמי.",
-        },
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
       ],
+      links: [{ rel: "canonical", href: "https://kachkivun.com/role-insights" }],
     };
   },
 });
@@ -45,7 +53,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 function RoleInsightsPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
-  const selectedSlug = search.role ? roleInsightSlug(decodeURIComponent(search.role)) : undefined;
+  const fullCatalog = Route.useLoaderData();
 
   const [query, setQuery] = useState(search.q || "");
   const deferredQ = useDeferredValue(query.trim());
@@ -53,6 +61,8 @@ function RoleInsightsPage() {
   const listQuery = useQuery({
     queryKey: ["roles-catalog", deferredQ, search.category],
     queryFn: () => listRoles({ q: deferredQ || undefined, category: search.category }),
+    // The unfiltered list is rendered on the server, so search engines see every role.
+    initialData: !deferredQ && !search.category ? (fullCatalog ?? undefined) : undefined,
     staleTime: 5 * 60_000,
   });
 
@@ -60,22 +70,6 @@ function RoleInsightsPage() {
   const roles = listQuery.data?.roles ?? [];
 
   const categoryChips = useMemo(() => categories.slice(0, 24), [categories]);
-
-  function openRole(slug: string) {
-    void navigate({
-      search: (prev) => ({ ...prev, role: slug }),
-    });
-  }
-
-  function closeRole() {
-    void navigate({
-      search: (prev) => {
-        const next = { ...prev };
-        delete next.role;
-        return next;
-      },
-    });
-  }
 
   function setCategory(category?: string) {
     void navigate({
@@ -105,11 +99,11 @@ function RoleInsightsPage() {
         <div className="relative space-y-3">
           <p className="font-mono text-xs tracking-wide text-primary uppercase">קטלוג תפקידים</p>
           <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            תובנות תפקידים
+            תפקידים בצה״ל
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-dust sm:text-base">
-            חיפוש בכל {listQuery.data?.total ?? "…"} התפקידים שבמערכת, הסבר בעברית, וקישור לאתר מתגייסים
-            הרשמי של צה״ל. אחרי התאמה ביועץ AI אפשר לפתוח כל תפקיד מכאן.
+            כל {listQuery.data?.total ?? "300+"} התפקידים בצה״ל: מה עושים ביומיום, דפ״ר ופרופיל מינימליים,
+            משך שירות, וקישור לאתר מתגייסים הרשמי.
           </p>
         </div>
       </motion.header>
@@ -186,11 +180,11 @@ function RoleInsightsPage() {
 
       <div className="grid gap-3 sm:grid-cols-2" dir="rtl">
         {roles.map((r) => (
-          <button
+          <Link
             key={r.slug}
-            type="button"
-            onClick={() => openRole(r.slug)}
-            className="border border-iron/30 bg-card p-4 text-right transition hover:border-primary/40"
+            to="/roles/$slug"
+            params={{ slug: r.slug }}
+            className="block border border-iron/30 bg-card p-4 text-right transition hover:border-primary/40"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -208,7 +202,7 @@ function RoleInsightsPage() {
             {r.signals.length ? (
               <p className="mt-2 text-[11px] text-dust/80">{r.signals.slice(0, 3).join(" · ")}</p>
             ) : null}
-          </button>
+          </Link>
         ))}
       </div>
 
@@ -216,7 +210,6 @@ function RoleInsightsPage() {
         <p className="py-10 text-center text-sm text-dust">לא נמצאו תפקידים לחיפוש הזה.</p>
       ) : null}
 
-      <RoleInsightSheet slug={selectedSlug} onClose={closeRole} />
     </div>
   );
 }

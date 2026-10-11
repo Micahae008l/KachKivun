@@ -21,6 +21,7 @@ import { MATCH_TOOL_NAME } from "@/lib/voice";
 export const Route = createFileRoute("/about")({
   component: AboutPage,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/about" }],
     meta: [
       { title: `אודות | ${SITE_NAME_HE}` },
       {

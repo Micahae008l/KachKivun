@@ -5,6 +5,7 @@ export const Route = createFileRoute("/checkout_/$shareToken")({
   component: SharedCheckoutRoute,
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "קישור לתשלום מאובטח | קח כיוון" },
       {
         name: "description",

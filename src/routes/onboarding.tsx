@@ -28,6 +28,7 @@ import { idfPhotoAt } from "@/lib/idf-images";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
 });
 
 const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;

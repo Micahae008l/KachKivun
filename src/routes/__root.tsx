@@ -153,6 +153,7 @@ const PUBLIC_PATHS = new Set([
   "/",
   "/about",
   "/contact",
+  "/role-insights",
   "/privacy",
   "/terms",
   "/accessibility",
@@ -207,7 +208,7 @@ function RootLayoutInner() {
   }
 
   // Marketing and legal pages never depend on the session; only gated pages wait for the refresh.
-  if (!authReady && !PUBLIC_PATHS.has(pathname)) {
+  if (!authReady && !PUBLIC_PATHS.has(pathname) && !pathname.startsWith("/roles/")) {
     return (
       <>
         <main

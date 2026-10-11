@@ -33,6 +33,7 @@ import {
 
 export const Route = createFileRoute("/admin_/security")({
   component: SecurityPage,
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;

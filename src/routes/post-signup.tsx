@@ -6,6 +6,7 @@ import { getPaymentOffer } from "@/lib/api";
 
 export const Route = createFileRoute("/post-signup")({
   component: PostSignupRoutePage,
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
 });
 
 function PostSignupRoutePage() {

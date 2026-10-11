@@ -6,6 +6,7 @@ export const Route = createFileRoute("/ai-secretary")({
   component: AiSecretaryPage,
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "מזכיר AI | קח כיוון" },
       { name: "description", content: "מזכיר AI אישי, שאלות על גיוס, פרופיל ותהליך. בקרוב." },
     ],

@@ -9,6 +9,7 @@ const LAST_UPDATED = "31 באוגוסט 2026";
 export const Route = createFileRoute("/accessibility")({
   component: AccessibilityPage,
   head: () => ({
+    links: [{ rel: "canonical", href: "https://kachkivun.com/accessibility" }],
     meta: [
       { title: `הצהרת נגישות | ${SITE_NAME_HE}` },
       {
