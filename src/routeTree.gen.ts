@@ -17,6 +17,7 @@ import { Route as PostSignupRouteImport } from './routes/post-signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CancellationRouteImport } from './routes/cancellation'
 import { Route as AiSecretaryRouteImport } from './routes/ai-secretary'
@@ -68,6 +69,11 @@ const LoginRoute = LoginRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/ai-secretary': typeof AiSecretaryRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/ai-secretary': typeof AiSecretaryRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/ai-secretary': typeof AiSecretaryRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/ai-secretary'
     | '/cancellation'
     | '/checkout'
+    | '/contact'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/ai-secretary'
     | '/cancellation'
     | '/checkout'
+    | '/contact'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/ai-secretary'
     | '/cancellation'
     | '/checkout'
+    | '/contact'
     | '/dashboard'
     | '/login'
     | '/onboarding'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   AiSecretaryRoute: typeof AiSecretaryRoute
   CancellationRoute: typeof CancellationRoute
   CheckoutRoute: typeof CheckoutRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   AiSecretaryRoute: AiSecretaryRoute,
   CancellationRoute: CancellationRoute,
   CheckoutRoute: CheckoutRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -471,10 +492,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

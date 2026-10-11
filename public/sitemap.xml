@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://kachkivun.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kachkivun.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kachkivun.com/role-insights</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kachkivun.com/ai-counselor</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://kachkivun.com/contact</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://kachkivun.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://kachkivun.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://kachkivun.com/accessibility</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://kachkivun.com/cancellation</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

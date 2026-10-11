@@ -21,6 +21,8 @@ import appCss from "../styles.css?url";
 import { queryClient } from "@/lib/query-client";
 import { KachKivunLogo } from "@/components/KachKivunLogo";
 import { SITE_DESCRIPTION, SITE_NAME_HE } from "@/lib/brand";
+
+const SITE_URL = "https://kachkivun.com";
 import { MATCH_TOOL_SHORT } from "@/lib/voice";
 import { ARIA, MAIN_CONTENT_ID, MOBILE_NAV_ID } from "@/lib/a11y";
 import {
@@ -55,17 +57,21 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: SITE_NAME_HE },
       { property: "og:title", content: SITE_DESCRIPTION },
       { property: "og:description", content: SITE_DESCRIPTION },
-      { property: "og:image", content: "/og-image.png" },
+      { property: "og:url", content: SITE_URL },
+      // Absolute: WhatsApp, Facebook and X ignore relative og:image paths.
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:alt", content: "קח כיוון: לאילו תפקידים בצה״ל אתם באמת מתאימים?" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: SITE_DESCRIPTION },
       { name: "twitter:description", content: SITE_DESCRIPTION },
-      { name: "twitter:image", content: "/og-image.png" },
+      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "apple-touch-icon", href: "/favicon.png" },
+      // Bump ?v= whenever the icon changes: browsers cache favicons separately and ignore normal reloads.
+      { rel: "icon", type: "image/png", href: "/favicon.png?v=2" },
+      { rel: "apple-touch-icon", href: "/favicon.png?v=2" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: appCss },
