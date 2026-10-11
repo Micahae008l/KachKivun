@@ -72,9 +72,9 @@ const validProductionEnv = {
   ISRAELI_LEGAL_REVIEW_CONFIRMED: "true",
 };
 
-test("payment catalog locks the product to exactly 1000 agorot ILS", () => {
+test("payment catalog locks the product to exactly 2499 agorot ILS", () => {
   const product = getPaymentProduct(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY);
-  assert.equal(product.amountMinor, 1000);
+  assert.equal(product.amountMinor, 2499);
   assert.equal(product.currency, "ILS");
   assert.equal(product.permanent, true);
   assert.ok(Object.isFrozen(product));
@@ -577,7 +577,7 @@ test("Grow adapter sends locked multipart fields through injected fetch only", a
   });
   assert.equal(request.url, `${GROW_BASE_URLS.production}/createPaymentProcess`);
   assert.equal(request.options.method, "POST");
-  assert.equal(request.fields.sum, "10.00");
+  assert.equal(request.fields.sum, "24.99");
   assert.equal(request.fields.pageCode, validProductionEnv.GROW_PAGE_CODE_APPLE_PAY);
   assert.equal(request.fields.cField1, AI_COUNSELOR_TOP_TWO_PRODUCT_KEY);
   assert.equal(request.fields.cField2, "ILS");

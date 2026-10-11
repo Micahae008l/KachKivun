@@ -670,6 +670,8 @@ export function matchRolesRequest(options: { retry?: boolean } = {}) {
     cached?: boolean;
     notice?: string;
     personalAnswer?: string;
+    /** The answer names a locked role, so it opens together with places 3, 2 and 1. */
+    personalAnswerLocked?: boolean;
   }>("/api/ai/match-roles", {
     method: "POST",
     body: JSON.stringify(options.retry ? { retry: true } : {}),
@@ -688,6 +690,7 @@ export type MatchHistoryItem = {
   recommendationId?: string;
   access?: RecommendationAccess;
   personalAnswer?: string;
+  personalAnswerLocked?: boolean;
 };
 
 export type MatchHistoryDetail = MatchHistoryItem & {

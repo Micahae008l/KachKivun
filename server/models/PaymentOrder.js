@@ -52,7 +52,7 @@ const paymentOrderSchema = new mongoose.Schema(
       required: true,
       immutable: true,
       min: 1,
-      default: 1000,
+      default: 2499,
     },
     currency: {
       type: String,

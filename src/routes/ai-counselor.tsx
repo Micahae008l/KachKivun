@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Lock, RefreshCw } from "lucide-react";
 import { RoleMatchCards } from "@/components/RoleMatchCards";
 import { BuildingMatches } from "@/components/BuildingMatches";
 import { MatchHistoryPanel } from "@/components/MatchHistoryPanel";
@@ -40,6 +40,7 @@ function AiCounselorPage() {
   const [roles, setRoles] = useState<RoleMatch[] | null>(null);
   const [notice, setNotice] = useState("");
   const [personalAnswer, setPersonalAnswer] = useState("");
+  const [personalAnswerLocked, setPersonalAnswerLocked] = useState(false);
   const [error, setError] = useState("");
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
@@ -106,6 +107,7 @@ function AiCounselorPage() {
         setRoles(response.roles);
         setNotice(response.notice || "");
         setPersonalAnswer(response.personalAnswer || "");
+        setPersonalAnswerLocked(Boolean(response.personalAnswerLocked));
         setHistoryId(response.recommendationId || null);
         setGenerationState("success");
         await Promise.all([
@@ -131,6 +133,7 @@ function AiCounselorPage() {
       setRoles(response.roles);
       setNotice(response.notice || "");
       setPersonalAnswer(response.personalAnswer || "");
+      setPersonalAnswerLocked(Boolean(response.personalAnswerLocked));
       setHistoryId(response.recommendationId || null);
       setGenerationState("success");
       await Promise.all([
@@ -172,9 +175,7 @@ function AiCounselorPage() {
         </div>
 
         <header className="border-b border-iron/30 pb-6 text-right">
-          <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">
-            היועץ האישי
-          </p>
+          <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">היועץ האישי</p>
           <h1 className="text-2xl font-black text-foreground sm:text-3xl">
             חמש התאמות התפקיד שלכם
           </h1>
@@ -273,6 +274,19 @@ function AiCounselorPage() {
                   {personalAnswer}
                 </p>
               </section>
+            ) : personalAnswerLocked ? (
+              <section className="flex items-start gap-3 border border-primary/40 bg-primary/10 px-5 py-4 text-right">
+                <Lock className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <div>
+                  <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
+                    תשובה לבקשה האישית
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-foreground">
+                    התשובה לבקשה שלכם מזכירה תפקידים מהמקומות הנעולים, אז היא תיפתח יחד עם מקומות 3,
+                    2 ו־1.
+                  </p>
+                </div>
+              </section>
             ) : null}
             {notice ? (
               <p className="border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-6 text-amber-100">
@@ -309,6 +323,7 @@ function AiCounselorPage() {
               setHistoryId(meta.id);
               setNotice("");
               setPersonalAnswer(meta.personalAnswer || "");
+              setPersonalAnswerLocked(Boolean(meta.personalAnswerLocked));
               setError("");
               setGenerationState("success");
             }}

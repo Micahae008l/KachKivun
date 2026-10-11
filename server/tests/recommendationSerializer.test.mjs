@@ -1,14 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  answerNamesLockedRole,
   serializeRecommendation,
   serializeRecommendationDetail,
   serializeRecommendationSummary,
 } from "../utils/recommendationSerializer.js";
-import {
-  isPaywallEnabled,
-  resolveRecommendationAccess,
-} from "../utils/recommendationAccess.js";
+import { isPaywallEnabled, resolveRecommendationAccess } from "../utils/recommendationAccess.js";
 
 function role(rank, marker) {
   return {
@@ -49,7 +47,7 @@ const recommendation = {
   roles: [
     role(1, "LOCKED-ONE"),
     role(2, "LOCKED-TWO"),
-    role(3, "VISIBLE-THREE"),
+    role(3, "LOCKED-THREE"),
     role(4, "VISIBLE-FOUR"),
     role(5, "VISIBLE-FIVE"),
   ],
@@ -86,16 +84,23 @@ test("locked serialization exposes only discriminator, rank, and percentage", ()
     "matchPercentage",
     "rank",
   ]);
+  assert.deepEqual(Object.keys(serialized.roles[2]).sort(), [
+    "kind",
+    "locked",
+    "matchPercentage",
+    "rank",
+  ]);
   assert.equal(serialized.roles[0].rank, 1);
   assert.equal(serialized.roles[0].matchPercentage, 95);
   assert.equal("scoreBreakdown" in serialized.roles[0], false);
   assert.equal("scoreBreakdown" in serialized.roles[1], false);
-  assert.equal(serialized.roles[2].roleTitle, "כותרת-VISIBLE-THREE");
-  assert.deepEqual(serialized.roles[2].scoreBreakdown, {
-    preference: 83,
-    focus: 73,
-    yom: 63,
-    eligibility: 53,
+  assert.equal("scoreBreakdown" in serialized.roles[2], false);
+  assert.equal(serialized.roles[3].roleTitle, "כותרת-VISIBLE-FOUR");
+  assert.deepEqual(serialized.roles[3].scoreBreakdown, {
+    preference: 84,
+    focus: 74,
+    yom: 64,
+    eligibility: 54,
     catalogQuality: 90,
     structuredAssessment: 75,
   });
@@ -114,6 +119,8 @@ test("locked serialization exposes only discriminator, rank, and percentage", ()
     "שירות-LOCKED-ONE",
     "פירוט-LOCKED-ONE",
     "כותרת-LOCKED-TWO",
+    "כותרת-LOCKED-THREE",
+    "תיאור-LOCKED-THREE",
   ]) {
     assert.equal(json.includes(secret), false, `locked payload leaked ${secret}`);
   }
@@ -123,20 +130,14 @@ test("history list and detail use the same locked serializer", () => {
   const summary = serializeRecommendationSummary(recommendation, lockedAccess);
   const detail = serializeRecommendationDetail(recommendation, lockedAccess);
   assert.equal(summary.topRole, "");
-  assert.deepEqual(summary.roleTitles, [
-    "כותרת-VISIBLE-THREE",
-    "כותרת-VISIBLE-FOUR",
-    "כותרת-VISIBLE-FIVE",
-  ]);
+  assert.deepEqual(summary.roleTitles, ["כותרת-VISIBLE-FOUR", "כותרת-VISIBLE-FIVE"]);
+  assert.equal(JSON.stringify(summary).includes("כותרת-LOCKED-THREE"), false);
   assert.equal(JSON.stringify(summary).includes("כותרת-LOCKED-ONE"), false);
   assert.equal(JSON.stringify(detail).includes("כותרת-LOCKED-TWO"), false);
 });
 
 test("disabled paywall and entitled access serialize all five complete roles", () => {
-  for (const access of [
-    { paywallEnabled: false, topTwoUnlocked: false },
-    unlockedAccess,
-  ]) {
+  for (const access of [{ paywallEnabled: false, topTwoUnlocked: false }, unlockedAccess]) {
     const serialized = serializeRecommendation(recommendation, access);
     assert.ok(serialized.roles.every((item) => item.kind === "role"));
     assert.deepEqual(
@@ -149,13 +150,11 @@ test("disabled paywall and entitled access serialize all five complete roles", (
 test("access helper unlocks admins and active or grandfathered entitlements", () => {
   const now = new Date("2026-09-18T12:00:00.000Z");
   assert.equal(
-    resolveRecommendationAccess({ paywallEnabled: true, userRole: "user", now })
-      .topTwoUnlocked,
+    resolveRecommendationAccess({ paywallEnabled: true, userRole: "user", now }).topTwoUnlocked,
     false,
   );
   assert.equal(
-    resolveRecommendationAccess({ paywallEnabled: true, userRole: "admin", now })
-      .topTwoUnlocked,
+    resolveRecommendationAccess({ paywallEnabled: true, userRole: "admin", now }).topTwoUnlocked,
     true,
   );
   for (const status of ["active", "grandfathered"]) {
@@ -194,4 +193,30 @@ test("access helper unlocks admins and active or grandfathered entitlements", ()
     }).topTwoUnlocked,
     true,
   );
+});
+
+test("a personal answer that names a locked role is withheld until the unlock", () => {
+  const withAnswer = (personalAnswer) => ({ ...recommendation, personalAnswer });
+  const naming = withAnswer("כותרת-LOCKED-THREE הוא בדיוק מה שביקשתם.");
+  const locked = serializeRecommendation(naming, lockedAccess);
+  assert.equal(locked.personalAnswer, "");
+  assert.equal(locked.personalAnswerLocked, true);
+  assert.equal(JSON.stringify(locked).includes("כותרת-LOCKED-THREE"), false);
+
+  const unlocked = serializeRecommendation(naming, unlockedAccess);
+  assert.equal(unlocked.personalAnswerLocked, false);
+  assert.match(unlocked.personalAnswer, /LOCKED-THREE/);
+
+  const freeOnly = serializeRecommendation(
+    withAnswer("כותרת-VISIBLE-FOUR עונה על הבקשה."),
+    lockedAccess,
+  );
+  assert.equal(freeOnly.personalAnswerLocked, false);
+  assert.match(freeOnly.personalAnswer, /VISIBLE-FOUR/);
+});
+
+test("gender slashes and parentheses do not hide a locked role name", () => {
+  assert.equal(answerNamesLockedRole("תפקיד מפעיל רחפנים יתאים לכם", ["מפעיל/ת רחפנים"]), true);
+  assert.equal(answerNamesLockedRole("מומלץ: תלפיות", ["תלפיות (כולל תואר)"]), true);
+  assert.equal(answerNamesLockedRole("לוחם תותחנים", ["מפעיל/ת רחפנים"]), false);
 });

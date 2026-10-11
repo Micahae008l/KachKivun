@@ -48,7 +48,7 @@ export type AnalyticsEventMap = {
   otp_verify: { intent: "signup" | "login" };
   counselor_viewed: undefined;
   match_retry: undefined;
-  free_role_expanded: { rank: 3 | 4 | 5 };
+  free_role_expanded: { rank: 4 | 5 };
   paywall_viewed: undefined;
   checkout_started: {
     flow: "account" | "shared";

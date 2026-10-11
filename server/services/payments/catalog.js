@@ -5,8 +5,9 @@ export const PAYMENT_METHOD_PRIORITY = Object.freeze(["apple_pay", "bit", "googl
 const products = {
   [AI_COUNSELOR_TOP_TWO_PRODUCT_KEY]: Object.freeze({
     productKey: AI_COUNSELOR_TOP_TWO_PRODUCT_KEY,
-    displayName: "פתיחת שתי ההתאמות המובילות",
-    amountMinor: 1000,
+    displayName: "פתיחת מקומות 3, 2 ו־1",
+    // Must equal the price on the Grow payment link: webhooks with any other amount are ignored.
+    amountMinor: 2499,
     currency: "ILS",
     permanent: true,
     futureRecalculationsIncluded: true,

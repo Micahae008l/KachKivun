@@ -346,8 +346,8 @@ test("public payment offer exposes only safe catalog, method, processor, and mer
       personalizedFunnelV2: false,
       product: {
         productKey: AI_COUNSELOR_TOP_TWO_PRODUCT_KEY,
-        displayName: "פתיחת שתי ההתאמות המובילות",
-        amountMinor: 1000,
+        displayName: "פתיחת מקומות 3, 2 ו־1",
+        amountMinor: 2499,
         currency: "ILS",
         permanent: true,
         futureRecalculationsIncluded: true,
@@ -378,7 +378,7 @@ test("disabled public offer keeps product and merchant but exposes no methods", 
   assert.equal(offer.enabled, false);
   assert.equal(offer.personalizedFunnelV2, false);
   assert.deepEqual(offer.paymentMethods, []);
-  assert.equal(offer.product.amountMinor, 1000);
+  assert.equal(offer.product.amountMinor, 2499);
   assert.equal(offer.processor, "Grow");
   assert.deepEqual(offer.merchant, { contactEmail: "support@example.test" });
 });

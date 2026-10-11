@@ -404,8 +404,8 @@ function UnlockedRoleCard({
               <button
                 type="button"
                 onClick={() => {
-                  if (!expanded && role.rank >= 3 && role.rank <= 5) {
-                    trackEvent("free_role_expanded", { rank: role.rank as 3 | 4 | 5 });
+                  if (!expanded && role.rank >= 4 && role.rank <= 5) {
+                    trackEvent("free_role_expanded", { rank: role.rank as 4 | 5 });
                   }
                   setExpanded((value) => !value);
                 }}
@@ -468,8 +468,22 @@ const VAULT_PERKS = [
   "תשלום אחד, בלי מנוי",
 ];
 
-/** Places 2 and 1 together on one slide, with the offer inside it: the payoff of the 5-to-1 climb. */
-function TopTwoVault({
+/** "מקומות 3, 2 ו־1" for the given ranks, highest number first. */
+function placesLabel(ranks: number[]) {
+  const sorted = [...ranks].sort((a, b) => b - a);
+  if (sorted.length === 1) return `מקום ${sorted[0]}`;
+  return `מקומות ${sorted.slice(0, -1).join(", ")} ו־${sorted[sorted.length - 1]}`;
+}
+
+const COUNT_WORD: Record<number, string> = { 2: "שתי", 3: "שלוש", 4: "ארבע" };
+const LOCKED_TITLE: Record<number, string> = {
+  1: "הכי חזקה שלכם",
+  2: "חזקה עוד יותר",
+  3: "חזקה מאוד",
+};
+
+/** The locked top places together on one slide, with the offer inside it: the payoff of the 5-to-1 climb. */
+function TopPlacesVault({
   locked,
   bestFreeMatch,
   offer,
@@ -485,16 +499,21 @@ function TopTwoVault({
   const top = locked.find((role) => role.rank === 1);
   const lift = top && bestFreeMatch != null ? top.matchPercentage - bestFreeMatch : 0;
   const price = offer?.enabled ? formatPaymentPrice(offer.product) : null;
+  const places = placesLabel(locked.map((role) => role.rank));
+  const title =
+    locked.length > 1
+      ? `${COUNT_WORD[locked.length] ?? locked.length} ההתאמות הכי חזקות שלכם מחכות כאן`
+      : "ההתאמה הכי חזקה שלכם מחכה כאן";
 
   return (
     <article className="vault-border rounded-xl p-[2px]" aria-labelledby={headingId} dir="rtl">
       <div className="rounded-[10px] bg-card p-5 text-right sm:p-7">
         <p className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary">
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
-          מקומות 2 ו־1
+          {places}
         </p>
         <h3 id={headingId} className="mt-2 text-2xl leading-tight font-black text-foreground">
-          שתי ההתאמות הכי חזקות שלכם מחכות כאן
+          {title}
         </h3>
         <p className="mt-2 text-sm leading-6 text-dust">
           {lift > 0
@@ -527,7 +546,7 @@ function TopTwoVault({
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1.5 text-sm font-black text-foreground">
                       <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
-                      {featured ? "הכי חזקה שלכם" : "חזקה עוד יותר"}
+                      {LOCKED_TITLE[role.rank] ?? "התאמה חזקה"}
                     </p>
                     <div className="mt-2 space-y-1.5 opacity-60" aria-hidden>
                       <div className="h-3.5 w-36 max-w-full rounded-sm bg-iron/40 blur-[3px]" />
@@ -564,7 +583,7 @@ function TopTwoVault({
                 className="cta-shine inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-base font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
               >
                 <Lock className="h-4 w-4" aria-hidden />
-                פתחו את מקומות 2 ו־1
+                פתחו את {places}
               </Link>
             </div>
             <p className="mt-3 text-xs leading-5 text-dust/80">
@@ -620,7 +639,7 @@ export function RoleMatchCards({
 
   if (!ordered.length) return null;
 
-  // 5, 4, 3 one at a time; whatever is still locked (2 and 1) shares the last slide.
+  // Free places one at a time; whatever is still locked (3, 2 and 1) shares the last slide.
   const locked = ordered.filter((role): role is LockedRoleMatch => role.kind === "locked");
   const slides: (UnlockedRoleMatch | "vault")[] = [
     ...ordered.filter((role): role is UnlockedRoleMatch => role.kind === "role"),
@@ -630,6 +649,8 @@ export function RoleMatchCards({
     (best, role) => (role.kind === "role" ? Math.max(best ?? 0, role.matchPercentage) : best),
     null,
   );
+  const lockedRanks = locked.map((role) => role.rank).sort((a, b) => b - a);
+  const lockedLabel = placesLabel(lockedRanks);
   const slideKey = (slide: UnlockedRoleMatch | "vault") =>
     slide === "vault" ? "vault" : `role-${slide.rank}`;
   const current = slides[Math.min(index, slides.length - 1)];
@@ -645,7 +666,7 @@ export function RoleMatchCards({
 
   const renderSlide = (slide: UnlockedRoleMatch | "vault") =>
     slide === "vault" ? (
-      <TopTwoVault locked={locked} bestFreeMatch={bestFreeMatch} offer={offer} />
+      <TopPlacesVault locked={locked} bestFreeMatch={bestFreeMatch} offer={offer} />
     ) : (
       <UnlockedRoleCard
         role={slide}
@@ -673,7 +694,7 @@ export function RoleMatchCards({
             type="button"
             onClick={() => go(i)}
             aria-current={i === index ? "step" : undefined}
-            aria-label={slide === "vault" ? "מקומות 2 ו־1" : `מקום ${slide.rank}`}
+            aria-label={slide === "vault" ? lockedLabel : `מקום ${slide.rank}`}
             className={`flex h-11 min-w-11 items-center justify-center gap-1 rounded-full border px-3 font-mono text-sm font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
               i === index
                 ? "border-primary bg-primary text-primary-foreground"
@@ -685,7 +706,7 @@ export function RoleMatchCards({
             {slide === "vault" ? (
               <>
                 <Lock className="h-3.5 w-3.5" aria-hidden />
-                2·1
+                {lockedRanks.join("·")}
               </>
             ) : (
               slide.rank
@@ -732,7 +753,7 @@ export function RoleMatchCards({
             onClick={() => go(index + 1)}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
           >
-            {nextSlide === "vault" ? "למקומות 2 ו־1" : `למקום ${nextSlide.rank}`}
+            {nextSlide === "vault" ? `ל${lockedLabel}` : `למקום ${nextSlide.rank}`}
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
         ) : null}

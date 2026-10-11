@@ -42,9 +42,7 @@ function rankedRoles(doc) {
     .map((role, index) => ({
       role: role?.toObject ? role.toObject() : role || {},
       rank:
-        Number.isInteger(Number(role?.rank)) &&
-        Number(role.rank) >= 1 &&
-        Number(role.rank) <= 5
+        Number.isInteger(Number(role?.rank)) && Number(role.rank) >= 1 && Number(role.rank) <= 5
           ? Number(role.rank)
           : index + 1,
       index,
@@ -90,18 +88,51 @@ function serializeLockedRole(role, rank) {
   };
 }
 
+/** Places 1 to 3 are the paid part ("topTwoUnlocked" is the historic name of the same unlock). */
+export const LOCKED_TOP_RANKS = 3;
+
 export function serializeRecommendationRoles(doc, access) {
   const resolvedAccess = normalizedAccess(access);
   return rankedRoles(doc).map(({ role, rank }) =>
-    !resolvedAccess.topTwoUnlocked && rank <= 2
+    !resolvedAccess.topTwoUnlocked && rank <= LOCKED_TOP_RANKS
       ? serializeLockedRole(role, rank)
       : serializeFullRole(role, rank),
   );
 }
 
+/** Comparable form: no parentheses, no gender suffixes ("מפעיל/ת" -> "מפעיל"), one quote style. */
+function comparable(value) {
+  return text(value)
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\/[\u0590-\u05FF]{1,3}/g, "")
+    .replace(/[״”“]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * The AI's answer to the personal note often names the roles that fit. While places 1-3 are
+ * locked, an answer that names one of them is withheld; it opens together with them.
+ */
+export function answerNamesLockedRole(answer, lockedTitles) {
+  const haystack = comparable(answer);
+  return lockedTitles.some((title) => {
+    const needle = comparable(title);
+    return needle.length >= 3 && haystack.includes(needle);
+  });
+}
+
 export function serializeRecommendation(doc, access) {
   const resolvedAccess = normalizedAccess(access);
   const recommendationId = doc?._id ? String(doc._id) : "";
+  const lockedTitles = resolvedAccess.topTwoUnlocked
+    ? []
+    : rankedRoles(doc)
+        .filter(({ rank }) => rank <= LOCKED_TOP_RANKS)
+        .map(({ role }) => role.roleTitle);
+  const answer = text(doc?.personalAnswer);
+  const personalAnswerLocked = answerNamesLockedRole(answer, lockedTitles);
   return {
     recommendationId,
     createdAt: doc?.createdAt ?? null,
@@ -111,7 +142,8 @@ export function serializeRecommendation(doc, access) {
     catalogVersion: text(doc?.catalogVersion),
     promptVersion: text(doc?.promptVersion),
     notice: text(doc?.notice),
-    personalAnswer: text(doc?.personalAnswer),
+    personalAnswer: personalAnswerLocked ? "" : answer,
+    personalAnswerLocked,
     roles: serializeRecommendationRoles(doc, resolvedAccess),
     access: resolvedAccess,
   };
@@ -144,6 +176,7 @@ export function serializeRecommendationDetail(doc, access) {
     promptVersion: serialized.promptVersion,
     notice: serialized.notice,
     personalAnswer: serialized.personalAnswer,
+    personalAnswerLocked: serialized.personalAnswerLocked,
     roles: serialized.roles,
   };
 }

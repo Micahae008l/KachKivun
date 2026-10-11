@@ -405,7 +405,7 @@ export function CheckoutPage({ shareToken }: Props) {
         title={paid ? "התשלום כבר הושלם" : "הקישור אינו זמין עוד"}
         body={
           paid
-            ? "שתי ההתאמות המובילות כבר נפתחו בחשבון שאליו נשלח הקישור."
+            ? "מקומות 3, 2 ו־1 כבר נפתחו בחשבון שאליו נשלח הקישור."
             : "ייתכן שהקישור כבר שימש, בוטל או פג תוקפו."
         }
         shared
@@ -424,9 +424,9 @@ export function CheckoutPage({ shareToken }: Props) {
       <div className="border border-iron/30 bg-card">
         <header className="border-b border-iron/25 px-5 py-6 text-right sm:px-8">
           <p className="font-mono text-[10px] tracking-wide text-primary uppercase">תשלום מאובטח</p>
-          <h1 className="mt-2 text-2xl font-black text-foreground">פתיחת מקומות 2 ו־1</h1>
+          <h1 className="mt-2 text-2xl font-black text-foreground">פתיחת מקומות 3, 2 ו־1</h1>
           <p className="mt-2 text-sm leading-6 text-dust">
-            גישה קבועה לשתי ההתאמות המובילות בחשבון, כולל חישובים מחדש בעתיד. תשלום חד־פעמי, ללא
+            גישה קבועה לשלוש ההתאמות המובילות בחשבון, כולל חישובים מחדש בעתיד. תשלום חד־פעמי, ללא
             מנוי וללא חיובים חוזרים.
           </p>
         </header>

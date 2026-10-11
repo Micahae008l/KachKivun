@@ -310,7 +310,7 @@ export async function processGrowLinkWebhook({
   if (!finalized.duplicate) {
     notifySlack(
       env,
-      `:moneybag: New payment: ₪${product.amountMinor / 100}, places 2 and 1 unlocked (matched by ${reason.replace(/_/g, " ")}). Transaction ${evidence.transactionId}.`,
+      `:moneybag: New payment: ₪${product.amountMinor / 100}, places 3, 2 and 1 unlocked (matched by ${reason.replace(/_/g, " ")}). Transaction ${evidence.transactionId}.`,
     );
   }
   return {

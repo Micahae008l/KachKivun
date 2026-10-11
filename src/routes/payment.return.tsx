@@ -294,7 +294,7 @@ function PaymentReturnPage() {
           התשלום אושר בשרת
         </p>
         <h1 className="mt-2 text-2xl font-black text-foreground">
-          {isParentFlow ? "התשלום הושלם בהצלחה" : "מקומות 2 ו־1 פתוחים עכשיו"}
+          {isParentFlow ? "התשלום הושלם בהצלחה" : "מקומות 3, 2 ו־1 פתוחים עכשיו"}
         </h1>
         <p className="mt-3 text-sm leading-6 text-dust">
           {isParentFlow
@@ -435,7 +435,7 @@ function LoginToSeeResults() {
   return (
     <div className="mt-6">
       <p className="text-sm leading-6 text-dust">
-        התחברו עם אותו אימייל כדי לראות את מקומות 2 ו־1. הם כבר פתוחים בחשבון.
+        התחברו עם אותו אימייל כדי לראות את מקומות 3, 2 ו־1. הם כבר פתוחים בחשבון.
       </p>
       <Link
         to="/post-signup"
