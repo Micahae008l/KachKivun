@@ -1,0 +1,835 @@
+[
+  {
+    "title": "אנליסט/ית ביטחוני/ת",
+    "category": "מודיעין / מחקר",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "בודק/ת תוכנה",
+    "category": "מקצועות המחשב",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "בקר/ית רשת (חושן)",
+    "category": "תקשוב / תשתיות",
+    "combat": false,
+    "dapar": null,
+    "profile": 45
+  },
+  {
+    "title": "דאטא אנליסט/ית (אנליסט מידע מבצעי)",
+    "category": "דאטה / תוכנה",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "דבופס/DEVOPS",
+    "category": "מקצועות המחשב",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "חובל",
+    "category": "קצונה",
+    "combat": true,
+    "dapar": 60,
+    "profile": 82
+  },
+  {
+    "title": "חובש/ת קדמי/ת",
+    "category": "רפואה",
+    "combat": false,
+    "dapar": 50,
+    "profile": 64
+  },
+  {
+    "title": "חובש/ת קרבי/ת",
+    "category": "רפואה ושימור חיים",
+    "combat": true,
+    "dapar": 50,
+    "profile": 64
+  },
+  {
+    "title": "חוקר/ת מודיעין טכנולוגי (מסלול חומה)",
+    "category": "מודיעין / מחקר",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "טייס",
+    "category": "קצונה / אקסטרים",
+    "combat": true,
+    "dapar": 60,
+    "profile": 97
+  },
+  {
+    "title": "טכנאי/ת סיסטם (דיגיטל מבצעי)",
+    "category": "תקשוב",
+    "combat": false,
+    "dapar": null,
+    "profile": 45
+  },
+  {
+    "title": "טכנאי/ת רשתות",
+    "category": "תקשוב",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "לה\"ב מצו\"ב/חוקר ומפתח יכולות הגנה בסייבר",
+    "category": "סייבר",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "לוחם 669",
+    "category": "לחימה עילית / חילוץ",
+    "combat": true,
+    "dapar": 50,
+    "profile": 97
+  },
+  {
+    "title": "לוחם אגוז",
+    "category": "קומנדו",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם איסוף קרבי",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם אריות הירדן",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם אתגרים",
+    "category": "לחימה / איסוף",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בגבעתי",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": 40,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בגולני",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": 40,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בכפיר",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בנח״ל",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בצנחנים",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם ברדלס",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם דבור",
+    "category": "לחימה / ימי",
+    "combat": true,
+    "dapar": 30,
+    "profile": 72
+  },
+  {
+    "title": "לוחם דובדבן",
+    "category": "קומנדו",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם הגנה אווירית",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם הנדסה קרבית",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": 40,
+    "profile": 82
+  },
+  {
+    "title": "לוחם חי״ר גבולות",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם חילוץ והצלה",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם יהל״ם",
+    "category": "לחימה עילית / סיירות",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם לוחמה אלקטרונית",
+    "category": "אוויר / לוחמה אלקטרונית",
+    "combat": true,
+    "dapar": 50,
+    "profile": 72
+  },
+  {
+    "title": "לוחם מג״ב",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם מגלן",
+    "category": "קומנדו",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם מעברים",
+    "category": "תומך לחימה / לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 64
+  },
+  {
+    "title": "לוחם סטי״ל",
+    "category": "לחימה / ימי",
+    "combat": true,
+    "dapar": 30,
+    "profile": 72
+  },
+  {
+    "title": "לוחם סיירת מטכ״ל",
+    "category": "לחימה עילית / איסוף",
+    "combat": true,
+    "dapar": 50,
+    "profile": 82
+  },
+  {
+    "title": "לוחם סנפיר",
+    "category": "לחימה / ימי",
+    "combat": true,
+    "dapar": 30,
+    "profile": 72
+  },
+  {
+    "title": "לוחם עוקץ",
+    "category": "לחימה עילית / סיירות",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם קרקל",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם שייטת 13",
+    "category": "לחימה עילית / ימי",
+    "combat": true,
+    "dapar": 50,
+    "profile": 82
+  },
+  {
+    "title": "לוחם שלדג",
+    "category": "לחימה עילית",
+    "combat": true,
+    "dapar": 50,
+    "profile": 82
+  },
+  {
+    "title": "לוחם שריון",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם תותחנים",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם/ת ילת״ם",
+    "category": "לחימה / ימי",
+    "combat": true,
+    "dapar": 50,
+    "profile": 82
+  },
+  {
+    "title": "לוחמות טנקים בגדודי חי\"ר גבולות",
+    "category": "לחימה / בט״ש",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "מאבחן/ת צוות אוויר",
+    "category": "אבחון ומשא\"ן",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "מגן/ת טופז",
+    "category": "תקשוב",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מגן/ת סייבר",
+    "category": "סייבר",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "מגן/ת צופן",
+    "category": "תקשוב",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מדא\"ג/ית - מדריך/ת אימון גופני",
+    "category": "כושר / הדרכה",
+    "combat": false,
+    "dapar": 30,
+    "profile": 72
+  },
+  {
+    "title": "מדריך/ה בחיל התקשוב",
+    "category": "תקשוב / הדרכה",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מדריך/ת הנדסה קרבית",
+    "category": "הדרכה",
+    "combat": false,
+    "dapar": 40,
+    "profile": 72
+  },
+  {
+    "title": "מדריך/ת חי״ר",
+    "category": "הדרכה",
+    "combat": false,
+    "dapar": 40,
+    "profile": 72
+  },
+  {
+    "title": "מדריך/ת ERP",
+    "category": "הדרכה",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מט\"ס - מפתח/ת טכנולוגיות סייבר (מצו\"ב)",
+    "category": "סייבר",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "מטיס/ת חוץ כטמ\"ם",
+    "category": "אוויר / כטמ\"ם",
+    "combat": false,
+    "dapar": 50,
+    "profile": 64
+  },
+  {
+    "title": "מיישם/ת הגנת סייבר",
+    "category": "סייבר",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מנהל/ת רשת",
+    "category": "תקשוב",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מנהל/ת DC",
+    "category": "תקשוב / תשתיות",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול אגו\"ז",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 70,
+    "profile": 45
+  },
+  {
+    "title": "מסלול אדרים",
+    "category": "אוויר / קצונה טכנית",
+    "combat": false,
+    "dapar": 60,
+    "profile": 64
+  },
+  {
+    "title": "מסלול אופק",
+    "category": "מודיעין / שפות",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מסלול אח\"מ פיתוח",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול אניגמה מחשבים",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מסלול אקדמיזציה",
+    "category": "עתודה / אקדמי",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "מסלול אתרוג",
+    "category": "מודיעין",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול בכיר לדוברי השפה הערבית",
+    "category": "מודיעין / שפות",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מסלול בכיר לדוברי השפה הפרסית",
+    "category": "מודיעין / שפות",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מסלול גאמ״א",
+    "category": "מודיעין / סייבר",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול גוונים",
+    "category": "מודיעין / מדעי",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מסלול חבצלות",
+    "category": "מודיעין עילית / אקדמי",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "מסלול מומנט",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול מופ\"ת",
+    "category": "מודיעין",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול מט\"מ",
+    "category": "מודיעין / איסוף",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול ממ\"ש",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול נץ",
+    "category": "מודיעין / מבצעים",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "מסלול סיגיט - תכנית טכנאי IT",
+    "category": "תקשוב / טכנולוגי",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול צמרת - עתודה לרפואה",
+    "category": "עתודה / רפואה",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול רומא",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 70,
+    "profile": 72
+  },
+  {
+    "title": "מסלול שביט",
+    "category": "מודיעין / חומרה",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים",
+    "category": "מודיעין עילית",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - אח\"מ",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - אמ\"מ",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - אמנון",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - אע\"מ",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - ארזים",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - מח\"א",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - שוב\"ל",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול שחקים - שמ\"מ",
+    "category": "מודיעין עילית / שחקים",
+    "combat": false,
+    "dapar": 80,
+    "profile": 21
+  },
+  {
+    "title": "מסלול תלפיות",
+    "category": "עילית / טכנולוגיה / מחקר",
+    "combat": false,
+    "dapar": 90,
+    "profile": 72
+  },
+  {
+    "title": "מסלול SRE - תקשוב",
+    "category": "מקצועות המחשב",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מסלולי ערבית (אלמוג, רשף, קדם)",
+    "category": "מודיעין / שפות",
+    "combat": false,
+    "dapar": 50,
+    "profile": 21
+  },
+  {
+    "title": "מפעיל/ת דיגיטל מבצעי",
+    "category": "תקשוב / מבצעים",
+    "combat": false,
+    "dapar": null,
+    "profile": 64
+  },
+  {
+    "title": "מפעיל/ת לוחמה אלקטרונית (ל\"א)",
+    "category": "אוויר / לוחמה אלקטרונית",
+    "combat": false,
+    "dapar": 50,
+    "profile": 72
+  },
+  {
+    "title": "מפתח/ת BI צבאי/ת",
+    "category": "דאטה / תוכנה",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "מש\"ק/ית בקרה אווירית",
+    "category": "מבצעים / אוויר",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "מש\"ק/ית מערך (מודיעין שדה)",
+    "category": "מודיעין / שדה",
+    "combat": false,
+    "dapar": 60,
+    "profile": 64
+  },
+  {
+    "title": "מש\"ק/ית שליטה בדיגיטל",
+    "category": "תקשוב / שליטה",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "עתודה אקדמית",
+    "category": "עתודה / כללי",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
+    "title": "פס\"י - מפתח/ת ספקטרום (פריזמה)",
+    "category": "תקשוב / ספקטרום",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "פקח/ית טיסה",
+    "category": "מבצעים / אוויר",
+    "combat": false,
+    "dapar": 60,
+    "profile": 45
+  },
+  {
+    "title": "פרמדיק/ית",
+    "category": "רפואה קרבית / טיפול נמרץ",
+    "combat": true,
+    "dapar": 70,
+    "profile": 72
+  },
+  {
+    "title": "צוללן",
+    "category": "לחימה עילית / ימי",
+    "combat": true,
+    "dapar": 60,
+    "profile": 82
+  },
+  {
+    "title": "קורס מת\"ן",
+    "category": "מודיעין / טכנולוגי",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "קצונה ייעודית מבצעית בחיל התקשוב",
+    "category": "קצונה / תקשוב",
+    "combat": false,
+    "dapar": null,
+    "profile": 45
+  },
+  {
+    "title": "רכז/ת שירותי תקשוב",
+    "category": "תקשוב / שירות",
+    "combat": false,
+    "dapar": null,
+    "profile": 45
+  },
+  {
+    "title": "רכז/ת שליטה קרקעית (קשל\"ט)",
+    "category": "אוויר / מבצעים",
+    "combat": false,
+    "dapar": 50,
+    "profile": 45
+  },
+  {
+    "title": "תוכנית ארז",
+    "category": "קצונה / לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "תוכניתן/ית",
+    "category": "מקצועות המחשב",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית אביבים",
+    "category": "עתודה / הנדסה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית אלונים",
+    "category": "עתודה / דאטה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית ביו",
+    "category": "עתודה / מדעים",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית ברקים",
+    "category": "עתודה / הנדסה מכנית",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית גבישים",
+    "category": "עתודה / הנדסה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית גלקסיה",
+    "category": "עתודה / מדעים",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית סילון",
+    "category": "עתודה / אווירונאוטיקה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית פסגות",
+    "category": "עתודה / הנדסה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  },
+  {
+    "title": "תכנית רעמים",
+    "category": "עתודה / הנדסה",
+    "combat": false,
+    "dapar": 70,
+    "profile": 21
+  }
+]

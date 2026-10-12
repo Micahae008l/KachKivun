@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronLeft, ExternalLink, Shield, Sparkles } from "lucide-react";
 import { IntensityBar } from "@/components/RoleInsightSheet";
 import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
+import { getBlogPost } from "@/lib/blog";
 import { fetchRoleCatalog, fetchRoleDetail, roleUrl, SITE_URL } from "@/lib/roles-public";
 
 /** One indexable page per role: what the role is, its thresholds, and a path into the assessment. */
@@ -75,6 +76,11 @@ function Fact({ label, value }: { label: string; value: string }) {
 function RolePage() {
   const { role, related } = Route.useLoaderData();
   const paragraphs = role.about.split(/\n\n+/).filter(Boolean);
+  // Combat roles get the field-screening guides; the rest get thresholds and the questionnaire.
+  const guideSlugs = role.combat
+    ? ["יום-סיירות", "פרופיל-צבאי", "טירונות", "לוחמות-בצהל"]
+    : ["תפקידים-לפי-דפר", "תפקידים-לפי-פרופיל", "שאלון-העדפות", "יום-המאה"];
+  const guides = guideSlugs.flatMap((slug) => getBlogPost(slug) ?? []);
 
   return (
     <article
@@ -222,6 +228,24 @@ function RolePage() {
           </ul>
         </section>
       ) : null}
+
+      <section>
+        <h2 className="mb-3 text-lg font-black text-foreground">מדריכים שיעזרו לכם להגיע לתפקיד</h2>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {guides.map((p) => (
+            <li key={p.slug}>
+              <Link
+                to="/blog/$slug"
+                params={{ slug: p.slug }}
+                className="flex items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
+              >
+                <span className="font-bold text-foreground">{p.shortTitle}</span>
+                <ChevronLeft className="h-4 w-4 shrink-0 text-dust" aria-hidden />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <p className="text-xs leading-5 text-dust">
         המידע אינו רשמי ועשוי להשתנות. תנאי הסף והשיבוץ נקבעים רק על ידי צה״ל; אמתו באתר מתגייסים.

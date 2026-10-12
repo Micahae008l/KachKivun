@@ -154,6 +154,7 @@ const PUBLIC_PATHS = new Set([
   "/about",
   "/contact",
   "/role-insights",
+  "/blog",
   "/privacy",
   "/terms",
   "/accessibility",
@@ -208,7 +209,7 @@ function RootLayoutInner() {
   }
 
   // Marketing and legal pages never depend on the session; only gated pages wait for the refresh.
-  if (!authReady && !PUBLIC_PATHS.has(pathname) && !pathname.startsWith("/roles/")) {
+  if (!authReady && !PUBLIC_PATHS.has(pathname) && !/^\/(roles|blog)\//.test(pathname)) {
     return (
       <>
         <main
@@ -255,6 +256,9 @@ function RootLayoutInner() {
               </Link>
               <Link to="/role-insights" className="transition hover:text-foreground">
                 תובנות
+              </Link>
+              <Link to="/blog" className="transition hover:text-foreground">
+                מדריכים
               </Link>
               <Link to="/privacy" className="transition hover:text-foreground">
                 פרטיות

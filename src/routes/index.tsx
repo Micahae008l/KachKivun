@@ -12,6 +12,7 @@ import { getToken, subscribeAuth } from "@/lib/auth";
 import { formatPaymentPrice } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
+import { BLOG_POSTS } from "@/lib/blog";
 
 const HOME_TITLE = "קח כיוון | לאיזה תפקיד בצה״ל אתם מתאימים?";
 const HOME_DESCRIPTION =
@@ -336,6 +337,49 @@ function HomePage() {
               idx={2}
             />
           </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      {/* ── Guides ── */}
+      <section className="py-14 sm:py-28" aria-labelledby="guides-heading">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">מדריכים</p>
+              <h2
+                id="guides-heading"
+                className="text-2xl font-bold leading-tight text-foreground sm:text-3xl"
+              >
+                לפני שמדרגים תפקיד
+              </h2>
+            </div>
+            <Link
+              to="/blog"
+              className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary"
+            >
+              לכל המדריכים
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {BLOG_POSTS.slice(0, 3).map((p) => (
+              <li key={p.slug}>
+                <Link
+                  to="/blog/$slug"
+                  params={{ slug: p.slug }}
+                  className="flex h-full flex-col border border-iron/30 bg-card p-5 transition hover:border-primary/50"
+                >
+                  <p className="font-mono text-xs text-primary">{p.tag}</p>
+                  <h3 className="mt-2 text-base font-black leading-snug text-foreground">
+                    {p.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-dust">{p.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
