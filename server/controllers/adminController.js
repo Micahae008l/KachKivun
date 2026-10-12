@@ -12,6 +12,7 @@ import Entitlement from "../models/Entitlement.js";
 import { computeAiProfileMissing } from "../utils/profileAiReady.js";
 import { pricingMeta } from "../utils/openaiPricing.js";
 import { sendServerError } from "../utils/httpError.js";
+import { deleteUserData } from "../utils/deleteAccount.js";
 
 import {
   buildTokenCapStatus,
@@ -441,14 +442,7 @@ export async function deleteUser(req, res) {
 
     const email = normalizeEmail(user.email);
 
-    await Promise.all([
-      MilitaryStats.deleteOne({ userId: targetId }),
-      Preferences.deleteOne({ userId: targetId }),
-      AiUsageLog.deleteMany({ userId: targetId }),
-      RefreshToken.deleteMany({ userId: targetId }),
-      EmailOtp.deleteMany({ email }),
-      User.deleteOne({ _id: targetId }),
-    ]);
+    await deleteUserData(targetId, email);
 
     res.json({ message: "User and related data deleted", deletedUserId: targetId, email });
   } catch (err) {

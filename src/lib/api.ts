@@ -681,6 +681,14 @@ export function matchRolesRequest(options: { retry?: boolean } = {}) {
   });
 }
 
+/** Permanently deletes the signed-in user's account and personal data. */
+export function deleteAccount(confirm: string) {
+  return apiFetch<{ message: string }>("/api/profile/account", {
+    method: "DELETE",
+    body: JSON.stringify({ confirm }),
+  });
+}
+
 export type QuestionnairePlanEntry = {
   locked?: false;
   roleTitle: string;
