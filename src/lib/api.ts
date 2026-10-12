@@ -426,6 +426,10 @@ export type PaymentProduct = {
   productKey: "ai_counselor_top_two";
   displayName: string;
   amountMinor: number;
+  /** Regular price; differs from amountMinor only during a sale. Missing on older API builds. */
+  listAmountMinor?: number;
+  /** ISO end of the current sale, or null when there is none. */
+  saleEndsAt?: string | null;
   currency: "ILS";
   permanent: true;
   futureRecalculationsIncluded: true;
@@ -660,6 +664,9 @@ export type LockedRoleMatch = {
   matchPercentage: number;
   /** Broad field of the hidden role, e.g. "מודיעין". Missing on results saved before this existed. */
   field?: string;
+  /** Teaser hints; missing on results saved or served before they existed. */
+  combat?: boolean | null;
+  initial?: string;
   admissionChance?: { level: "high" | "medium" | "low"; label: string } | null;
 };
 

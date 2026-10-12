@@ -15,8 +15,10 @@ import {
   validateLifecyclePaymentEnvironment,
 } from "../services/payments/config.js";
 import {
+  acceptedAmountsMinor,
   AI_COUNSELOR_TOP_TWO_PRODUCT_KEY,
   getPaymentProduct,
+  SALE,
 } from "../services/payments/catalog.js";
 import { GrowProvider } from "../services/payments/growProvider.js";
 import {
@@ -72,12 +74,25 @@ const validProductionEnv = {
   ISRAELI_LEGAL_REVIEW_CONFIRMED: "true",
 };
 
-test("payment catalog locks the product to exactly 2499 agorot ILS", () => {
-  const product = getPaymentProduct(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY);
+test("payment catalog locks the product to exactly 2499 agorot ILS outside a sale", () => {
+  const after = new Date(Date.parse(SALE.endsAt) + 1000);
+  const product = getPaymentProduct(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, after);
   assert.equal(product.amountMinor, 2499);
+  assert.equal(product.listAmountMinor, 2499);
+  assert.equal(product.saleEndsAt, null);
   assert.equal(product.currency, "ILS");
   assert.equal(product.permanent, true);
   assert.ok(Object.isFrozen(product));
+  assert.deepEqual(acceptedAmountsMinor(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, after).sort(), [1499, 2499]);
+});
+
+test("during the sale the price is 1499, the regular 2499 is kept as the list price", () => {
+  const during = new Date(Date.parse(SALE.endsAt) - 1000);
+  const product = getPaymentProduct(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, during);
+  assert.equal(product.amountMinor, 1499);
+  assert.equal(product.listAmountMinor, 2499);
+  assert.equal(product.saleEndsAt, SALE.endsAt);
+  assert.deepEqual(acceptedAmountsMinor(AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, during).sort(), [1499, 2499]);
 });
 
 test("production paywall rejects mock, sandbox, missing methods, and insecure origins", () => {
@@ -577,7 +592,7 @@ test("Grow adapter sends locked multipart fields through injected fetch only", a
   });
   assert.equal(request.url, `${GROW_BASE_URLS.production}/createPaymentProcess`);
   assert.equal(request.options.method, "POST");
-  assert.equal(request.fields.sum, "24.99");
+  assert.equal(request.fields.sum, (getPaymentProduct().amountMinor / 100).toFixed(2));
   assert.equal(request.fields.pageCode, validProductionEnv.GROW_PAGE_CODE_APPLE_PAY);
   assert.equal(request.fields.cField1, AI_COUNSELOR_TOP_TWO_PRODUCT_KEY);
   assert.equal(request.fields.cField2, "ILS");

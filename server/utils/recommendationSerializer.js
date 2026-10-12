@@ -84,9 +84,16 @@ function broadField(category) {
   return text(category).split("/")[0].trim();
 }
 
+/** First Hebrew letter of the title ("מודיעין שדה" -> "מ"): a teaser that cannot name the role. */
+function titleInitial(title) {
+  const match = /[\u05D0-\u05EA]/.exec(text(title));
+  return match ? match[0] : "";
+}
+
 /**
- * A locked place shows two hints besides its score: the broad field and the admission-chance
- * level. Never the title, the sub-field, the chance's reasoning or anything else from the role.
+ * A locked place shows a few teaser hints besides its score: the broad field, combat or not, the
+ * title's first letter and the admission-chance level. Never the title itself, the sub-field, the
+ * chance's reasoning, the service length or anything else from the role.
  */
 function serializeLockedRole(role, rank) {
   const level = role.admissionChance?.level;
@@ -96,6 +103,8 @@ function serializeLockedRole(role, rank) {
     rank,
     matchPercentage: numberOrNull(role.matchPercentage) ?? 0,
     field: broadField(role.category),
+    combat: typeof role.combat === "boolean" ? role.combat : null,
+    initial: titleInitial(role.roleTitle),
     admissionChance: ["high", "medium", "low"].includes(level)
       ? { level, label: text(role.admissionChance.label) }
       : null,

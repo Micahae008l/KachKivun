@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { AI_COUNSELOR_TOP_TWO_PRODUCT_KEY } from "../services/payments/catalog.js";
+import { AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, getPaymentProduct } from "../services/payments/catalog.js";
 import { PaymentError } from "../services/payments/errors.js";
 import {
   buildEntitlementGrantOperation,
@@ -347,7 +347,9 @@ test("public payment offer exposes only safe catalog, method, processor, and mer
       product: {
         productKey: AI_COUNSELOR_TOP_TWO_PRODUCT_KEY,
         displayName: "פתיחת מקומות 3, 2 ו־1",
-        amountMinor: 2499,
+        amountMinor: getPaymentProduct().amountMinor,
+        listAmountMinor: 2499,
+        saleEndsAt: getPaymentProduct().saleEndsAt,
         currency: "ILS",
         permanent: true,
         futureRecalculationsIncluded: true,
@@ -378,7 +380,7 @@ test("disabled public offer keeps product and merchant but exposes no methods", 
   assert.equal(offer.enabled, false);
   assert.equal(offer.personalizedFunnelV2, false);
   assert.deepEqual(offer.paymentMethods, []);
-  assert.equal(offer.product.amountMinor, 2499);
+  assert.equal(offer.product.amountMinor, getPaymentProduct().amountMinor);
   assert.equal(offer.processor, "Grow");
   assert.deepEqual(offer.merchant, { contactEmail: "support@example.test" });
 });

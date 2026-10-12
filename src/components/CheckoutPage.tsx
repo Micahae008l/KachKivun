@@ -33,6 +33,7 @@ import { getToken } from "@/lib/auth";
 import { rememberAuthReturnTarget } from "@/lib/auth-return";
 import { categorizeCheckoutBrowser, trackEvent } from "@/lib/analytics";
 import { formatPaymentPrice, PENDING_PAYMENT_RETURN_KEY } from "@/lib/payment-offer";
+import { SaleTag } from "@/components/SaleTag";
 
 type Props = {
   shareToken?: string;
@@ -458,6 +459,7 @@ export function CheckoutPage({ shareToken }: Props) {
                 {price}
               </strong>
             </div>
+            <SaleTag product={info.product} className="mt-3" />
             <p className="mt-2 text-xs leading-5 text-dust">המחיר כולל מע״מ ככל שחל.</p>
             <ul className="mt-5 space-y-3 text-sm text-dust">
               <li className="flex items-center gap-2">
