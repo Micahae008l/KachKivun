@@ -98,7 +98,13 @@ function PaymentReturnPage() {
     // page. The return token in this link (only this browser has it) restores the login once.
     let cancelled = false;
     async function ensureSession() {
-      if (getToken() || isParentFlow || !search.order || !search.token) return;
+      if (getToken() || isParentFlow) return;
+      // Grow's fixed link returns without the order (and often in another browser): just
+      // pick up an existing login so the page can send the buyer straight to the results.
+      if (!search.order || !search.token) {
+        await bootstrapAuth();
+        return;
+      }
       if (await bootstrapAuth()) return;
       try {
         const session = await restorePaymentReturnSession(search.order, search.token);
@@ -250,18 +256,36 @@ function PaymentReturnPage() {
   }
 
   if (!search.order) {
+    // The payment itself is matched on the server by the payer's email, so this is not an error.
     return (
       <ReturnShell>
-        <XCircle className="mx-auto h-10 w-10 text-destructive" aria-hidden />
-        <h1 className="mt-5 text-2xl font-black text-foreground">קישור החזרה חסר</h1>
-        <p className="mt-3 text-sm text-dust">לא נמצא מזהה הזמנה תקין בקישור.</p>
-        {isParentFlow ? <BackToSite /> : <BackToCounselor />}
-        <Link
-          to="/cancellation"
-          className="mt-6 mr-3 inline-flex text-sm font-semibold text-primary hover:underline"
-        >
-          ביטול עסקה והחזרים
-        </Link>
+        <ReceiptText className="mx-auto h-10 w-10 text-primary" aria-hidden />
+        <h1 className="mt-5 text-2xl font-black text-foreground">חזרתם מהתשלום</h1>
+        <p className="mt-3 text-sm leading-6 text-dust">
+          אם התשלום הושלם, מקומות 3, 2 ו־1 נפתחים אוטומטית בחשבון של האימייל ששילמתם איתו, בדרך כלל
+          תוך דקה.
+        </p>
+        {isParentFlow ? (
+          <BackToSite />
+        ) : getToken() ? (
+          <BackToCounselor primary />
+        ) : (
+          <Link
+            to="/post-signup"
+            hash="login"
+            onClick={() => rememberAuthReturnTarget("/ai-counselor")}
+            className="mt-6 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            התחברות וצפייה בתוצאות
+          </Link>
+        )}
+        <p className="mt-6 text-xs leading-5 text-dust">
+          שילמתם והמקומות לא נפתחו אחרי כמה דקות?{" "}
+          <Link to="/contact" className="font-semibold text-primary hover:underline">
+            כתבו לנו
+          </Link>{" "}
+          עם האימייל ששילמתם איתו ונפתח ידנית.
+        </p>
       </ReturnShell>
     );
   }
