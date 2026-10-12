@@ -2,7 +2,7 @@ import crypto from "crypto";
 import PaymentOrder from "../../models/PaymentOrder.js";
 import User from "../../models/User.js";
 import { getRecommendationAccessForUser } from "../../utils/recommendationAccess.js";
-import { AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, getPaymentProduct } from "./catalog.js";
+import { acceptedAmountsMinor, AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, getPaymentProduct } from "./catalog.js";
 import { PaymentError } from "./errors.js";
 import { normalizeGrowAmountMinor } from "./growNormalization.js";
 import { paymentOpenOrderKey } from "./orderState.js";
@@ -218,7 +218,8 @@ async function findOrCreateOrderForPayer(payer, productKey) {
   const order = await PaymentOrder.create({
     userId: user._id,
     productKey: product.productKey,
-    amountMinor: product.amountMinor,
+    // Record what was actually paid (sale or regular price; both passed the gate).
+    amountMinor: Number.isSafeInteger(payer.amountMinor) ? payer.amountMinor : product.amountMinor,
     currency: product.currency,
     provider: "grow_link",
     status: "pending",
@@ -269,7 +270,9 @@ export async function processGrowLinkWebhook({
     return { state: "ignored", reason: "not_paid" };
   }
   const product = getPaymentProduct(productKey);
-  if (evidence.amountMinor !== product.amountMinor) {
+  // Either real price counts, so switching the Grow link a little before or after a sale
+  // boundary never leaves someone who paid without an unlock.
+  if (!acceptedAmountsMinor(productKey).includes(evidence.amountMinor)) {
     logGrowLink("warn", "ignored: amount mismatch", summary);
     notifySlack(
       env,
@@ -294,7 +297,7 @@ export async function processGrowLinkWebhook({
     });
     notifySlack(
       env,
-      `:rotating_light: ₪${product.amountMinor / 100} paid but NOT matched to an account (${reason}). Transaction ${evidence.transactionId}, payer ${evidence.payerEmail || "no email"}. Unlock it by hand or refund.`,
+      `:rotating_light: ₪${evidence.amountMinor / 100} paid but NOT matched to an account (${reason}). Transaction ${evidence.transactionId}, payer ${evidence.payerEmail || "no email"}. Unlock it by hand or refund.`,
     );
     return { state: "unmatched", reason };
   }
@@ -310,7 +313,7 @@ export async function processGrowLinkWebhook({
   if (!finalized.duplicate) {
     notifySlack(
       env,
-      `:moneybag: New payment: ₪${product.amountMinor / 100}, places 3, 2 and 1 unlocked (matched by ${reason.replace(/_/g, " ")}). Transaction ${evidence.transactionId}.`,
+      `:moneybag: New payment: ₪${evidence.amountMinor / 100}, places 3, 2 and 1 unlocked (matched by ${reason.replace(/_/g, " ")}). Transaction ${evidence.transactionId}.`,
     );
   }
   return {

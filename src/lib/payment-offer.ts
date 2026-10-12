@@ -11,3 +11,10 @@ export function formatPaymentPrice(product: PaymentProduct): string {
   });
   return product.currency === "ILS" ? `₪${formatted}` : `${formatted} ${product.currency}`;
 }
+
+/** Whole percent off the regular price during a sale (2499 → 1499 is 40), or 0 outside one. */
+export function salePercentOff(product: PaymentProduct): number {
+  const list = product.listAmountMinor;
+  if (!list || !product.saleEndsAt || product.amountMinor >= list) return 0;
+  return Math.round(((list - product.amountMinor) / list) * 100);
+}

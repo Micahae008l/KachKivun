@@ -43,6 +43,7 @@ import { pickRolePhoto, type IdfPhoto } from "@/lib/idf-photo-catalog";
 import { ARIA, progressBarProps } from "@/lib/a11y";
 import { trackEvent } from "@/lib/analytics";
 import { formatPaymentPrice } from "@/lib/payment-offer";
+import { SaleTag } from "@/components/SaleTag";
 
 function tagIcon(tag: string) {
   const normalized = tag.toLowerCase();
@@ -554,12 +555,20 @@ function TopPlacesVault({
                       className="mt-2 h-3.5 w-36 max-w-full rounded-sm bg-iron/40 opacity-60 blur-[3px]"
                       aria-hidden
                     />
-                    {role.field || role.admissionChance ? (
+                    {role.field || role.admissionChance || role.initial || role.combat != null ? (
                       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-dust">
+                        {role.initial ? (
+                          <span>
+                            מתחיל ב־<strong className="text-foreground">{role.initial}׳</strong>
+                          </span>
+                        ) : null}
                         {role.field ? (
                           <span>
                             תחום: <strong className="text-foreground">{role.field}</strong>
                           </span>
+                        ) : null}
+                        {role.combat != null ? (
+                          <span className="text-foreground">{role.combat ? "קרבי" : "לא קרבי"}</span>
                         ) : null}
                         {role.admissionChance ? (
                           <span className="text-foreground">{role.admissionChance.label}</span>
@@ -593,10 +602,13 @@ function TopPlacesVault({
               ))}
             </ul>
             <div className="mt-6 flex flex-col gap-4 border-t border-iron/25 pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-foreground">{price}</span>
-                <span className="text-sm text-dust">פעם אחת · בלי מנוי</span>
-              </p>
+              <div>
+                <p className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-foreground">{price}</span>
+                  <span className="text-sm text-dust">פעם אחת · בלי מנוי</span>
+                </p>
+                {offer?.enabled ? <SaleTag product={offer.product} className="mt-2" /> : null}
+              </div>
               <Link
                 to="/checkout"
                 className="cta-shine inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-base font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"

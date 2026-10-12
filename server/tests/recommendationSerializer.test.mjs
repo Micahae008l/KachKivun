@@ -71,11 +71,13 @@ test("recommendation paywall is enabled only by an explicit true value", () => {
   assert.equal(isPaywallEnabled("false"), false);
 });
 
-test("locked serialization exposes only rank, percentage, broad field and chance level", () => {
+test("locked serialization exposes only rank, percentage and the teaser hints", () => {
   const serialized = serializeRecommendation(recommendation, lockedAccess);
   assert.deepEqual(Object.keys(serialized.roles[0]).sort(), [
     "admissionChance",
+    "combat",
     "field",
+    "initial",
     "kind",
     "locked",
     "matchPercentage",
@@ -83,7 +85,9 @@ test("locked serialization exposes only rank, percentage, broad field and chance
   ]);
   assert.deepEqual(Object.keys(serialized.roles[1]).sort(), [
     "admissionChance",
+    "combat",
     "field",
+    "initial",
     "kind",
     "locked",
     "matchPercentage",
@@ -91,7 +95,9 @@ test("locked serialization exposes only rank, percentage, broad field and chance
   ]);
   assert.deepEqual(Object.keys(serialized.roles[2]).sort(), [
     "admissionChance",
+    "combat",
     "field",
+    "initial",
     "kind",
     "locked",
     "matchPercentage",
