@@ -155,6 +155,8 @@ const PUBLIC_PATHS = new Set([
   "/contact",
   "/role-insights",
   "/blog",
+  "/attention-test",
+  "/role-calculator",
   "/privacy",
   "/terms",
   "/accessibility",
@@ -260,6 +262,12 @@ function RootLayoutInner() {
               <Link to="/blog" className="transition hover:text-foreground">
                 מדריכים
               </Link>
+              <Link to="/attention-test" className="transition hover:text-foreground">
+                מבחן קשב
+              </Link>
+              <Link to="/role-calculator" className="transition hover:text-foreground">
+                מחשבון תפקידים
+              </Link>
               <Link to="/privacy" className="transition hover:text-foreground">
                 פרטיות
               </Link>
@@ -292,6 +300,13 @@ function RootLayoutInner() {
 /** Main tools in header — profile lives in ProfileMenu */
 type NavItem = { to: string; label: string; exact?: boolean };
 
+/** Open to everyone: the free guides and tools. */
+const NAV_PUBLIC: readonly NavItem[] = [
+  { to: "/blog", label: "מדריכים" },
+  { to: "/attention-test", label: "מבחן קשב" },
+  { to: "/role-calculator", label: "מחשבון תפקידים" },
+];
+
 const NAV_AUTHED: readonly NavItem[] = [
   { to: "/ai-counselor", label: MATCH_TOOL_SHORT },
   { to: "/role-insights", label: "תובנות תפקידים" },
@@ -315,7 +330,10 @@ function SiteHeader({
 
   const isAdmin = session?.role === "admin" || (tokenPresent && isStoredAdmin());
 
-  const NAV_ITEMS = useMemo(() => (authed ? [...NAV_AUTHED] : []), [authed]);
+  const NAV_ITEMS = useMemo(
+    () => (authed ? [...NAV_AUTHED, ...NAV_PUBLIC] : [...NAV_PUBLIC]),
+    [authed],
+  );
 
   const profileName =
     session?.preferredName?.trim() || (session?.email ? session.email.split("@")[0] : undefined);
@@ -351,7 +369,7 @@ function SiteHeader({
         <KachKivunLogo size="md" linked />
 
         {/* Desktop: nav + single action */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           {NAV_ITEMS.length > 0 ? (
             <nav className="flex items-center" aria-label={ARIA.navPrimary}>
               {NAV_ITEMS.map((item) => (
@@ -379,24 +397,9 @@ function SiteHeader({
           )}
         </div>
 
-        {/* Mobile: login (guests) or menu (signed in) */}
-        <div className="flex items-center gap-2 sm:hidden">
-          {authed ? (
-            <button
-              type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-11 w-11 items-center justify-center text-dust transition hover:text-foreground"
-              aria-label={mobileOpen ? ARIA.closeMenu : ARIA.openMenu}
-              aria-expanded={mobileOpen}
-              aria-controls={MOBILE_NAV_ID}
-            >
-              {mobileOpen ? (
-                <X className="h-5 w-5" aria-hidden />
-              ) : (
-                <Menu className="h-5 w-5" aria-hidden />
-              )}
-            </button>
-          ) : (
+        {/* Mobile: menu for everyone, plus login for guests */}
+        <div className="flex items-center gap-2 md:hidden">
+          {authed ? null : (
             <Link
               to="/post-signup"
               hash="login"
@@ -405,18 +408,32 @@ function SiteHeader({
               התחברו
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="flex h-11 w-11 items-center justify-center text-dust transition hover:text-foreground"
+            aria-label={mobileOpen ? ARIA.closeMenu : ARIA.openMenu}
+            aria-expanded={mobileOpen}
+            aria-controls={MOBILE_NAV_ID}
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" aria-hidden />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Mobile dropdown (signed-in only) */}
+      {/* Mobile dropdown */}
       <AnimatePresence>
-        {authed && mobileOpen && (
+        {mobileOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm sm:hidden"
+            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm md:hidden"
           >
             <nav
               id={MOBILE_NAV_ID}

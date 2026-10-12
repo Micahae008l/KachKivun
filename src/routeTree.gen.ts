@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as RoleInsightsRouteImport } from './routes/role-insights'
+import { Route as RoleCalculatorRouteImport } from './routes/role-calculator'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PostSignupRouteImport } from './routes/post-signup'
@@ -21,6 +22,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CancellationRouteImport } from './routes/cancellation'
+import { Route as AttentionTestRouteImport } from './routes/attention-test'
 import { Route as AiSecretaryRouteImport } from './routes/ai-secretary'
 import { Route as AiCounselorRouteImport } from './routes/ai-counselor'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -43,6 +45,11 @@ const TermsRoute = TermsRouteImport.update({
 const RoleInsightsRoute = RoleInsightsRouteImport.update({
   id: '/role-insights',
   path: '/role-insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoleCalculatorRoute = RoleCalculatorRouteImport.update({
+  id: '/role-calculator',
+  path: '/role-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportRoute = ReportRouteImport.update({
@@ -93,6 +100,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const CancellationRoute = CancellationRouteImport.update({
   id: '/cancellation',
   path: '/cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttentionTestRoute = AttentionTestRouteImport.update({
+  id: '/attention-test',
+  path: '/attention-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiSecretaryRoute = AiSecretaryRouteImport.update({
@@ -168,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/attention-test': typeof AttentionTestRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -178,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
+  '/role-calculator': typeof RoleCalculatorRoute
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin/security': typeof AdminSecurityRoute
@@ -195,6 +209,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/attention-test': typeof AttentionTestRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -205,6 +220,7 @@ export interface FileRoutesByTo {
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
+  '/role-calculator': typeof RoleCalculatorRoute
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin/security': typeof AdminSecurityRoute
@@ -223,6 +239,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/ai-counselor': typeof AiCounselorRoute
   '/ai-secretary': typeof AiSecretaryRoute
+  '/attention-test': typeof AttentionTestRoute
   '/cancellation': typeof CancellationRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -233,6 +250,7 @@ export interface FileRoutesById {
   '/post-signup': typeof PostSignupRoute
   '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRouteWithChildren
+  '/role-calculator': typeof RoleCalculatorRoute
   '/role-insights': typeof RoleInsightsRoute
   '/terms': typeof TermsRoute
   '/admin_/security': typeof AdminSecurityRoute
@@ -252,6 +270,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/attention-test'
     | '/cancellation'
     | '/checkout'
     | '/contact'
@@ -262,6 +281,7 @@ export interface FileRouteTypes {
     | '/post-signup'
     | '/privacy'
     | '/report'
+    | '/role-calculator'
     | '/role-insights'
     | '/terms'
     | '/admin/security'
@@ -279,6 +299,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/attention-test'
     | '/cancellation'
     | '/checkout'
     | '/contact'
@@ -289,6 +310,7 @@ export interface FileRouteTypes {
     | '/post-signup'
     | '/privacy'
     | '/report'
+    | '/role-calculator'
     | '/role-insights'
     | '/terms'
     | '/admin/security'
@@ -306,6 +328,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ai-counselor'
     | '/ai-secretary'
+    | '/attention-test'
     | '/cancellation'
     | '/checkout'
     | '/contact'
@@ -316,6 +339,7 @@ export interface FileRouteTypes {
     | '/post-signup'
     | '/privacy'
     | '/report'
+    | '/role-calculator'
     | '/role-insights'
     | '/terms'
     | '/admin_/security'
@@ -334,6 +358,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AiCounselorRoute: typeof AiCounselorRoute
   AiSecretaryRoute: typeof AiSecretaryRoute
+  AttentionTestRoute: typeof AttentionTestRoute
   CancellationRoute: typeof CancellationRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
@@ -344,6 +369,7 @@ export interface RootRouteChildren {
   PostSignupRoute: typeof PostSignupRoute
   PrivacyRoute: typeof PrivacyRoute
   ReportRoute: typeof ReportRouteWithChildren
+  RoleCalculatorRoute: typeof RoleCalculatorRoute
   RoleInsightsRoute: typeof RoleInsightsRoute
   TermsRoute: typeof TermsRoute
   AdminSecurityRoute: typeof AdminSecurityRoute
@@ -368,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/role-insights'
       fullPath: '/role-insights'
       preLoaderRoute: typeof RoleInsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/role-calculator': {
+      id: '/role-calculator'
+      path: '/role-calculator'
+      fullPath: '/role-calculator'
+      preLoaderRoute: typeof RoleCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report': {
@@ -438,6 +471,13 @@ declare module '@tanstack/react-router' {
       path: '/cancellation'
       fullPath: '/cancellation'
       preLoaderRoute: typeof CancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attention-test': {
+      id: '/attention-test'
+      path: '/attention-test'
+      fullPath: '/attention-test'
+      preLoaderRoute: typeof AttentionTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai-secretary': {
@@ -552,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AiCounselorRoute: AiCounselorRoute,
   AiSecretaryRoute: AiSecretaryRoute,
+  AttentionTestRoute: AttentionTestRoute,
   CancellationRoute: CancellationRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
@@ -562,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostSignupRoute: PostSignupRoute,
   PrivacyRoute: PrivacyRoute,
   ReportRoute: ReportRouteWithChildren,
+  RoleCalculatorRoute: RoleCalculatorRoute,
   RoleInsightsRoute: RoleInsightsRoute,
   TermsRoute: TermsRoute,
   AdminSecurityRoute: AdminSecurityRoute,

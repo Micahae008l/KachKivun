@@ -11,6 +11,8 @@ const STATIC = [
   ["/", "weekly", "1.0"],
   ["/role-insights", "weekly", "0.9"],
   ["/blog", "weekly", "0.8"],
+  ["/attention-test", "monthly", "0.8"],
+  ["/role-calculator", "monthly", "0.8"],
   ["/about", "monthly", "0.7"],
   ["/contact", "yearly", "0.4"],
   ["/privacy", "yearly", "0.3"],
