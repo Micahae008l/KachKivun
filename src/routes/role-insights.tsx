@@ -105,6 +105,23 @@ function RoleInsightsPage() {
             כל {listQuery.data?.total ?? "300+"} התפקידים בצה״ל: מה עושים ביומיום, דפ״ר ופרופיל מינימליים,
             משך שירות, וקישור לאתר מתגייסים הרשמי.
           </p>
+          <p className="text-sm text-dust">
+            מחפשות לפי תחום?{" "}
+            <Link
+              to="/blog/$slug"
+              params={{ slug: "תפקידים-בצבא-לבנות" }}
+              className="font-semibold text-primary underline decoration-primary/40 underline-offset-4"
+            >
+              תפקידים בצבא לבנות
+            </Link>
+            {" · "}
+            <Link
+              to="/blog"
+              className="font-semibold text-primary underline decoration-primary/40 underline-offset-4"
+            >
+              כל המדריכים
+            </Link>
+          </p>
         </div>
       </motion.header>
 

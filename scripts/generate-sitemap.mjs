@@ -1,5 +1,5 @@
-// Writes public/sitemap.xml at build time: the public pages plus one URL per role,
-// read from the same catalog the API serves (server/utils/roleInsights.js).
+// Writes public/sitemap.xml at build time: the public pages, one URL per blog post, and one
+// URL per role, read from the same catalog the API serves (server/utils/roleInsights.js).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,7 @@ const SITE = "https://kachkivun.com";
 const STATIC = [
   ["/", "weekly", "1.0"],
   ["/role-insights", "weekly", "0.9"],
+  ["/blog", "weekly", "0.8"],
   ["/about", "monthly", "0.7"],
   ["/contact", "yearly", "0.4"],
   ["/privacy", "yearly", "0.3"],
@@ -19,17 +20,23 @@ const STATIC = [
 ];
 
 const escape = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const url = (loc, changefreq, priority) =>
-  `  <url><loc>${escape(loc)}</loc><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+const url = (loc, changefreq, priority, lastmod) =>
+  `  <url><loc>${escape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
 
 const roles = listRoleInsights();
+const posts = JSON.parse(
+  fs.readFileSync(path.join(root, "src", "content", "blog", "posts.json"), "utf8"),
+);
 const lines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   ...STATIC.map(([p, f, pr]) => url(`${SITE}${p}`, f, pr)),
+  ...posts.map((p) =>
+    url(`${SITE}/blog/${encodeURIComponent(p.slug)}`, "monthly", "0.8", p.updated),
+  ),
   ...roles.map((r) => url(`${SITE}/roles/${encodeURIComponent(r.slug)}`, "monthly", "0.6")),
   "</urlset>",
   "",
 ];
 fs.writeFileSync(path.join(root, "public", "sitemap.xml"), lines.join("\n"));
-console.log(`sitemap.xml: ${STATIC.length} pages + ${roles.length} roles`);
+console.log(`sitemap.xml: ${STATIC.length} pages + ${posts.length} posts + ${roles.length} roles`);

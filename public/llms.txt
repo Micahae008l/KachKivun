@@ -7,6 +7,7 @@
 - [Home](https://kachkivun.com/): what the service does and how the matching works
 - [All IDF roles](https://kachkivun.com/role-insights): catalog of 300+ roles with requirements, minimum דפ״ר and medical profile, service length and locations
 - [Role pages](https://kachkivun.com/sitemap.xml): one page per role at https://kachkivun.com/roles/<role-slug>
+- [Guides](https://kachkivun.com/blog): sourced Hebrew guides to the draft process: roles for women, roles by medical profile and by דפ״ר, women in combat, צו ראשון, דפ״ר, medical profile, יום המא״ה, שאלון העדפות (מנילה), יום סיירות, טירונות, soldier pay, עתודה אקדמית, שנת שירות and מכינה
 - [About](https://kachkivun.com/about): who runs the project and how to contact us
 
 ## Pricing

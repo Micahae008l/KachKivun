@@ -7,7 +7,7 @@
     "dev": "concurrently -n api,web -c cyan,magenta \"npm run server\" \"node scripts/wait-api-and-dev.mjs\"",
     "dev:web": "vite dev",
     "server": "npm --prefix server run dev",
-    "build": "node scripts/generate-sitemap.mjs && vite build",
+    "build": "node scripts/generate-role-thresholds.mjs && node scripts/generate-sitemap.mjs && vite build",
     "build:dev": "vite build --mode development",
     "test:server": "npm --prefix server test",
     "grandfather-paywall": "node server/scripts/grandfather-paywall-users.mjs",
