@@ -300,16 +300,12 @@ function RootLayoutInner() {
 /** Main tools in header — profile lives in ProfileMenu */
 type NavItem = { to: string; label: string; exact?: boolean };
 
-/** Open to everyone: the free guides and tools. */
-const NAV_PUBLIC: readonly NavItem[] = [
+/** The same five links for everyone; only the matching tool's target depends on being signed in. */
+const NAV_SHARED: readonly NavItem[] = [
+  { to: "/role-insights", label: "תובנות תפקידים" },
   { to: "/blog", label: "מדריכים" },
   { to: "/attention-test", label: "מבחן קשב" },
   { to: "/role-calculator", label: "מחשבון תפקידים" },
-];
-
-const NAV_AUTHED: readonly NavItem[] = [
-  { to: "/ai-counselor", label: MATCH_TOOL_SHORT },
-  { to: "/role-insights", label: "תובנות תפקידים" },
 ];
 
 function SiteHeader({
@@ -330,8 +326,12 @@ function SiteHeader({
 
   const isAdmin = session?.role === "admin" || (tokenPresent && isStoredAdmin());
 
-  const NAV_ITEMS = useMemo(
-    () => (authed ? [...NAV_AUTHED, ...NAV_PUBLIC] : [...NAV_PUBLIC]),
+  // Guests reach the matching tool through the questionnaire; signed-in users go straight to it.
+  const NAV_ITEMS = useMemo<NavItem[]>(
+    () => [
+      { to: authed ? "/ai-counselor" : "/post-signup", label: MATCH_TOOL_SHORT },
+      ...NAV_SHARED,
+    ],
     [authed],
   );
 
@@ -369,7 +369,7 @@ function SiteHeader({
         <KachKivunLogo size="md" linked />
 
         {/* Desktop: nav + single action */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {NAV_ITEMS.length > 0 ? (
             <nav className="flex items-center" aria-label={ARIA.navPrimary}>
               {NAV_ITEMS.map((item) => (
@@ -398,7 +398,7 @@ function SiteHeader({
         </div>
 
         {/* Mobile: menu for everyone, plus login for guests */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           {authed ? null : (
             <Link
               to="/post-signup"
@@ -433,7 +433,7 @@ function SiteHeader({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm md:hidden"
+            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden"
           >
             <nav
               id={MOBILE_NAV_ID}
@@ -495,7 +495,7 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
     <Link
       to={to}
       activeOptions={exact ? { exact: true } : undefined}
-      className="relative px-3 py-1.5 text-sm font-medium transition-colors"
+      className="relative px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors"
       inactiveProps={{
         className: "text-dust hover:text-foreground",
       }}

@@ -126,7 +126,6 @@ function ShapeSvg({ stimulus }: { stimulus: Stimulus }) {
 function AttentionTestPage() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [count, setCount] = useState(3);
-  const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState<Stimulus | null>(null);
   const [flash, setFlash] = useState<"good" | "bad" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -174,7 +173,6 @@ function AttentionTestPage() {
       answered.current = false;
       tappedDark.current = false;
       shownAt.current = performance.now();
-      setIndex(i);
       setVisible(sequence.current[i]);
       timers.current.push(
         window.setTimeout(() => {
@@ -277,15 +275,6 @@ function AttentionTestPage() {
         }`}
         aria-live="polite"
       >
-        {phase === "running" ? (
-          <div className="h-1 bg-iron/25">
-            <div
-              className="h-full bg-primary transition-[width] duration-300"
-              style={{ width: `${((index + 1) / TRIALS) * 100}%` }}
-            />
-          </div>
-        ) : null}
-
         {phase === "intro" ? (
           <div className="flex flex-col items-center gap-5 p-6 text-center sm:p-10">
             <ShapeSvg stimulus={{ shape: "circle", color: GREEN, target: true, gapMs: 0 }} />
