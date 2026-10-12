@@ -205,6 +205,16 @@
 }
 .animate-slide-up { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+/* Attention test: a shape snaps onto the screen rather than fading in. */
+@keyframes attention-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.attention-pop { display: inline-flex; animation: attention-pop 90ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .attention-pop { animation: none; }
+}
+
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }

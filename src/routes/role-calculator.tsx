@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { ArrowUp, ChevronLeft, Sparkles } from "lucide-react";
 import catalog from "@/content/blog/role-calculator.json";
 import { roleInsightSlug } from "@/lib/api";
 
@@ -49,6 +49,7 @@ const countOpen = (dapar: number, profile: number) =>
 
 const broadField = (category: string) => category.split("/")[0].trim() || "כללי";
 
+/** A row of values to pick from, with the chosen one shown large beside the label. */
 function Stepper({
   label,
   steps,
@@ -62,18 +63,29 @@ function Stepper({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-bold text-foreground">{label}</legend>
-      <div className="flex flex-wrap gap-1.5">
+      <legend className="flex w-full items-baseline justify-between gap-3">
+        <span className="text-sm font-bold text-foreground">{label}</span>
+        <span className="font-mono text-3xl font-black tabular-nums leading-none text-primary">
+          {value}
+        </span>
+      </legend>
+      <div
+        className="mt-3 grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+      >
         {steps.map((step) => (
           <button
             key={step}
             type="button"
             aria-pressed={step === value}
+            aria-label={`${label} ${step}`}
             onClick={() => onChange(step)}
-            className={`min-h-11 min-w-11 border px-2 font-mono text-sm font-bold tabular-nums transition active:scale-[0.95] ${
+            className={`min-h-11 border font-mono text-sm font-bold tabular-nums transition active:scale-[0.95] ${
               step === value
                 ? "border-primary bg-primary text-primary-foreground"
-                : "border-iron/40 text-dust hover:border-primary/50 hover:text-foreground"
+                : step < value
+                  ? "border-primary/30 bg-primary/10 text-foreground hover:border-primary/60"
+                  : "border-iron/40 text-dust hover:border-primary/50 hover:text-foreground"
             }`}
           >
             {step}
@@ -81,6 +93,42 @@ function Stepper({
         ))}
       </div>
     </fieldset>
+  );
+}
+
+const TOP_FIELDS = 8;
+
+function FieldGroup({ field, roles, open }: { field: string; roles: Threshold[]; open: boolean }) {
+  return (
+    <details open={open} className="group border border-iron/30 bg-card">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-base font-black text-foreground transition hover:text-primary">
+        <span className="flex items-center gap-2">
+          <ChevronLeft
+            className="h-4 w-4 text-dust transition-transform group-open:-rotate-90"
+            aria-hidden
+          />
+          {field}
+        </span>
+        <span className="font-mono text-sm font-normal text-dust">{roles.length}</span>
+      </summary>
+      <ul className="flex flex-wrap gap-2 border-t border-iron/25 p-4">
+        {roles.map((role) => (
+          <li key={role.title}>
+            <Link
+              to="/roles/$slug"
+              params={{ slug: roleInsightSlug(role.title) }}
+              className={`inline-flex min-h-9 items-center border px-3 text-sm font-semibold transition hover:border-primary hover:text-primary ${
+                role.verified
+                  ? "border-primary/40 bg-primary/5 text-foreground"
+                  : "border-iron/30 text-foreground/80"
+              }`}
+            >
+              {role.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -102,14 +150,26 @@ function RoleCalculatorPage() {
   }, [open]);
 
   const verifiedOpen = open.filter((role) => role.verified).length;
+  const unknownOpen = open.length - verifiedOpen;
+  const blocked = ROLES.length - open.length;
+  const share = (count: number) => `${(count / ROLES.length) * 100}%`;
+
   const nextDapar = DAPAR_STEPS.find((step) => step > dapar);
   const nextProfile = PROFILE_STEPS.find((step) => step > profile);
   const steps = [
     nextDapar
-      ? { label: `דפ״ר ${nextDapar}`, gain: countOpen(nextDapar, profile) - open.length }
+      ? {
+          label: `דפ״ר ${nextDapar}`,
+          gain: countOpen(nextDapar, profile) - open.length,
+          apply: () => setDapar(nextDapar),
+        }
       : null,
     nextProfile
-      ? { label: `פרופיל ${nextProfile}`, gain: countOpen(dapar, nextProfile) - open.length }
+      ? {
+          label: `פרופיל ${nextProfile}`,
+          gain: countOpen(dapar, nextProfile) - open.length,
+          apply: () => setProfile(nextProfile),
+        }
       : null,
   ].flatMap((step) => (step && step.gain > 0 ? [step] : []));
 
@@ -125,63 +185,101 @@ function RoleCalculatorPage() {
         </p>
       </header>
 
-      <section className="mt-6 grid gap-5 border border-iron/30 bg-card p-5 sm:grid-cols-2 sm:p-6">
-        <Stepper label="דפ״ר" steps={DAPAR_STEPS} value={dapar} onChange={setDapar} />
-        <Stepper label="פרופיל רפואי" steps={PROFILE_STEPS} value={profile} onChange={setProfile} />
-      </section>
+      <div className="mt-6 border border-iron/30 bg-card">
+        <section className="grid gap-6 p-5 sm:grid-cols-[3fr_2fr] sm:p-6">
+          <Stepper label="דפ״ר" steps={DAPAR_STEPS} value={dapar} onChange={setDapar} />
+          <Stepper
+            label="פרופיל רפואי"
+            steps={PROFILE_STEPS}
+            value={profile}
+            onChange={setProfile}
+          />
+        </section>
 
-      <section className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4" aria-live="polite">
-        <div>
-          <p className="font-mono text-7xl font-black tabular-nums leading-none text-primary sm:text-8xl">
-            {open.length}
-          </p>
-          <p className="mt-2 text-sm text-foreground">
-            תפקידים פתוחים לכם, מתוך {ROLES.length} בקטלוג
-          </p>
-          <p className="mt-1 text-xs leading-5 text-dust">
-            {verifiedOpen} מהם עם סף מאומת שאתם עומדים בו. לשאר {open.length - verifiedOpen} לא
-            פורסם סף, ולכן שום דבר ידוע לא חוסם אתכם.
-          </p>
-        </div>
-        {steps.length ? (
-          <ul className="space-y-1.5 pb-1">
-            {steps.map((step) => (
-              <li key={step.label} className="flex items-center gap-2 text-sm text-foreground">
-                <ArrowUp className="h-4 w-4 text-primary" aria-hidden />
-                עם {step.label} היו נפתחים עוד <strong>{step.gain}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </section>
-
-      <div className="mt-8 space-y-2">
-        {groups.map(([field, roles], i) => (
-          <details key={field} open={i < 3} className="group border border-iron/30 bg-card">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-base font-black text-foreground">
-              {field}
-              <span className="font-mono text-sm font-normal text-dust">{roles.length}</span>
-            </summary>
-            <ul className="flex flex-wrap gap-2 border-t border-iron/25 p-4">
-              {roles.map((role) => (
-                <li key={role.title}>
-                  <Link
-                    to="/roles/$slug"
-                    params={{ slug: roleInsightSlug(role.title) }}
-                    className={`inline-flex min-h-9 items-center border px-3 text-sm font-semibold transition hover:border-primary/50 hover:text-primary ${
-                      role.verified
-                        ? "border-primary/40 text-foreground"
-                        : "border-iron/30 text-foreground/80"
-                    }`}
+        <section className="border-t border-iron/25 bg-background/40 p-5 sm:p-6" aria-live="polite">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <p className="flex items-baseline gap-3">
+              <span className="font-mono text-7xl font-black tabular-nums leading-none text-primary sm:text-8xl">
+                {open.length}
+              </span>
+              <span className="text-sm leading-5 text-foreground">
+                תפקידים פתוחים לכם
+                <span className="block text-dust">מתוך {ROLES.length} בקטלוג</span>
+              </span>
+            </p>
+            {steps.length ? (
+              <div className="flex flex-wrap gap-2">
+                {steps.map((step) => (
+                  <button
+                    key={step.label}
+                    type="button"
+                    onClick={step.apply}
+                    className="inline-flex min-h-11 items-center gap-2 border border-primary/50 px-3 text-sm font-bold text-foreground transition hover:bg-primary/10 active:scale-[0.97]"
                   >
-                    {role.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </details>
+                    <ArrowUp className="h-4 w-4 text-primary" aria-hidden />
+                    {step.label}
+                    <span className="font-mono text-primary">+{step.gain}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          {/* One bar for the whole catalog: met floors, no published floor, blocked. */}
+          <div
+            className="mt-5 flex h-3 overflow-hidden bg-iron/25"
+            role="img"
+            aria-label={`${verifiedOpen} עם סף מאומת, ${unknownOpen} בלי סף שפורסם, ${blocked} חסומים`}
+          >
+            <span
+              className="bg-primary transition-[width] duration-300 ease-out"
+              style={{ width: share(verifiedOpen) }}
+            />
+            <span
+              className="bg-primary/35 transition-[width] duration-300 ease-out"
+              style={{ width: share(unknownOpen) }}
+            />
+          </div>
+          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-dust">
+            <li className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 bg-primary" aria-hidden />
+              <strong className="font-mono text-foreground">{verifiedOpen}</strong> עם סף מאומת שאתם
+              עומדים בו
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 bg-primary/35" aria-hidden />
+              <strong className="font-mono text-foreground">{unknownOpen}</strong> שלא פורסם להם סף
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 bg-iron/40" aria-hidden />
+              <strong className="font-mono text-foreground">{blocked}</strong> חסומים כרגע
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <h2 className="mt-10 mb-3 text-xl font-black text-foreground">התפקידים, לפי תחום</h2>
+      <div className="space-y-2">
+        {groups.slice(0, TOP_FIELDS).map(([field, roles], i) => (
+          <FieldGroup key={field} field={field} roles={roles} open={i < 2} />
         ))}
       </div>
+      {groups.length > TOP_FIELDS ? (
+        <details className="group mt-2 border border-iron/30">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-bold text-dust transition hover:text-foreground">
+            עוד {groups.length - TOP_FIELDS} תחומים
+            <ChevronLeft
+              className="h-4 w-4 transition-transform group-open:-rotate-90"
+              aria-hidden
+            />
+          </summary>
+          <div className="space-y-2 border-t border-iron/25 p-2">
+            {groups.slice(TOP_FIELDS).map(([field, roles]) => (
+              <FieldGroup key={field} field={field} roles={roles} open={false} />
+            ))}
+          </div>
+        </details>
+      ) : null}
       <p className="mt-3 text-xs text-dust">
         מסגרת ירוקה: תפקיד עם סף מאומת שאתם עומדים בו. מסגרת אפורה: לא פורסם סף.
       </p>

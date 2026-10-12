@@ -437,7 +437,7 @@ function SiteHeader({
           >
             <nav
               id={MOBILE_NAV_ID}
-              className="mx-auto flex max-w-7xl flex-col px-4 py-3"
+              className="mx-auto flex max-w-7xl flex-col px-4 pt-1 pb-4"
               aria-label={ARIA.navMobile}
             >
               {NAV_ITEMS.map((item) => (
@@ -445,11 +445,19 @@ function SiteHeader({
                   key={item.to}
                   to={item.to}
                   activeOptions={"exact" in item && item.exact ? { exact: true } : undefined}
-                  className="px-2 py-2.5 text-sm font-medium transition-colors"
-                  inactiveProps={{ className: "text-dust" }}
+                  className="flex min-h-12 items-center justify-between border-b border-iron/15 px-2 text-base font-semibold transition-colors"
+                  inactiveProps={{ className: "text-foreground/85" }}
                   activeProps={{ className: "text-primary" }}
                 >
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      {item.label}
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-primary" : "bg-transparent"}`}
+                        aria-hidden
+                      />
+                    </>
+                  )}
                 </Link>
               ))}
               {authed ? (
@@ -463,10 +471,9 @@ function SiteHeader({
               ) : (
                 <Link
                   to="/post-signup"
-                  hash="login"
-                  className="px-2 py-2.5 text-sm font-semibold text-primary"
+                  className="btn-primary mt-4 flex min-h-12 items-center justify-center text-base"
                 >
-                  התחברו
+                  בדקו התאמה בחינם
                 </Link>
               )}
             </nav>
@@ -495,9 +502,9 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
     <Link
       to={to}
       activeOptions={exact ? { exact: true } : undefined}
-      className="relative px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors"
+      className="relative flex h-14 items-center px-3 text-sm font-semibold whitespace-nowrap transition-colors"
       inactiveProps={{
-        className: "text-dust hover:text-foreground",
+        className: "text-dust hover:bg-foreground/5 hover:text-foreground",
       }}
       activeProps={{
         className: "text-foreground",
@@ -509,7 +516,7 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
           {isActive && (
             <motion.span
               layoutId="nav-indicator"
-              className="absolute inset-x-2 -bottom-[1px] h-[2px] bg-primary"
+              className="absolute inset-x-3 bottom-0 h-[2px] bg-primary"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}

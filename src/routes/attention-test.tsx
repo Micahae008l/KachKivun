@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { RefreshCw, Share2, Sparkles } from "lucide-react";
+import { Check, RefreshCw, Share2, Sparkles, X } from "lucide-react";
 
 const URL = "https://kachkivun.com/attention-test";
 const TITLE = "מבחן קשב לצו ראשון: תרגול חינם של העיגול הירוק | קח כיוון";
@@ -109,19 +109,58 @@ const GRADE_LABEL: Record<number, string> = {
   1: "הפעם זה לא הלך. שווה לנסות שוב אחרי הפסקה.",
 };
 
-function ShapeSvg({ stimulus }: { stimulus: Stimulus }) {
+function ShapeSvg({ stimulus, className }: { stimulus: Stimulus; className: string }) {
   return (
-    <svg viewBox="0 0 100 100" className="h-40 w-40 sm:h-48 sm:w-48" aria-hidden>
+    <svg
+      viewBox="0 0 100 100"
+      className={className}
+      // A soft halo in the shape's own colour, like a lit object on a dark screen.
+      style={{ filter: `drop-shadow(0 0 18px ${stimulus.color}66)` }}
+      aria-hidden
+    >
       {stimulus.shape === "circle" ? (
         <circle cx="50" cy="50" r="42" fill={stimulus.color} />
       ) : stimulus.shape === "square" ? (
-        <rect x="10" y="10" width="80" height="80" fill={stimulus.color} />
+        <rect x="10" y="10" width="80" height="80" rx="3" fill={stimulus.color} />
       ) : (
         <polygon points="50,8 94,90 6,90" fill={stimulus.color} />
       )}
     </svg>
   );
 }
+
+/** Viewfinder corners that frame the screen and light up green or red on a tap. */
+function Corners({ tone }: { tone: "good" | "bad" | null }) {
+  const color =
+    tone === "good" ? "border-primary" : tone === "bad" ? "border-destructive" : "border-iron/50";
+  const base = `pointer-events-none absolute h-6 w-6 transition-colors duration-150 ${color}`;
+  return (
+    <>
+      <span className={`${base} top-3 right-3 border-t-2 border-r-2`} aria-hidden />
+      <span className={`${base} top-3 left-3 border-t-2 border-l-2`} aria-hidden />
+      <span className={`${base} right-3 bottom-3 border-r-2 border-b-2`} aria-hidden />
+      <span className={`${base} bottom-3 left-3 border-b-2 border-l-2`} aria-hidden />
+    </>
+  );
+}
+
+const RULES: { stimulus: Stimulus; tap: boolean; label: string }[] = [
+  {
+    stimulus: { shape: "circle", color: GREEN, target: true, gapMs: 0 },
+    tap: true,
+    label: "לוחצים",
+  },
+  {
+    stimulus: { shape: "square", color: GREEN, target: false, gapMs: 0 },
+    tap: false,
+    label: "ירוק, אבל לא עיגול",
+  },
+  {
+    stimulus: { shape: "circle", color: OTHER_COLORS[0], target: false, gapMs: 0 },
+    tap: false,
+    label: "עיגול, אבל לא ירוק",
+  },
+];
 
 function AttentionTestPage() {
   const [phase, setPhase] = useState<Phase>("intro");
@@ -266,38 +305,71 @@ function AttentionTestPage() {
       </header>
 
       <section
-        className={`mt-6 border bg-card transition-colors duration-150 ${
-          flash === "good"
-            ? "border-primary"
-            : flash === "bad"
-              ? "border-destructive"
-              : "border-iron/30"
-        }`}
+        className="relative mt-6 overflow-hidden border border-iron/30 bg-black"
+        style={{
+          backgroundImage:
+            flash === "good"
+              ? "radial-gradient(circle at center, rgb(74 222 128 / 0.12), transparent 65%)"
+              : flash === "bad"
+                ? "radial-gradient(circle at center, rgb(248 113 113 / 0.14), transparent 65%)"
+                : "radial-gradient(circle at center, rgb(255 255 255 / 0.04), transparent 65%)",
+        }}
         aria-live="polite"
       >
+        {phase === "done" ? null : <Corners tone={flash} />}
+
         {phase === "intro" ? (
-          <div className="flex flex-col items-center gap-5 p-6 text-center sm:p-10">
-            <ShapeSvg stimulus={{ shape: "circle", color: GREEN, target: true, gapMs: 0 }} />
-            <ul className="space-y-1.5 text-sm leading-6 text-foreground">
-              <li>עיגול ירוק: לוחצים.</li>
-              <li>כל דבר אחר, גם ריבוע ירוק וגם עיגול אדום: לא נוגעים.</li>
-              <li>המרווחים לא קבועים: לפעמים המסך נשאר כהה כמה שניות. על מסך ריק לא לוחצים.</li>
-              <li>40 צורות, בערך דקה וחצי.</li>
+          <div className="flex min-h-[26rem] flex-col items-center justify-center gap-6 p-6 sm:p-10">
+            <ul className="grid w-full max-w-md grid-cols-3 gap-2 sm:gap-3">
+              {RULES.map((rule) => (
+                <li
+                  key={rule.label}
+                  className={`flex flex-col items-center gap-2 border p-3 text-center ${
+                    rule.tap ? "border-primary/60 bg-primary/10" : "border-iron/30"
+                  }`}
+                >
+                  <ShapeSvg stimulus={rule.stimulus} className="h-14 w-14 sm:h-16 sm:w-16" />
+                  <span
+                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${
+                      rule.tap
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-destructive/20 text-destructive"
+                    }`}
+                  >
+                    {rule.tap ? (
+                      <Check className="h-3.5 w-3.5" aria-hidden />
+                    ) : (
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    )}
+                  </span>
+                  <span className="text-xs leading-4 font-semibold text-foreground">
+                    {rule.label}
+                  </span>
+                </li>
+              ))}
             </ul>
+            <p className="max-w-sm text-center text-sm leading-6 text-dust">
+              המרווחים לא קבועים. לפעמים המסך נשאר כהה כמה שניות, וגם אז לא לוחצים.
+            </p>
             <button
               type="button"
               onClick={start}
-              className="inline-flex min-h-12 items-center rounded-md bg-primary px-8 text-base font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
+              className="cta-shine inline-flex min-h-12 items-center rounded-md bg-primary px-10 text-base font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
             >
               מתחילים
             </button>
-            <p className="text-xs text-dust">במחשב אפשר ללחוץ גם על מקש הרווח.</p>
+            <p className="font-mono text-[11px] text-dust/80">40 צורות · כדקה וחצי · רווח במקלדת</p>
           </div>
         ) : null}
 
         {phase === "countdown" ? (
-          <div className="flex h-80 items-center justify-center">
-            <span className="font-mono text-8xl font-black tabular-nums text-primary">{count}</span>
+          <div className="flex h-[26rem] items-center justify-center">
+            <span
+              key={count}
+              className="animate-scale-in font-mono text-9xl font-black tabular-nums text-primary"
+            >
+              {count}
+            </span>
           </div>
         ) : null}
 
@@ -305,49 +377,72 @@ function AttentionTestPage() {
           <button
             type="button"
             onPointerDown={tap}
-            className="flex h-80 w-full touch-manipulation select-none items-center justify-center"
+            className="flex h-[26rem] w-full touch-manipulation select-none items-center justify-center outline-none"
             aria-label="לחצו כשמופיע עיגול ירוק"
           >
-            {visible ? <ShapeSvg stimulus={visible} /> : null}
+            {visible ? (
+              <span className="attention-pop">
+                <ShapeSvg stimulus={visible} className="h-44 w-44 sm:h-52 sm:w-52" />
+              </span>
+            ) : null}
           </button>
         ) : null}
 
         {phase === "done" && result ? (
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
-              <p className="font-mono text-7xl font-black tabular-nums leading-none text-primary">
+          <div className="bg-card p-6 sm:p-8">
+            <p className="font-mono text-xs tracking-widest text-primary uppercase">הציון שלכם</p>
+            <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
+              <p className="font-mono text-8xl font-black tabular-nums leading-none text-primary">
                 {result.grade}
-                <span className="text-3xl text-dust">/5</span>
               </p>
-              <p className="max-w-sm pb-1 text-base font-bold leading-snug text-foreground">
-                {GRADE_LABEL[result.grade]}
-              </p>
-            </div>
-            <dl className="mt-6 grid grid-cols-3 divide-x divide-x-reverse divide-iron/25 border border-iron/25 text-center">
-              <div className="p-3">
-                <dt className="text-[11px] text-dust">עיגולים ירוקים שתפסתם</dt>
-                <dd className="mt-1 font-mono text-xl font-black text-foreground">
-                  {result.hits}/{result.targets}
-                </dd>
+              <div className="min-w-0 flex-1 pb-1">
+                <div className="flex gap-1.5" role="img" aria-label={`${result.grade} מתוך 5`}>
+                  {[1, 2, 3, 4, 5].map((step) => (
+                    <span
+                      key={step}
+                      className={`animate-slide-up h-2.5 flex-1 ${
+                        step <= result.grade ? "bg-primary" : "bg-iron/30"
+                      }`}
+                      style={{ animationDelay: `${step * 70}ms` }}
+                    />
+                  ))}
+                </div>
+                <p className="mt-3 text-base font-bold leading-snug text-foreground">
+                  {GRADE_LABEL[result.grade]}
+                </p>
               </div>
-              <div className="p-3">
-                <dt className="text-[11px] text-dust">לחיצות בטעות</dt>
-                <dd className="mt-1 font-mono text-xl font-black text-foreground">
+            </div>
+            <dl className="mt-6 grid grid-cols-3 gap-2 text-center sm:gap-3">
+              <div className="border border-iron/25 bg-background/40 p-3">
+                <dd className="font-mono text-2xl font-black text-foreground">
+                  {result.hits}
+                  <span className="text-sm text-dust">/{result.targets}</span>
+                </dd>
+                <dt className="mt-1 text-[11px] leading-4 text-dust">עיגולים ירוקים שתפסתם</dt>
+              </div>
+              <div className="border border-iron/25 bg-background/40 p-3">
+                <dd
+                  className={`font-mono text-2xl font-black ${
+                    result.falseTaps ? "text-destructive" : "text-foreground"
+                  }`}
+                >
                   {result.falseTaps}
                 </dd>
+                <dt className="mt-1 text-[11px] leading-4 text-dust">לחיצות בטעות</dt>
               </div>
-              <div className="p-3">
-                <dt className="text-[11px] text-dust">זמן תגובה ממוצע</dt>
-                <dd className="mt-1 font-mono text-xl font-black text-foreground" dir="ltr">
-                  {result.avgMs != null ? `${result.avgMs}ms` : "—"}
+              <div className="border border-iron/25 bg-background/40 p-3">
+                <dd className="font-mono text-2xl font-black text-foreground" dir="ltr">
+                  {result.avgMs != null ? result.avgMs : "—"}
+                  {result.avgMs != null ? <span className="text-sm text-dust">ms</span> : null}
                 </dd>
+                <dt className="mt-1 text-[11px] leading-4 text-dust">זמן תגובה ממוצע</dt>
               </div>
             </dl>
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => void share()}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97] sm:flex-none"
               >
                 <Share2 className="h-4 w-4" aria-hidden />
                 אתגרו חברים
@@ -355,7 +450,7 @@ function AttentionTestPage() {
               <button
                 type="button"
                 onClick={start}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-primary/60 px-5 text-sm font-bold text-primary transition hover:bg-primary/10 active:scale-[0.97]"
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md border border-primary/60 px-5 text-sm font-bold text-primary transition hover:bg-primary/10 active:scale-[0.97] sm:flex-none"
               >
                 <RefreshCw className="h-4 w-4" aria-hidden />
                 עוד סיבוב
