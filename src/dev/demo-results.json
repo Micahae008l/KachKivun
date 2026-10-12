@@ -1,0 +1,866 @@
+{
+  "personas": [
+    {
+      "id": "noa",
+      "label": "נועה, כיתה י״ב",
+      "dapar": 70,
+      "profile": 64,
+      "paid": {
+        "roles": [
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 1,
+            "roleTitle": "בודק/ת תוכנה",
+            "matchPercentage": 93,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 87,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 88
+            },
+            "summary": "ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים בבודק/ת תוכנה.",
+            "description": "ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם. הדפ״ר שלכם (70) עובר את הסף של התפקיד (60) עם מרווח. בתפקיד הזה עוסקים בעיקר ב: בדיקות תוכנה, דיוק, חשיבה שיטתית. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "מקצועות המחשב",
+              "בדיקות תוכנה",
+              "דיוק",
+              "חשיבה שיטתית",
+              "סבלנות"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים לבודק/ת תוכנה?",
+              "איך נראה יום טיפוסי בבודק/ת תוכנה?"
+            ],
+            "category": "מקצועות המחשב",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "מיוני אשכול מקצועות המחשב",
+              "דפ\"ר 60 ומעלה",
+              "נשים וגברים בעלי פרופיל עורפי",
+              "קד\"צ כ-16 שבועות"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "32 חודשים (גם לנשים)",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": "מיון תחרותי"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 2,
+            "roleTitle": "מפתח/ת BI צבאי/ת",
+            "matchPercentage": 93,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 87,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 88
+            },
+            "summary": "ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם.",
+            "description": "הדפ״ר שלכם (70) עובר את הסף של התפקיד (60) עם מרווח. העדפתם שירות שאינו קרבי, וזה בדיוק האופי של התפקיד. בתפקיד הזה עוסקים בעיקר ב: דשבורדים, SQL, ניתוח. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "דאטה / תוכנה",
+              "דשבורדים",
+              "SQL",
+              "ניתוח",
+              "ויזואליזציה"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים למפתח/ת BI צבאי/ת?",
+              "איך נראה יום טיפוסי במפתח/ת BI צבאי/ת?"
+            ],
+            "category": "דאטה / תוכנה",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "מיוני אשכול מקצועות המחשב",
+              "דפ\"ר 60 ומעלה"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": "מיון תחרותי"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 3,
+            "roleTitle": "דאטא אנליסט/ית (אנליסט מידע מבצעי)",
+            "matchPercentage": 93,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 94,
+              "yom": 87,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 89
+            },
+            "summary": "הדפ״ר שלכם (70) עובר את הסף של התפקיד (60) עם מרווח.",
+            "description": "העדפתם שירות שאינו קרבי, וזה בדיוק האופי של התפקיד. ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים בדאטא אנליסט/ית (אנליסט מידע מבצעי). בתפקיד הזה עוסקים בעיקר ב: SQL, סטטיסטיקה, BI, Python, קד\"צ 16 שבועות, בתי תוכנה. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "דאטה / תוכנה",
+              "SQL, סטטיסטיקה, BI, Python",
+              "קד\"צ 16 שבועות",
+              "בתי תוכנה"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים לדאטא אנליסט/ית (אנליסט מידע מבצעי)?",
+              "איך נראה יום טיפוסי בדאטא אנליסט/ית (אנליסט מידע מבצעי)?"
+            ],
+            "category": "דאטה / תוכנה",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "מיוני אשכול מקצועות המחשב",
+              "דפ\"ר 60",
+              "פרופיל עורפי לגברים"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "32 חודשים (גם לנשים)",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": "מיון תחרותי"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 4,
+            "roleTitle": "מסלול SRE - תקשוב",
+            "matchPercentage": 92,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 80,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 88
+            },
+            "summary": "העדפתם שירות שאינו קרבי, וזה בדיוק האופי של התפקיד.",
+            "description": "ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים במסלול SRE - תקשוב. ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם. בתפקיד הזה עוסקים בעיקר ב: אמינות מערכות, צוותי פיתוח בכל הזרועות. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "מקצועות המחשב",
+              "אמינות מערכות",
+              "צוותי פיתוח בכל הזרועות"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים למסלול SRE - תקשוב?",
+              "איך נראה יום טיפוסי במסלול SRE - תקשוב?"
+            ],
+            "category": "מקצועות המחשב",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "מיוני אשכול מקצועות המחשב",
+              "דפ\"ר 60",
+              "לא לבעלי ייעוד קרבי",
+              "עברית 5"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": "מיון תחרותי"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 5,
+            "roleTitle": "מסלול סיגיט - תכנית טכנאי IT",
+            "matchPercentage": 92,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 80,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 84
+            },
+            "summary": "ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים במסלול סיגיט - תכנית טכנאי IT.",
+            "description": "ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם. הדפ״ר שלכם (70) עובר את הסף של התפקיד (60) עם מרווח. בתפקיד הזה עוסקים בעיקר ב: IT, תשתיות, טכנאות. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "תקשוב / טכנולוגי",
+              "IT",
+              "תשתיות",
+              "טכנאות",
+              "הנדסת תוכנה"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים למסלול סיגיט - תכנית טכנאי IT?",
+              "איך נראה יום טיפוסי במסלול סיגיט - תכנית טכנאי IT?"
+            ],
+            "category": "תקשוב / טכנולוגי",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "דפ\"ר 60 ומעלה",
+              "פרופיל 25 ומעלה",
+              "10 יח\"ל הנדסת תוכנה + 5 יח\"ל מדעי"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "שנת י\"ג הנדסאי תוכנה (80% מימון) + 2.5 חודשי קורס + שנת קבע",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": ""
+            }
+          }
+        ],
+        "extras": {
+          "unlocked": true,
+          "plan": [
+            {
+              "roleTitle": "בודק/ת תוכנה",
+              "rank": 1,
+              "rating": 5,
+              "source": "match",
+              "category": "מקצועות המחשב",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: 32 חודשים (גם לנשים)."
+              ]
+            },
+            {
+              "roleTitle": "מפתח/ת BI צבאי/ת",
+              "rank": 2,
+              "rating": 5,
+              "source": "match",
+              "category": "דאטה / תוכנה",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ."
+              ]
+            },
+            {
+              "roleTitle": "דאטא אנליסט/ית (אנליסט מידע מבצעי)",
+              "rank": 3,
+              "rating": 4,
+              "source": "match",
+              "category": "דאטה / תוכנה",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: 32 חודשים (גם לנשים)."
+              ]
+            },
+            {
+              "roleTitle": "מסלול SRE - תקשוב",
+              "rank": 4,
+              "rating": 4,
+              "source": "match",
+              "category": "מקצועות המחשב",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ."
+              ]
+            },
+            {
+              "roleTitle": "מסלול סיגיט - תכנית טכנאי IT",
+              "rank": 5,
+              "rating": 3,
+              "source": "match",
+              "category": "תקשוב / טכנולוגי",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: שנת י\"ג הנדסאי תוכנה (80% מימון) + 2.5 חודשי קורס + שנת קבע."
+              ]
+            },
+            {
+              "roleTitle": "מנהל/ת DC",
+              "rank": 6,
+              "rating": 3,
+              "source": "backup",
+              "category": "תקשוב / תשתיות",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ."
+              ]
+            },
+            {
+              "roleTitle": "פס\"י - מפתח/ת ספקטרום (פריזמה)",
+              "rank": 7,
+              "rating": 3,
+              "source": "backup",
+              "category": "תקשוב / ספקטרום",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 14-19 שבועות הכשרה בבסיס סגור."
+              ]
+            },
+            {
+              "roleTitle": "לה\"ב מצו\"ב/חוקר ומפתח יכולות הגנה בסייבר",
+              "rank": 8,
+              "rating": 3,
+              "source": "backup",
+              "category": "סייבר",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 32 חודשים (גם לנשים) + 2.5-3 שנות קבע."
+              ]
+            },
+            {
+              "roleTitle": "מסלול ממ\"ש",
+              "rank": 9,
+              "rating": 3,
+              "source": "backup",
+              "category": "מודיעין / טכנולוגי",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: טר\"צ + קורס צבאי; שנת קבע; נשים כמו גברים."
+              ]
+            },
+            {
+              "roleTitle": "מט\"ס - מפתח/ת טכנולוגיות סייבר (מצו\"ב)",
+              "rank": 10,
+              "rating": 3,
+              "source": "backup",
+              "category": "סייבר",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 32 חודשים; התחייבות קבע צפויה לעבור לתקנה 16א."
+              ]
+            }
+          ],
+          "whatIf": [
+            {
+              "key": "dapar+10",
+              "metric": "dapar",
+              "from": 70,
+              "to": 80,
+              "openedCount": 9,
+              "opened": [
+                {
+                  "roleTitle": "מסלול שחקים - אמנון",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - ארזים",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - אע\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - שוב\"ל",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - שמ\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - אמ\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                }
+              ],
+              "enteringTopFive": [
+                "מסלול אח\"מ פיתוח",
+                "מסלול גאמ״א",
+                "תכנית אלונים",
+                "תכנית ביו",
+                "תכנית פסגות"
+              ],
+              "enteringCount": 5
+            },
+            {
+              "key": "dapar+20",
+              "metric": "dapar",
+              "from": 70,
+              "to": 90,
+              "openedCount": 9,
+              "opened": [
+                {
+                  "roleTitle": "מסלול שחקים - אמנון",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - ארזים",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - אע\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - שוב\"ל",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - שמ\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - אמ\"מ",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                }
+              ],
+              "enteringTopFive": [
+                "מסלול אח\"מ פיתוח",
+                "מסלול גאמ״א",
+                "תכנית אלונים",
+                "תכנית ביו",
+                "תכנית פסגות"
+              ],
+              "enteringCount": 5
+            },
+            {
+              "key": "profile-72",
+              "metric": "profile",
+              "from": 64,
+              "to": 72,
+              "openedCount": 18,
+              "opened": [
+                {
+                  "roleTitle": "מסלול רומא",
+                  "category": "מודיעין / טכנולוגי",
+                  "combat": false,
+                  "daparFloor": 70,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "מפעיל/ת לוחמה אלקטרונית (ל\"א)",
+                  "category": "אוויר / לוחמה אלקטרונית",
+                  "combat": false,
+                  "daparFloor": 50,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "מדריך/ת הנדסה קרבית",
+                  "category": "הדרכה",
+                  "combat": false,
+                  "daparFloor": 40,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "לוחם תותחנים",
+                  "category": "לחימה",
+                  "combat": true,
+                  "daparFloor": null,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "מדריך/ת חי״ר",
+                  "category": "הדרכה",
+                  "combat": false,
+                  "daparFloor": 40,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "לוחם לוחמה אלקטרונית",
+                  "category": "אוויר / לוחמה אלקטרונית",
+                  "combat": true,
+                  "daparFloor": 50,
+                  "medicalFloor": 72
+                }
+              ],
+              "enteringTopFive": [],
+              "enteringCount": 0
+            }
+          ]
+        }
+      },
+      "unpaid": {
+        "roles": [
+          {
+            "kind": "locked",
+            "locked": true,
+            "rank": 1,
+            "matchPercentage": 93,
+            "field": "מקצועות המחשב",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני"
+            }
+          },
+          {
+            "kind": "locked",
+            "locked": true,
+            "rank": 2,
+            "matchPercentage": 93,
+            "field": "דאטה",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני"
+            }
+          },
+          {
+            "kind": "locked",
+            "locked": true,
+            "rank": 3,
+            "matchPercentage": 93,
+            "field": "דאטה",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 4,
+            "roleTitle": "מסלול SRE - תקשוב",
+            "matchPercentage": 92,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 80,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 88
+            },
+            "summary": "העדפתם שירות שאינו קרבי, וזה בדיוק האופי של התפקיד.",
+            "description": "ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים במסלול SRE - תקשוב. ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם. בתפקיד הזה עוסקים בעיקר ב: אמינות מערכות, צוותי פיתוח בכל הזרועות. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "מקצועות המחשב",
+              "אמינות מערכות",
+              "צוותי פיתוח בכל הזרועות"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים למסלול SRE - תקשוב?",
+              "איך נראה יום טיפוסי במסלול SRE - תקשוב?"
+            ],
+            "category": "מקצועות המחשב",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "מיוני אשכול מקצועות המחשב",
+              "דפ\"ר 60",
+              "לא לבעלי ייעוד קרבי",
+              "עברית 5"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": "מיון תחרותי"
+            }
+          },
+          {
+            "kind": "role",
+            "locked": false,
+            "rank": 5,
+            "roleTitle": "מסלול סיגיט - תכנית טכנאי IT",
+            "matchPercentage": 92,
+            "scoreBreakdown": {
+              "preference": 90,
+              "focus": 100,
+              "yom": 80,
+              "eligibility": 100,
+              "catalogQuality": 85,
+              "structuredAssessment": 84
+            },
+            "summary": "ביום המא״ה קיבלתם 5 מתוך 5 בהפעלה טכנית והבנת מערכות ו־4 מתוך 5 בעיבוד מידע, ואלה המדדים המרכזיים במסלול סיגיט - תכנית טכנאי IT.",
+            "description": "ביקשתם שירות עם דגש על טכנולוגיה, והתפקיד הזה יושב בדיוק שם. הדפ״ר שלכם (70) עובר את הסף של התפקיד (60) עם מרווח. בתפקיד הזה עוסקים בעיקר ב: IT, תשתיות, טכנאות. את תנאי המיון העדכניים כדאי לאמת באתר מתגייסים.",
+            "tags": [
+              "תקשוב / טכנולוגי",
+              "IT",
+              "תשתיות",
+              "טכנאות",
+              "הנדסת תוכנה"
+            ],
+            "nextStepPrompts": [
+              "מהם תנאי המיון העדכניים למסלול סיגיט - תכנית טכנאי IT?",
+              "איך נראה יום טיפוסי במסלול סיגיט - תכנית טכנאי IT?"
+            ],
+            "category": "תקשוב / טכנולוגי",
+            "combat": false,
+            "dayToDay": "",
+            "requirements": [
+              "דפ\"ר 60 ומעלה",
+              "פרופיל 25 ומעלה",
+              "10 יח\"ל הנדסת תוכנה + 5 יח\"ל מדעי"
+            ],
+            "locations": [],
+            "serviceLengthLabel": "שנת י\"ג הנדסאי תוכנה (80% מימון) + 2.5 חודשי קורס + שנת קבע",
+            "admissionChance": {
+              "level": "medium",
+              "label": "סיכוי קבלה בינוני",
+              "reason": ""
+            }
+          }
+        ],
+        "extras": {
+          "unlocked": false,
+          "plan": [
+            {
+              "locked": true,
+              "rank": 1,
+              "rating": 5,
+              "source": "match"
+            },
+            {
+              "locked": true,
+              "rank": 2,
+              "rating": 5,
+              "source": "match"
+            },
+            {
+              "locked": true,
+              "rank": 3,
+              "rating": 4,
+              "source": "match"
+            },
+            {
+              "roleTitle": "מסלול SRE - תקשוב",
+              "rank": 4,
+              "rating": 4,
+              "source": "match",
+              "category": "מקצועות המחשב",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ."
+              ]
+            },
+            {
+              "roleTitle": "מסלול סיגיט - תכנית טכנאי IT",
+              "rank": 5,
+              "rating": 3,
+              "source": "match",
+              "category": "תקשוב / טכנולוגי",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: שנת י\"ג הנדסאי תוכנה (80% מימון) + 2.5 חודשי קורס + שנת קבע."
+              ]
+            },
+            {
+              "roleTitle": "מנהל/ת DC",
+              "rank": 6,
+              "rating": 3,
+              "source": "backup",
+              "category": "תקשוב / תשתיות",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ."
+              ]
+            },
+            {
+              "roleTitle": "פס\"י - מפתח/ת ספקטרום (פריזמה)",
+              "rank": 7,
+              "rating": 3,
+              "source": "backup",
+              "category": "תקשוב / ספקטרום",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 14-19 שבועות הכשרה בבסיס סגור."
+              ]
+            },
+            {
+              "roleTitle": "לה\"ב מצו\"ב/חוקר ומפתח יכולות הגנה בסייבר",
+              "rank": 8,
+              "rating": 3,
+              "source": "backup",
+              "category": "סייבר",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 32 חודשים (גם לנשים) + 2.5-3 שנות קבע."
+              ]
+            },
+            {
+              "roleTitle": "מסלול ממ\"ש",
+              "rank": 9,
+              "rating": 3,
+              "source": "backup",
+              "category": "מודיעין / טכנולוגי",
+              "combat": false,
+              "daparFloor": 60,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "משך שירות: טר\"צ + קורס צבאי; שנת קבע; נשים כמו גברים."
+              ]
+            },
+            {
+              "roleTitle": "מט\"ס - מפתח/ת טכנולוגיות סייבר (מצו\"ב)",
+              "rank": 10,
+              "rating": 3,
+              "source": "backup",
+              "category": "סייבר",
+              "combat": false,
+              "daparFloor": 70,
+              "medicalFloor": 21,
+              "notes": [
+                "יש מיון לתפקיד. דירוג גבוה הוא בקשה לזימון למיון, לא שיבוץ.",
+                "הדפ״ר שלכם על הסף של התפקיד (70).",
+                "משך שירות: 32 חודשים; התחייבות קבע צפויה לעבור לתקנה 16א."
+              ]
+            }
+          ],
+          "whatIf": [
+            {
+              "key": "dapar+10",
+              "metric": "dapar",
+              "from": 70,
+              "to": 80,
+              "openedCount": 9,
+              "opened": [
+                {
+                  "roleTitle": "מסלול שחקים - אמנון",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - ארזים",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                }
+              ],
+              "enteringTopFive": [],
+              "enteringCount": 5
+            },
+            {
+              "key": "dapar+20",
+              "metric": "dapar",
+              "from": 70,
+              "to": 90,
+              "openedCount": 9,
+              "opened": [
+                {
+                  "roleTitle": "מסלול שחקים - אמנון",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                },
+                {
+                  "roleTitle": "מסלול שחקים - ארזים",
+                  "category": "מודיעין עילית / שחקים",
+                  "combat": false,
+                  "daparFloor": 80,
+                  "medicalFloor": 21
+                }
+              ],
+              "enteringTopFive": [],
+              "enteringCount": 5
+            },
+            {
+              "key": "profile-72",
+              "metric": "profile",
+              "from": 64,
+              "to": 72,
+              "openedCount": 18,
+              "opened": [
+                {
+                  "roleTitle": "מסלול רומא",
+                  "category": "מודיעין / טכנולוגי",
+                  "combat": false,
+                  "daparFloor": 70,
+                  "medicalFloor": 72
+                },
+                {
+                  "roleTitle": "מפעיל/ת לוחמה אלקטרונית (ל\"א)",
+                  "category": "אוויר / לוחמה אלקטרונית",
+                  "combat": false,
+                  "daparFloor": 50,
+                  "medicalFloor": 72
+                }
+              ],
+              "enteringTopFive": [],
+              "enteringCount": 0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

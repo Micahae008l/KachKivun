@@ -26,12 +26,13 @@ function role(rank, marker) {
     description: `תיאור-${marker}`,
     tags: [`תגית-${marker}`],
     nextStepPrompts: [`שאלה-${marker}`],
-    category: `קטגוריה-${marker}`,
+    category: `תחום-${marker} / קטגוריה-${marker}`,
     combat: rank === 1,
     dayToDay: `יומיום-${marker}`,
     requirements: [`דרישה-${marker}`],
     locations: [`מיקום-${marker}`],
     serviceLengthLabel: `שירות-${marker}`,
+    admissionChance: { level: "medium", label: "סיכוי קבלה בינוני", reason: `נימוק-${marker}` },
   };
 }
 
@@ -70,21 +71,27 @@ test("recommendation paywall is enabled only by an explicit true value", () => {
   assert.equal(isPaywallEnabled("false"), false);
 });
 
-test("locked serialization exposes only discriminator, rank, and percentage", () => {
+test("locked serialization exposes only rank, percentage, broad field and chance level", () => {
   const serialized = serializeRecommendation(recommendation, lockedAccess);
   assert.deepEqual(Object.keys(serialized.roles[0]).sort(), [
+    "admissionChance",
+    "field",
     "kind",
     "locked",
     "matchPercentage",
     "rank",
   ]);
   assert.deepEqual(Object.keys(serialized.roles[1]).sort(), [
+    "admissionChance",
+    "field",
     "kind",
     "locked",
     "matchPercentage",
     "rank",
   ]);
   assert.deepEqual(Object.keys(serialized.roles[2]).sort(), [
+    "admissionChance",
+    "field",
     "kind",
     "locked",
     "matchPercentage",
@@ -92,6 +99,11 @@ test("locked serialization exposes only discriminator, rank, and percentage", ()
   ]);
   assert.equal(serialized.roles[0].rank, 1);
   assert.equal(serialized.roles[0].matchPercentage, 95);
+  assert.equal(serialized.roles[0].field, "תחום-LOCKED-ONE");
+  assert.deepEqual(serialized.roles[0].admissionChance, {
+    level: "medium",
+    label: "סיכוי קבלה בינוני",
+  });
   assert.equal("scoreBreakdown" in serialized.roles[0], false);
   assert.equal("scoreBreakdown" in serialized.roles[1], false);
   assert.equal("scoreBreakdown" in serialized.roles[2], false);
@@ -118,6 +130,7 @@ test("locked serialization exposes only discriminator, rank, and percentage", ()
     "מיקום-LOCKED-ONE",
     "שירות-LOCKED-ONE",
     "פירוט-LOCKED-ONE",
+    "נימוק-LOCKED-ONE",
     "כותרת-LOCKED-TWO",
     "כותרת-LOCKED-THREE",
     "תיאור-LOCKED-THREE",
