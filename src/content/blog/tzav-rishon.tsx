@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Callout, H2, H3, P, PostLink, UL, type Source } from "@/components/blog/Prose";
 import type { PostFaq } from "./index";
 
@@ -92,7 +93,14 @@ export function Body() {
         בין המבחנים הממוחשבים יש גם מבחן קשב, שממנו נגזר מדד הקשב. על המסך מופיעות צורות בצבעים
         שונים, אחת אחרי השנייה, וצריך ללחוץ רק כשמופיע הגירוי שהוגדר מראש, למשל עיגול ירוק, ולהתאפק
         בכל השאר. הוא לא בודק ידע. הוא בודק ריכוז לאורך זמן ויכולת לא ללחוץ כשלא צריך, ולכן עייפות
-        פוגעת בו יותר מבכל מבחן אחר.
+        פוגעת בו יותר מבכל מבחן אחר. אפשר לתרגל אותו כאן בדקה:{" "}
+        <Link
+          to="/attention-test"
+          className="font-semibold text-primary underline decoration-primary/40 underline-offset-4"
+        >
+          תרגול מבחן הקשב
+        </Link>
+        .
       </P>
 
       <H3>2. בדיקות רפואיות</H3>

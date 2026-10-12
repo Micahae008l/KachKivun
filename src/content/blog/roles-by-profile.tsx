@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Callout, H2, P, PostLink, type Source } from "@/components/blog/Prose";
 import { VerifiedRoles } from "@/components/blog/VerifiedRoles";
 import type { PostFaq } from "./index";
@@ -42,7 +43,15 @@ export function Body() {
       <P>
         פרופיל נמוך לא מקצר את רשימת התפקידים כמו שנהוג לחשוב. מתוך התפקידים שאימתנו מול דפי התפקיד
         הרשמיים, הקבוצה הגדולה ביותר היא דווקא של תפקידים בלי דרישת פרופיל מיוחדת: סייבר, תוכנה,
-        מודיעין ומסלולים טכנולוגיים. הפרופיל חוסם בעיקר שטח ולחימה, ואת מה שנשאר קובע הדפ״ר.
+        מודיעין ומסלולים טכנולוגיים. הפרופיל חוסם בעיקר שטח ולחימה, ואת מה שנשאר קובע הדפ״ר. רוצים
+        לבדוק את שני המספרים שלכם יחד?{" "}
+        <Link
+          to="/role-calculator"
+          className="font-semibold text-primary underline decoration-primary/40 underline-offset-4"
+        >
+          מחשבון התפקידים
+        </Link>
+        .
       </P>
       <Callout title="איך לקרוא את הרשימות">
         כל תפקיד מופיע תחת הפרופיל המינימלי שלו. מי שיש לו פרופיל גבוה יותר יכול כמובן לשרת גם

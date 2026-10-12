@@ -42,6 +42,19 @@ export const Route = createFileRoute("/blog/")({
   }),
 });
 
+const TOOLS = [
+  {
+    to: "/attention-test",
+    title: "מבחן הקשב: לוחצים רק על עיגול ירוק",
+    description: "תרגול למבחן הקשב של הצו הראשון, עם ציון מ־1 עד 5 וזמן תגובה בסוף.",
+  },
+  {
+    to: "/role-calculator",
+    title: "מחשבון תפקידים: מה פתוח לי?",
+    description: "בוחרים דפ״ר ופרופיל ורואים מיד אילו תפקידים עומדים בסף.",
+  },
+] as const;
+
 // Sections follow the order tags first appear in posts.json.
 const TAG_ORDER = [...new Set(BLOG_POSTS.map((p) => p.tag))];
 
@@ -80,6 +93,25 @@ function BlogIndexPage() {
             />
           </p>
         </Link>
+
+        <section aria-labelledby="tools-heading">
+          <h2 id="tools-heading" className="mb-4 scroll-mt-20 text-xl font-black text-foreground">
+            כלים חינם
+          </h2>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {TOOLS.map((tool) => (
+              <li key={tool.to}>
+                <Link
+                  to={tool.to}
+                  className="flex h-full flex-col border border-primary/40 bg-primary/5 p-5 transition hover:border-primary"
+                >
+                  <h3 className="text-lg font-black leading-snug text-foreground">{tool.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-dust">{tool.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {TAG_ORDER.map((tag) => {
           const posts = rest.filter((p) => p.tag === tag);

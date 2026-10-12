@@ -155,6 +155,8 @@ const PUBLIC_PATHS = new Set([
   "/contact",
   "/role-insights",
   "/blog",
+  "/attention-test",
+  "/role-calculator",
   "/privacy",
   "/terms",
   "/accessibility",
@@ -260,6 +262,12 @@ function RootLayoutInner() {
               <Link to="/blog" className="transition hover:text-foreground">
                 מדריכים
               </Link>
+              <Link to="/attention-test" className="transition hover:text-foreground">
+                מבחן קשב
+              </Link>
+              <Link to="/role-calculator" className="transition hover:text-foreground">
+                מחשבון תפקידים
+              </Link>
               <Link to="/privacy" className="transition hover:text-foreground">
                 פרטיות
               </Link>
@@ -292,9 +300,12 @@ function RootLayoutInner() {
 /** Main tools in header — profile lives in ProfileMenu */
 type NavItem = { to: string; label: string; exact?: boolean };
 
-const NAV_AUTHED: readonly NavItem[] = [
-  { to: "/ai-counselor", label: MATCH_TOOL_SHORT },
+/** The same five links for everyone; only the matching tool's target depends on being signed in. */
+const NAV_SHARED: readonly NavItem[] = [
   { to: "/role-insights", label: "תובנות תפקידים" },
+  { to: "/blog", label: "מדריכים" },
+  { to: "/attention-test", label: "מבחן קשב" },
+  { to: "/role-calculator", label: "מחשבון תפקידים" },
 ];
 
 function SiteHeader({
@@ -315,7 +326,14 @@ function SiteHeader({
 
   const isAdmin = session?.role === "admin" || (tokenPresent && isStoredAdmin());
 
-  const NAV_ITEMS = useMemo(() => (authed ? [...NAV_AUTHED] : []), [authed]);
+  // Guests reach the matching tool through the questionnaire; signed-in users go straight to it.
+  const NAV_ITEMS = useMemo<NavItem[]>(
+    () => [
+      { to: authed ? "/ai-counselor" : "/post-signup", label: MATCH_TOOL_SHORT },
+      ...NAV_SHARED,
+    ],
+    [authed],
+  );
 
   const profileName =
     session?.preferredName?.trim() || (session?.email ? session.email.split("@")[0] : undefined);
@@ -351,7 +369,7 @@ function SiteHeader({
         <KachKivunLogo size="md" linked />
 
         {/* Desktop: nav + single action */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {NAV_ITEMS.length > 0 ? (
             <nav className="flex items-center" aria-label={ARIA.navPrimary}>
               {NAV_ITEMS.map((item) => (
@@ -379,24 +397,9 @@ function SiteHeader({
           )}
         </div>
 
-        {/* Mobile: login (guests) or menu (signed in) */}
-        <div className="flex items-center gap-2 sm:hidden">
-          {authed ? (
-            <button
-              type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-11 w-11 items-center justify-center text-dust transition hover:text-foreground"
-              aria-label={mobileOpen ? ARIA.closeMenu : ARIA.openMenu}
-              aria-expanded={mobileOpen}
-              aria-controls={MOBILE_NAV_ID}
-            >
-              {mobileOpen ? (
-                <X className="h-5 w-5" aria-hidden />
-              ) : (
-                <Menu className="h-5 w-5" aria-hidden />
-              )}
-            </button>
-          ) : (
+        {/* Mobile: menu for everyone, plus login for guests */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {authed ? null : (
             <Link
               to="/post-signup"
               hash="login"
@@ -405,22 +408,36 @@ function SiteHeader({
               התחברו
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="flex h-11 w-11 items-center justify-center text-dust transition hover:text-foreground"
+            aria-label={mobileOpen ? ARIA.closeMenu : ARIA.openMenu}
+            aria-expanded={mobileOpen}
+            aria-controls={MOBILE_NAV_ID}
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" aria-hidden />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Mobile dropdown (signed-in only) */}
+      {/* Mobile dropdown */}
       <AnimatePresence>
-        {authed && mobileOpen && (
+        {mobileOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm sm:hidden"
+            className="overflow-hidden border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden"
           >
             <nav
               id={MOBILE_NAV_ID}
-              className="mx-auto flex max-w-7xl flex-col px-4 py-3"
+              className="mx-auto flex max-w-7xl flex-col px-4 pt-1 pb-4"
               aria-label={ARIA.navMobile}
             >
               {NAV_ITEMS.map((item) => (
@@ -428,11 +445,19 @@ function SiteHeader({
                   key={item.to}
                   to={item.to}
                   activeOptions={"exact" in item && item.exact ? { exact: true } : undefined}
-                  className="px-2 py-2.5 text-sm font-medium transition-colors"
-                  inactiveProps={{ className: "text-dust" }}
+                  className="flex min-h-12 items-center justify-between border-b border-iron/15 px-2 text-base font-semibold transition-colors"
+                  inactiveProps={{ className: "text-foreground/85" }}
                   activeProps={{ className: "text-primary" }}
                 >
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      {item.label}
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-primary" : "bg-transparent"}`}
+                        aria-hidden
+                      />
+                    </>
+                  )}
                 </Link>
               ))}
               {authed ? (
@@ -446,10 +471,9 @@ function SiteHeader({
               ) : (
                 <Link
                   to="/post-signup"
-                  hash="login"
-                  className="px-2 py-2.5 text-sm font-semibold text-primary"
+                  className="btn-primary mt-4 flex min-h-12 items-center justify-center text-base"
                 >
-                  התחברו
+                  בדקו התאמה בחינם
                 </Link>
               )}
             </nav>
@@ -478,9 +502,9 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
     <Link
       to={to}
       activeOptions={exact ? { exact: true } : undefined}
-      className="relative px-3 py-1.5 text-sm font-medium transition-colors"
+      className="relative flex h-14 items-center px-3 text-sm font-semibold whitespace-nowrap transition-colors"
       inactiveProps={{
-        className: "text-dust hover:text-foreground",
+        className: "text-dust hover:bg-foreground/5 hover:text-foreground",
       }}
       activeProps={{
         className: "text-foreground",
@@ -492,7 +516,7 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
           {isActive && (
             <motion.span
               layoutId="nav-indicator"
-              className="absolute inset-x-2 -bottom-[1px] h-[2px] bg-primary"
+              className="absolute inset-x-3 bottom-0 h-[2px] bg-primary"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}

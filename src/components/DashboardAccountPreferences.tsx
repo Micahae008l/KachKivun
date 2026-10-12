@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { PreferenceOptionGrid } from "@/components/PreferenceOptionGrid";
 import { DraftDateField } from "@/components/DraftDateField";
-import { getDashboardStats, updateProfile, type DashboardResponse } from "@/lib/api";
+import {
+  deleteAccount,
+  getDashboardStats,
+  logoutRequest,
+  updateProfile,
+  type DashboardResponse,
+} from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
 import {
   COMBAT_PREFERENCE_OPTIONS,
   FITNESS_PREFERENCE_OPTIONS,
@@ -14,12 +22,7 @@ import {
   type FitnessPreferenceValue,
   type FocusPreferenceValue,
 } from "@/lib/profile-preference-data";
-import {
-  coerceCombat,
-  coerceFitness,
-  coerceFocus,
-  draftDateToYmd,
-} from "@/lib/profile-resume";
+import { coerceCombat, coerceFitness, coerceFocus, draftDateToYmd } from "@/lib/profile-resume";
 import { ARIA } from "@/lib/a11y";
 
 const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
@@ -142,7 +145,10 @@ export function DashboardAccountPreferences({ data }: Props) {
           <Settings2 className="h-5 w-5 shrink-0 text-primary" aria-hidden />
           <div className="text-right">
             <p className="font-mono text-[10px] tracking-wide text-primary uppercase">חשבון</p>
-            <h2 id="account-preferences-heading" className="text-base font-bold text-foreground sm:text-lg">
+            <h2
+              id="account-preferences-heading"
+              className="text-base font-bold text-foreground sm:text-lg"
+            >
               העדפות ופרטים אישיים
             </h2>
           </div>
@@ -178,7 +184,11 @@ export function DashboardAccountPreferences({ data }: Props) {
 
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-foreground">כיוון שירות</p>
-                <PreferenceOptionGrid options={COMBAT_PREFERENCE_OPTIONS} selected={combat} onSelect={setCombat} />
+                <PreferenceOptionGrid
+                  options={COMBAT_PREFERENCE_OPTIONS}
+                  selected={combat}
+                  onSelect={setCombat}
+                />
               </div>
 
               <div className="space-y-3">
@@ -203,7 +213,9 @@ export function DashboardAccountPreferences({ data }: Props) {
 
               {data.user.status === "Pre-Draft" && (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground">תאריך גיוס משוער</label>
+                  <label className="block text-sm font-medium text-foreground">
+                    תאריך גיוס משוער
+                  </label>
                   <DraftDateField value={draftDate} onChange={setDraftDate} />
                 </div>
               )}
@@ -229,16 +241,100 @@ export function DashboardAccountPreferences({ data }: Props) {
                   className="inline-flex min-w-[9rem] items-center justify-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-70"
                 >
                   {saving ? (
-                    <span className="h-4 w-24 animate-pulse rounded-sm bg-primary-foreground/30" aria-hidden />
+                    <span
+                      className="h-4 w-24 animate-pulse rounded-sm bg-primary-foreground/30"
+                      aria-hidden
+                    />
                   ) : (
                     "שמירת העדפות"
                   )}
                 </button>
               </div>
+
+              <DeleteAccount />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </section>
+  );
+}
+
+const DELETE_WORD = "מחיקה";
+
+/** Self-service account deletion: closed by default, and armed only by typing the word. */
+function DeleteAccount() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const armed = typed.trim() === DELETE_WORD;
+
+  async function remove() {
+    if (!armed || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(DELETE_WORD);
+      await logoutRequest();
+      queryClient.clear();
+      toast.success("החשבון והנתונים האישיים נמחקו");
+      void navigate({ to: "/" });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "המחיקה נכשלה. נסו שוב או פנו אלינו."));
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div className="border-t border-iron/20 pt-4 text-right">
+      {open ? (
+        <div className="space-y-3 border border-destructive/40 bg-destructive/5 p-4">
+          <p className="text-sm font-bold text-foreground">מחיקת החשבון לצמיתות</p>
+          <p className="text-xs leading-5 text-dust">
+            יימחקו הפרופיל, תשובות השאלון, ההתאמות וההיסטוריה שלכם. אי אפשר לשחזר. רשומות תשלום
+            נשמרות לפי החוק, כמפורט במדיניות הפרטיות.
+          </p>
+          <label className="block text-xs text-dust">
+            כדי לאשר, הקלידו <strong className="text-foreground">{DELETE_WORD}</strong>
+            <input
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              className="input-field mt-1.5 w-full"
+              autoComplete="off"
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void remove()}
+              disabled={!armed || deleting}
+              aria-busy={deleting}
+              className="inline-flex min-h-11 items-center rounded-md bg-destructive px-4 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-40"
+            >
+              {deleting ? "מוחקים…" : "מחקו את החשבון שלי"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setTyped("");
+              }}
+              className="inline-flex min-h-11 items-center rounded-md border border-iron/40 px-4 text-sm text-dust transition hover:text-foreground"
+            >
+              ביטול
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-xs text-dust underline underline-offset-4 transition hover:text-destructive"
+        >
+          מחיקת החשבון והנתונים שלי
+        </button>
+      )}
+    </div>
   );
 }

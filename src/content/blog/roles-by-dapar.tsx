@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Callout, H2, P, PostLink, type Source } from "@/components/blog/Prose";
 import { VerifiedRoles } from "@/components/blog/VerifiedRoles";
 import type { PostFaq } from "./index";
@@ -42,7 +43,15 @@ export function Body() {
       <P>
         שאלת ״איזה דפ״ר נחשב טוב״ מניחה שיש סולם אחד. בפועל דפ״ר 50 ודפ״ר 90 פותחים את אותה דלת אם
         הסף שלה הוא 50, ומשם מה שקובע הוא המיון. לכן השאלה המועילה היא הפוכה: אילו תפקידים נפתחים
-        בכל ציון. זו הרשימה, מתוך התפקידים שהסף שלהם אומת מול דף התפקיד הרשמי.
+        בכל ציון. זו הרשימה, מתוך התפקידים שהסף שלהם אומת מול דף התפקיד הרשמי. רוצים לבדוק את שני
+        המספרים שלכם יחד?{" "}
+        <Link
+          to="/role-calculator"
+          className="font-semibold text-primary underline decoration-primary/40 underline-offset-4"
+        >
+          מחשבון התפקידים
+        </Link>
+        .
       </P>
       <Callout title="איך לקרוא את הרשימות">
         כל תפקיד מופיע תחת הדפ״ר המינימלי שלו, ולצדו הפרופיל הנדרש. מי שיש לו ציון גבוה יותר עומד
