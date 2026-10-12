@@ -1,7 +1,12 @@
 const AUTH_RETURN_KEY = "kachkivun-auth-return";
-const ALLOWED_RETURN_TARGETS = new Set(["/checkout", "/cancellation", "/ai-counselor"]);
+const ALLOWED_RETURN_TARGETS = new Set([
+  "/checkout",
+  "/cancellation",
+  "/ai-counselor",
+  "/payment/return",
+]);
 
-export type AuthReturnTarget = "/checkout" | "/cancellation" | "/ai-counselor";
+export type AuthReturnTarget = "/checkout" | "/cancellation" | "/ai-counselor" | "/payment/return";
 
 export function rememberAuthReturnTarget(target: AuthReturnTarget): void {
   if (typeof window === "undefined" || !ALLOWED_RETURN_TARGETS.has(target)) return;

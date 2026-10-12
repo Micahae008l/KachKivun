@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   bootstrapAuth,
+  claimPayment,
   getPaymentOrder,
   getPaymentReturnStatus,
   restorePaymentReturnSession,
@@ -256,37 +257,17 @@ function PaymentReturnPage() {
   }
 
   if (!search.order) {
-    // The payment itself is matched on the server by the payer's email, so this is not an error.
-    return (
+    return isParentFlow ? (
       <ReturnShell>
         <ReceiptText className="mx-auto h-10 w-10 text-primary" aria-hidden />
         <h1 className="mt-5 text-2xl font-black text-foreground">חזרתם מהתשלום</h1>
         <p className="mt-3 text-sm leading-6 text-dust">
-          אם התשלום הושלם, מקומות 3, 2 ו־1 נפתחים אוטומטית בחשבון של האימייל ששילמתם איתו, בדרך כלל
-          תוך דקה.
+          אם התשלום הושלם, מקומות 3, 2 ו־1 נפתחים בחשבון של מי שקיבל את הקישור, בדרך כלל תוך דקה.
         </p>
-        {isParentFlow ? (
-          <BackToSite />
-        ) : getToken() ? (
-          <BackToCounselor primary />
-        ) : (
-          <Link
-            to="/post-signup"
-            hash="login"
-            onClick={() => rememberAuthReturnTarget("/ai-counselor")}
-            className="mt-6 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
-          >
-            התחברות וצפייה בתוצאות
-          </Link>
-        )}
-        <p className="mt-6 text-xs leading-5 text-dust">
-          שילמתם והמקומות לא נפתחו אחרי כמה דקות?{" "}
-          <Link to="/contact" className="font-semibold text-primary hover:underline">
-            כתבו לנו
-          </Link>{" "}
-          עם האימייל ששילמתם איתו ונפתח ידנית.
-        </p>
+        <BackToSite />
       </ReturnShell>
+    ) : (
+      <ClaimPaymentPanel signedIn={Boolean(getToken())} />
     );
   }
 
@@ -425,6 +406,161 @@ function PaymentReturnPage() {
         בדיקה מחדש
       </button>
       {isParentFlow ? <BackToSite /> : <BackToCounselor />}
+    </ReturnShell>
+  );
+}
+
+const AUTO_CLAIM_DELAYS_MS = [0, 5_000, 15_000];
+
+/**
+ * Grow's fixed link comes back with no order. Payments are matched by email, phone or the time
+ * of checkout; anything left over is parked, and this panel attaches it to the signed-in buyer:
+ * automatically by the account's own email and phone, or by the one they typed on Grow's page.
+ */
+function ClaimPaymentPanel({ signedIn }: { signedIn: boolean }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [state, setState] = useState<"checking" | "idle" | "not_found" | "error" | "paid">(
+    signedIn ? "checking" : "idle",
+  );
+  const [contact, setContact] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function unlocked() {
+    setState("paid");
+    await queryClient.invalidateQueries();
+    window.setTimeout(() => navigate({ to: "/ai-counselor", replace: true }), 2_500);
+  }
+
+  useEffect(() => {
+    if (!signedIn) return;
+    let cancelled = false;
+    void (async () => {
+      // The webhook can land a few seconds after the buyer does, so look a few times.
+      for (const delay of AUTO_CLAIM_DELAYS_MS) {
+        if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+        if (cancelled) return;
+        try {
+          const { state: result } = await claimPayment();
+          if (cancelled) return;
+          if (result !== "not_found") return void unlocked();
+        } catch {
+          // keep trying; the form below still works
+        }
+      }
+      if (!cancelled) setState("idle");
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn]);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!contact.trim()) return;
+    setBusy(true);
+    try {
+      const { state: result } = await claimPayment(contact.trim());
+      if (result === "not_found") setState("not_found");
+      else await unlocked();
+    } catch {
+      setState("error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (state === "checking") {
+    return (
+      <ReturnShell>
+        <Loader2 className="mx-auto h-9 w-9 animate-spin text-primary" aria-hidden />
+        <h1 className="mt-5 text-2xl font-black text-foreground">מחפשים את התשלום שלכם</h1>
+        <p className="mt-3 text-sm leading-6 text-dust" aria-live="polite">
+          זה לוקח כמה שניות.
+        </p>
+      </ReturnShell>
+    );
+  }
+
+  if (state === "paid") {
+    return (
+      <ReturnShell>
+        <CheckCircle2 className="mx-auto h-10 w-10 text-primary" aria-hidden />
+        <h1 className="mt-5 text-2xl font-black text-foreground">התשלום נמצא</h1>
+        <p className="mt-3 text-sm leading-6 text-dust" aria-live="polite">
+          מקומות 3, 2 ו־1 פתוחים בחשבון שלכם. עוברים לתוצאות…
+        </p>
+        <BackToCounselor primary />
+      </ReturnShell>
+    );
+  }
+
+  return (
+    <ReturnShell>
+      <ReceiptText className="mx-auto h-10 w-10 text-primary" aria-hidden />
+      <h1 className="mt-5 text-2xl font-black text-foreground">חזרתם מהתשלום</h1>
+      {signedIn ? (
+        <>
+          <p className="mt-3 text-sm leading-6 text-dust">
+            עדיין לא מצאנו תשלום עם האימייל או הטלפון של החשבון הזה. שילמתם עם פרטים אחרים? כתבו
+            אותם כאן ונחבר את התשלום לחשבון.
+          </p>
+          <form onSubmit={submit} className="mt-5 flex flex-col gap-2 text-right sm:flex-row">
+            <label htmlFor="claim-contact" className="sr-only">
+              האימייל או הטלפון ששילמתם איתו
+            </label>
+            <input
+              id="claim-contact"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="אימייל או טלפון מהתשלום"
+              autoComplete="email"
+              dir="ltr"
+              className="min-h-11 flex-1 rounded-md border border-iron/40 bg-background px-3 text-sm text-foreground outline-none focus:border-primary/60"
+            />
+            <button
+              type="submit"
+              disabled={busy || !contact.trim()}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+              חיבור התשלום
+            </button>
+          </form>
+          {state === "not_found" ? (
+            <p role="alert" className="mt-3 text-xs leading-5 text-amber-300">
+              לא מצאנו תשלום עם הפרטים האלה. שילמתם הרגע? נסו שוב בעוד דקה.
+            </p>
+          ) : state === "error" ? (
+            <p role="alert" className="mt-3 text-xs leading-5 text-amber-300">
+              משהו השתבש. נסו שוב בעוד רגע.
+            </p>
+          ) : null}
+          <BackToCounselor />
+        </>
+      ) : (
+        <>
+          <p className="mt-3 text-sm leading-6 text-dust">
+            התחברו לחשבון שלכם ונמצא את התשלום ונחבר אותו אליו.
+          </p>
+          <Link
+            to="/post-signup"
+            hash="login"
+            onClick={() => rememberAuthReturnTarget("/payment/return")}
+            className="mt-6 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            התחברות וחיבור התשלום
+          </Link>
+        </>
+      )}
+      <p className="mt-6 text-xs leading-5 text-dust">
+        עדיין תקוע?{" "}
+        <Link to="/contact" className="font-semibold text-primary hover:underline">
+          כתבו לנו
+        </Link>{" "}
+        ונסדר.
+      </p>
     </ReturnShell>
   );
 }

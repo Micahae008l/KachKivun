@@ -161,6 +161,17 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 /** Back from the payment page without a login cookie: the order's return token restores it once. */
+export type ClaimPaymentState = "paid" | "already_unlocked" | "not_found";
+
+/** Attach a payment Grow could not match to this account (own email/phone, or `contact`). */
+export function claimPayment(contact = "") {
+  return apiFetch<{ state: ClaimPaymentState }>("/api/payments/claim", {
+    method: "POST",
+    body: JSON.stringify({ contact }),
+    retries: 0,
+  });
+}
+
 export function restorePaymentReturnSession(order: string, token: string) {
   return apiFetch<LoginResponse>("/api/auth/payment-return-session", {
     method: "POST",

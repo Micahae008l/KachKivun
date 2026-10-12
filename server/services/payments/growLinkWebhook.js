@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import PaymentOrder from "../../models/PaymentOrder.js";
+import UnclaimedPayment from "../../models/UnclaimedPayment.js";
 import User from "../../models/User.js";
 import { getRecommendationAccessForUser } from "../../utils/recommendationAccess.js";
 import { acceptedAmountsMinor, AI_COUNSELOR_TOP_TWO_PRODUCT_KEY, getPaymentProduct } from "./catalog.js";
@@ -195,9 +196,13 @@ async function findOrCreateOrderForPayer(payer, productKey) {
   if (!payer.payerEmail && !payer.payerPhone) return { order: null, reason: "no_payer_contact" };
   const { user, via } = await findUserForPayer(payer);
   if (!user) return { order: null, reason: "no_account_for_payer" };
+  return orderForUser(user._id, payer.amountMinor, productKey, via);
+}
 
+/** The user's open link order, or a fresh pending one to settle the payment against. */
+async function orderForUser(userId, amountMinor, productKey, via) {
   const pending = await PaymentOrder.findOne({
-    userId: user._id,
+    userId,
     provider: "grow_link",
     productKey,
     status: { $in: ["pending", "processing"] },
@@ -206,20 +211,20 @@ async function findOrCreateOrderForPayer(payer, productKey) {
     .select(PAYMENT_PRIVATE_SELECT);
   if (pending) return { order: pending, reason: `${via}_pending_order` };
 
-  const access = await getRecommendationAccessForUser(user._id);
+  const access = await getRecommendationAccessForUser(userId);
   if (access.topTwoUnlocked) return { order: null, reason: "already_unlocked" };
 
   const product = getPaymentProduct(productKey);
-  const openOrderKey = paymentOpenOrderKey(user._id, product.productKey);
+  const openOrderKey = paymentOpenOrderKey(userId, product.productKey);
   await PaymentOrder.updateMany(
     { openOrderKey, status: { $in: ["created", "failed"] } },
     { $set: { status: "expired", openOrderKey: null, expiredAt: new Date() } },
   );
   const order = await PaymentOrder.create({
-    userId: user._id,
+    userId,
     productKey: product.productKey,
     // Record what was actually paid (sale or regular price; both passed the gate).
-    amountMinor: Number.isSafeInteger(payer.amountMinor) ? payer.amountMinor : product.amountMinor,
+    amountMinor: Number.isSafeInteger(amountMinor) ? amountMinor : product.amountMinor,
     currency: product.currency,
     provider: "grow_link",
     status: "pending",
@@ -227,6 +232,96 @@ async function findOrCreateOrderForPayer(payer, productKey) {
     returnSecretHash: hashPaymentSecret(createOpaqueSecret()),
   });
   return { order, reason: `${via}_new_order` };
+}
+
+const RECENT_CHECKOUT_MS = 30 * 60 * 1000;
+
+/**
+ * Nothing on the payment names an account, but if exactly one person pressed "pay" in the last
+ * 30 minutes and has not paid yet, this payment is theirs. Two or more at once stay unmatched.
+ */
+async function findRecentCheckoutOrder(productKey, now = Date.now()) {
+  const orders = await PaymentOrder.find({
+    provider: "grow_link",
+    productKey,
+    status: { $in: ["pending", "processing"] },
+    checkoutStartedAt: { $gte: new Date(now - RECENT_CHECKOUT_MS) },
+  })
+    .sort({ checkoutStartedAt: -1 })
+    .limit(5)
+    .select(PAYMENT_PRIVATE_SELECT);
+  const users = new Set(orders.map((order) => String(order.userId)));
+  return users.size === 1 ? orders[0] : null;
+}
+
+/** What a buyer typed to find their payment: an email, or an Israeli mobile number. */
+export function parseClaimContact(value) {
+  const raw = text(value, 254).toLowerCase();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return { email: raw, phone: "" };
+  return { email: "", phone: israeliMobileDigits(raw) };
+}
+
+const CLAIM_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * A signed-in buyer attaches a parked payment to their account. Their own email and phone are
+ * always tried; `contact` adds the email or phone they typed on Grow's page if it was different.
+ */
+export async function claimUnclaimedPayment({
+  userId,
+  contact = "",
+  env = process.env,
+  persistence = paymentPersistence,
+  productKey = AI_COUNSELOR_TOP_TWO_PRODUCT_KEY,
+}) {
+  const user = await User.findById(userId).select("email phone").lean();
+  if (!user) return { state: "not_found" };
+  const access = await getRecommendationAccessForUser(userId);
+  if (access.topTwoUnlocked) return { state: "already_unlocked" };
+
+  const typed = parseClaimContact(contact);
+  const emails = [...new Set([text(user.email, 254).toLowerCase(), typed.email].filter(Boolean))];
+  const phones = [...new Set([israeliMobileDigits(user.phone), typed.phone].filter(Boolean))];
+  if (!emails.length && !phones.length) return { state: "not_found" };
+
+  const payment = await UnclaimedPayment.findOneAndUpdate(
+    {
+      claimedAt: null,
+      createdAt: { $gte: new Date(Date.now() - CLAIM_WINDOW_MS) },
+      $or: [
+        ...(emails.length ? [{ payerEmail: { $in: emails } }] : []),
+        ...(phones.length ? [{ payerPhone: { $in: phones } }] : []),
+      ],
+    },
+    { $set: { claimedBy: userId, claimedAt: new Date() } },
+    { new: true, sort: { createdAt: -1 } },
+  );
+  if (!payment) return { state: "not_found" };
+
+  try {
+    const { order } = await orderForUser(userId, payment.amountMinor, productKey, "claim");
+    if (!order) return { state: "already_unlocked" };
+    const finalized = await persistence.finalizePaid({
+      orderId: order._id,
+      evidence: { transactionId: payment.transactionId, statusCode: "2" },
+    });
+    logGrowLink("info", "paid (claimed by buyer)", {
+      transactionId: payment.transactionId,
+      order: order.publicId,
+    });
+    notifySlack(
+      env,
+      `:white_check_mark: A buyer claimed their unmatched payment (transaction ${payment.transactionId}); places 3, 2 and 1 unlocked.`,
+    );
+    return { state: finalized.status || "paid" };
+  } catch (error) {
+    // Put it back so the buyer (or the operator) can try again.
+    await UnclaimedPayment.updateOne(
+      { _id: payment._id },
+      { $set: { claimedBy: null, claimedAt: null } },
+    );
+    throw error;
+  }
 }
 
 /**
@@ -289,15 +384,30 @@ export async function processGrowLinkWebhook({
   let order = await findOrderForClaimCodes(evidence.claimCodes);
   let reason = order ? "claim_code" : "";
   if (!order) ({ order, reason } = await findOrCreateOrderForPayer(evidence, productKey));
+  if (!order && reason !== "already_unlocked") {
+    order = await findRecentCheckoutOrder(productKey);
+    if (order) reason = "recent_checkout";
+  }
   if (!order) {
-    logGrowLink("error", `UNMATCHED payment needs manual review (${reason})`, {
+    await UnclaimedPayment.updateOne(
+      { transactionId: evidence.transactionId },
+      {
+        $setOnInsert: {
+          amountMinor: evidence.amountMinor,
+          payerEmail: evidence.payerEmail,
+          payerPhone: evidence.payerPhone,
+        },
+      },
+      { upsert: true },
+    );
+    logGrowLink("warn", `unmatched payment parked for the buyer to claim (${reason})`, {
       ...summary,
       payerEmail: evidence.payerEmail,
       payerPhone: evidence.payerPhone,
     });
     notifySlack(
       env,
-      `:rotating_light: ₪${evidence.amountMinor / 100} paid but NOT matched to an account (${reason}). Transaction ${evidence.transactionId}, payer ${evidence.payerEmail || "no email"}. Unlock it by hand or refund.`,
+      `:hourglass: ₪${evidence.amountMinor / 100} paid, not matched yet (${reason.replace(/_/g, " ")}). The buyer can claim it from their account with ${evidence.payerEmail || "the phone they paid with"}. Transaction ${evidence.transactionId}.`,
     );
     return { state: "unmatched", reason };
   }

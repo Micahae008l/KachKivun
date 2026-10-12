@@ -14,7 +14,10 @@ import {
   refundPaymentOrder,
 } from "../services/payments/paymentService.js";
 import { sendPaymentError } from "../services/payments/errors.js";
-import { processGrowLinkWebhook } from "../services/payments/growLinkWebhook.js";
+import {
+  claimUnclaimedPayment,
+  processGrowLinkWebhook,
+} from "../services/payments/growLinkWebhook.js";
 
 export function getOffer(_req, res) {
   try {
@@ -90,6 +93,16 @@ export async function listOrders(req, res) {
     return res.json({ orders });
   } catch (error) {
     return sendPaymentError(res, error, "[payments/orders]");
+  }
+}
+
+/** Attach a payment that matched no account to the signed-in buyer (see growLinkWebhook). */
+export async function claimPayment(req, res) {
+  try {
+    const contact = typeof req.body?.contact === "string" ? req.body.contact : "";
+    return res.json(await claimUnclaimedPayment({ userId: req.userId, contact }));
+  } catch (error) {
+    return sendPaymentError(res, error, "[payments/claim]");
   }
 }
 

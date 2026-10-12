@@ -6,6 +6,7 @@ import {
   processGrowLinkWebhook,
   unflattenBracketKeys,
   israeliMobileDigits,
+  parseClaimContact,
   verifyGrowLinkWebhookSecret,
 } from "../services/payments/growLinkWebhook.js";
 import { createClaimCode } from "../services/payments/paymentService.js";
@@ -185,4 +186,10 @@ test("payer phone normalizes to the 9 local mobile digits", () => {
   assert.equal(israeliMobileDigits("031234567"), "");
   assert.equal(israeliMobileDigits(""), "");
   assert.equal(normalizeGrowLinkWebhook({ "data[payerPhone]": "0521112233" }).payerPhone, "521112233");
+});
+
+test("a claim accepts the email or the phone the buyer paid with", () => {
+  assert.deepEqual(parseClaimContact(" Dan@Mail.com "), { email: "dan@mail.com", phone: "" });
+  assert.deepEqual(parseClaimContact("+972-50-123-4567"), { email: "", phone: "501234567" });
+  assert.deepEqual(parseClaimContact("not a contact"), { email: "", phone: "" });
 });

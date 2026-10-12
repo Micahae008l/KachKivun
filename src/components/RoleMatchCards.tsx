@@ -568,7 +568,9 @@ function TopPlacesVault({
                           </span>
                         ) : null}
                         {role.combat != null ? (
-                          <span className="text-foreground">{role.combat ? "קרבי" : "לא קרבי"}</span>
+                          <span className="text-foreground">
+                            {role.combat ? "קרבי" : "לא קרבי"}
+                          </span>
                         ) : null}
                         {role.admissionChance ? (
                           <span className="text-foreground">{role.admissionChance.label}</span>
@@ -618,7 +620,14 @@ function TopPlacesVault({
               </Link>
             </div>
             <p className="mt-3 text-xs leading-5 text-dust/80">
-              תשלום מאובטח דרך Grow, כולל מע״מ ככל שחל. נשאר פתוח בחשבון לתמיד.
+              תשלום מאובטח דרך Grow, כולל מע״מ ככל שחל. נשאר פתוח בחשבון לתמיד.{" "}
+              <Link
+                to="/payment/return"
+                search={{ interrupted: false }}
+                className="font-semibold text-primary hover:underline"
+              >
+                כבר שילמתם?
+              </Link>
             </p>
           </>
         ) : (

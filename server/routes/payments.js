@@ -1,8 +1,10 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import {
   cancelOrder,
   checkout,
   checkoutShare,
+  claimPayment,
   createShare,
   getOffer,
   getOrderStatus,
@@ -26,6 +28,15 @@ import {
 
 const router = Router();
 
+// Claims are looked up by email or phone, so keep guessing slow.
+const claimLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "יותר מדי ניסיונות. נסו שוב בעוד 15 דקות.", code: "RATE_LIMIT_CLAIM" },
+});
+
 router.get("/offer", getOffer);
 router.post(
   "/checkout",
@@ -48,6 +59,7 @@ router.post(
   validateRequest(validateShareCheckout),
   checkoutShare,
 );
+router.post("/claim", authenticateToken, claimLimiter, claimPayment);
 router.get("/orders", authenticateToken, listOrders);
 router.get("/orders/:publicId", authenticateToken, getOrderStatus);
 router.get("/return/:publicId/:returnToken", getReturnStatus);
