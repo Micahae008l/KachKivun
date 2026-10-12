@@ -208,6 +208,8 @@ export function CheckoutPage({ shareToken }: Props) {
   }, [isSharedCheckout, mounted, navigate, offer?.enabled, token]);
 
   const hosted = Boolean(info?.hostedPayerDetails);
+  // Signed-in buyers pay with their account email, so they can go straight to Grow in one click.
+  const accountEmail = isSharedCheckout ? "" : (sessionQuery.data?.email ?? "");
   const configuredMethods = useMemo(() => info?.paymentMethods ?? [], [info?.paymentMethods]);
   const methods = useMemo(
     () =>
@@ -291,6 +293,12 @@ export function CheckoutPage({ shareToken }: Props) {
         setReturnPath(
           rememberPaymentReturn(response.order, isSharedCheckout ? "parent" : "account"),
         );
+        // Signed-in buyers are matched by email; the order code is only a fallback, so skip the
+        // in-between screen (users read the confirmation email as "done" and never clicked again).
+        if (accountEmail && response.order.checkoutUrl) {
+          void navigator.clipboard?.writeText(response.order.claimCode).catch(() => undefined);
+          window.location.assign(response.order.checkoutUrl);
+        }
         return;
       }
       if (!response.order.checkoutUrl) {
@@ -541,7 +549,7 @@ export function CheckoutPage({ shareToken }: Props) {
           {order?.claimCode && order.checkoutUrl ? (
             <GrowLinkHandoff
               claimCode={order.claimCode}
-              accountEmail={isSharedCheckout ? "" : (sessionQuery.data?.email ?? "")}
+              accountEmail={accountEmail}
               checkoutUrl={order.checkoutUrl}
               returnPath={returnPath || `/payment/return?order=${encodeURIComponent(order.id)}`}
               price={price}
@@ -712,6 +720,16 @@ export function CheckoutPage({ shareToken }: Props) {
                 </p>
               ) : null}
 
+              {hosted && accountEmail ? (
+                <p className="border border-primary/40 bg-primary/10 px-4 py-3 text-sm leading-6 text-dust">
+                  בעמוד התשלום של Grow הזינו את האימייל{" "}
+                  <strong className="text-foreground" dir="ltr">
+                    {accountEmail}
+                  </strong>
+                  , כך נזהה את התשלום שלכם. את השדה &quot;קוד הזמנה&quot; אפשר להשאיר ריק.
+                </p>
+              ) : null}
+
               <button
                 type="submit"
                 disabled={
@@ -724,7 +742,7 @@ export function CheckoutPage({ shareToken }: Props) {
                 ) : (
                   <LockKeyhole className="h-4 w-4" aria-hidden />
                 )}
-                {hosted ? `קבלת קוד הזמנה · ${price}` : `מעבר לתשלום מאובטח · ${price}`}
+                {hosted && !accountEmail ? `המשך לתשלום · ${price}` : `מעבר לתשלום מאובטח · ${price}`}
               </button>
               <p className="text-center text-xs leading-5 text-dust">
                 {hosted
