@@ -34,6 +34,7 @@ import RoleRecommendation from "../models/RoleRecommendation.js";
 import { getRecommendationAccessForUser } from "../utils/recommendationAccess.js";
 import { serializeRecommendation } from "../utils/recommendationSerializer.js";
 import { sendServerError } from "../utils/httpError.js";
+import { buildProfileForMatch } from "../utils/matchProfile.js";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -652,28 +653,11 @@ export async function matchRoles(req, res) {
       });
     }
 
-    // Migrate yom hameah to 12-key format
-    const yom = migrateLegacyYomHameah(stats.yomHameah);
+    const profileForMatch = buildProfileForMatch(stats, preferences, latestAssessment);
+    const yom = profileForMatch.yom;
     const yomForLegacyScoring =
       preferences?.yomHameahSource === "unknown" ? null : yom;
-
-    const assessmentSignals = normalizeAssessmentSignals(latestAssessment?.answers);
-    const profileForMatch = {
-      daparScore:
-        stats.daparScore ??
-        (latestAssessment?.answers?.daparScore === "unknown" ? "unknown" : null),
-      medicalProfile:
-        stats.medicalProfile ??
-        (latestAssessment?.answers?.medicalProfile === "unknown" ? "unknown" : null),
-      gender: stats.gender,
-      combatPreference: preferences?.combatPreference,
-      focus: preferences?.focus,
-      physicalActivityLevel: preferences?.physicalActivityLevel,
-      yom,
-      yomSource: preferences?.yomHameahSource || null,
-      assessmentSignals,
-      personalRequest: String(latestAssessment?.answers?.extraNote || "").trim().slice(0, 400),
-    };
+    const assessmentSignals = profileForMatch.assessmentSignals;
     const profileNotice = buildProfileNotice(profileForMatch);
     const catalogV3 = getIdfRoleCatalogV3();
     const catalogVersion = catalogV3?.schemaVersion || "idf-role-catalog-unknown";

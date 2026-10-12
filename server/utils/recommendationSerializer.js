@@ -79,12 +79,26 @@ function serializeFullRole(role, rank) {
   };
 }
 
+/** The broad field only ("מודיעין / סיגינט" -> "מודיעין"): enough to tempt, not enough to name the role. */
+function broadField(category) {
+  return text(category).split("/")[0].trim();
+}
+
+/**
+ * A locked place shows two hints besides its score: the broad field and the admission-chance
+ * level. Never the title, the sub-field, the chance's reasoning or anything else from the role.
+ */
 function serializeLockedRole(role, rank) {
+  const level = role.admissionChance?.level;
   return {
     kind: "locked",
     locked: true,
     rank,
     matchPercentage: numberOrNull(role.matchPercentage) ?? 0,
+    field: broadField(role.category),
+    admissionChance: ["high", "medium", "low"].includes(level)
+      ? { level, label: text(role.admissionChance.label) }
+      : null,
   };
 }
 

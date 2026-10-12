@@ -464,6 +464,8 @@ function UnlockedRoleCard({
 const VAULT_PERKS = [
   "שם התפקיד, והסבר למה הוא מתאים דווקא לכם",
   "סיכויי קבלה ועובדות מפתח על התפקיד",
+  "תוכנית מוכנה לשאלון ההעדפות: מה לדרג 5, 4 ו־3",
+  "מה היה נפתח לכם עם דפ״ר או פרופיל גבוה יותר",
   "נפתח לתמיד, גם בכל סבב התאמות חדש",
   "תשלום אחד, בלי מנוי",
 ];
@@ -548,10 +550,27 @@ function TopPlacesVault({
                       <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
                       {LOCKED_TITLE[role.rank] ?? "התאמה חזקה"}
                     </p>
-                    <div className="mt-2 space-y-1.5 opacity-60" aria-hidden>
-                      <div className="h-3.5 w-36 max-w-full rounded-sm bg-iron/40 blur-[3px]" />
-                      <div className="h-2.5 w-52 max-w-full rounded-sm bg-iron/25 blur-[3px]" />
-                    </div>
+                    <div
+                      className="mt-2 h-3.5 w-36 max-w-full rounded-sm bg-iron/40 opacity-60 blur-[3px]"
+                      aria-hidden
+                    />
+                    {role.field || role.admissionChance ? (
+                      <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-dust">
+                        {role.field ? (
+                          <span>
+                            תחום: <strong className="text-foreground">{role.field}</strong>
+                          </span>
+                        ) : null}
+                        {role.admissionChance ? (
+                          <span className="text-foreground">{role.admissionChance.label}</span>
+                        ) : null}
+                      </p>
+                    ) : (
+                      <div
+                        className="mt-1.5 h-2.5 w-52 max-w-full rounded-sm bg-iron/25 opacity-60 blur-[3px]"
+                        aria-hidden
+                      />
+                    )}
                   </div>
                   <MatchRing
                     percentage={role.matchPercentage}

@@ -16,6 +16,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PostSignupRouteImport } from './routes/post-signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -67,6 +68,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/dashboard'
+    | '/demo'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/dashboard'
+    | '/demo'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/dashboard'
+    | '/demo'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  DemoRoute: typeof DemoRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PostSignupRoute: typeof PostSignupRoute
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -536,6 +556,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  DemoRoute: DemoRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PostSignupRoute: PostSignupRoute,

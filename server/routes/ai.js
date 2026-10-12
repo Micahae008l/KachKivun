@@ -8,11 +8,14 @@ import {
   deleteMatchHistory,
 } from "../controllers/matchHistoryController.js";
 
+import { getMatchExtras } from "../controllers/matchExtrasController.js";
+
 const router = Router();
 
 router.get("/match-history", authenticateToken, listMatchHistory);
 router.get("/match-history/:id", authenticateToken, getMatchHistory);
 router.delete("/match-history/:id", authenticateToken, deleteMatchHistory);
+router.get("/match-extras", authenticateToken, getMatchExtras);
 router.post("/match-roles", authenticateToken, enforceTokenCap, matchRoles);
 
 export default router;

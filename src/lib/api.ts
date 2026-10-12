@@ -658,6 +658,9 @@ export type LockedRoleMatch = {
   locked: true;
   rank: number;
   matchPercentage: number;
+  /** Broad field of the hidden role, e.g. "מודיעין". Missing on results saved before this existed. */
+  field?: string;
+  admissionChance?: { level: "high" | "medium" | "low"; label: string } | null;
 };
 
 export type RoleMatch = UnlockedRoleMatch | LockedRoleMatch;
@@ -676,6 +679,53 @@ export function matchRolesRequest(options: { retry?: boolean } = {}) {
     method: "POST",
     body: JSON.stringify(options.retry ? { retry: true } : {}),
   });
+}
+
+export type QuestionnairePlanEntry = {
+  locked?: false;
+  roleTitle: string;
+  rank: number;
+  /** Suggested rating in the preferences questionnaire, 5 highest. */
+  rating: 3 | 4 | 5;
+  source: "match" | "backup";
+  category: string;
+  combat: boolean;
+  daparFloor: number | null;
+  medicalFloor: number | null;
+  notes: string[];
+};
+
+/** A paid place the user has not unlocked: its position and rating, without the role. */
+export type LockedPlanEntry = { locked: true; rank: number; rating: 3 | 4 | 5; source: "match" };
+
+export type WhatIfScenario = {
+  key: string;
+  metric: "dapar" | "profile";
+  from: number;
+  to: number;
+  openedCount: number;
+  /** Named roles; shorter than openedCount, and shorter still without the unlock. */
+  opened: {
+    roleTitle: string;
+    category: string;
+    combat: boolean;
+    daparFloor: number | null;
+    medicalFloor: number | null;
+  }[];
+  /** Empty without the unlock; enteringCount still says how many. */
+  enteringTopFive: string[];
+  enteringCount: number;
+};
+
+export type MatchExtras = {
+  unlocked: boolean;
+  plan: (QuestionnairePlanEntry | LockedPlanEntry)[];
+  whatIf: WhatIfScenario[];
+};
+
+export function getMatchExtras(recommendationId?: string | null) {
+  const query = recommendationId ? `?recommendationId=${encodeURIComponent(recommendationId)}` : "";
+  return apiFetch<MatchExtras>(`/api/ai/match-extras${query}`);
 }
 
 export type MatchHistoryItem = {
