@@ -1,6 +1,15 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, LayoutDashboard, LogOut, Pencil, ReceiptText, Shield, Sparkles, User } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Pencil,
+  ReceiptText,
+  Shield,
+  Sparkles,
+  User,
+} from "lucide-react";
 
 type Props = {
   displayName?: string;
@@ -62,10 +71,10 @@ export function ProfileMenu({
         <LayoutDashboard className="h-4 w-4 shrink-0 text-dust" aria-hidden />
         דשבורד
       </Link>
-      {/* Profile editing lives in the dashboard's account panel, which is open by default. */}
+      {/* Same steps as onboarding, with the saved answers selected. */}
       <Link
-        to="/dashboard"
-        hash="account-preferences-heading"
+        to="/post-signup"
+        hash="edit"
         onClick={close}
         className="flex items-center gap-2 px-3 py-2 text-sm text-foreground transition hover:bg-iron/10"
       >
@@ -107,7 +116,9 @@ export function ProfileMenu({
   if (variant === "list") {
     return (
       <div className="border-t border-iron/20 pt-2 mt-1">
-        <p className="px-2 pb-1 font-mono text-[10px] tracking-wide text-dust/60 uppercase">פרופיל</p>
+        <p className="px-2 pb-1 font-mono text-[10px] tracking-wide text-dust/60 uppercase">
+          פרופיל
+        </p>
         {items}
       </div>
     );
@@ -125,7 +136,10 @@ export function ProfileMenu({
       >
         <User className="h-4 w-4 shrink-0 text-dust" aria-hidden />
         <span className="truncate">{label}</span>
-        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-dust transition ${open ? "rotate-180" : ""}`} aria-hidden />
+        <ChevronDown
+          className={`h-3.5 w-3.5 shrink-0 text-dust transition ${open ? "rotate-180" : ""}`}
+          aria-hidden
+        />
       </button>
       {open ? (
         <div
