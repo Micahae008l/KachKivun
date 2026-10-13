@@ -123,8 +123,7 @@ function escapeHtml(value) {
 export function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
   const safeName = escapeHtml(siteName);
   const digits = String(code).replace(/\D/g, "");
-  const first = escapeHtml(digits.slice(0, 3));
-  const second = escapeHtml(digits.slice(3));
+  const safeDigits = escapeHtml(digits);
   const siteHref = appUrl ? escapeHtml(appUrl.replace(/\/$/, "")) : "";
 
   return `<!DOCTYPE html>
@@ -138,7 +137,7 @@ export function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
 </head>
 <body style="margin:0;padding:0;background:${C.bg};-webkit-text-size-adjust:100%;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
-    ${escapeHtml(digits)} הוא הקוד שלכם. תקף ל־${ttlMinutes} דקות.
+    Your verification code is ${safeDigits}. ${safeDigits} הוא הקוד שלכם. תקף ל־${ttlMinutes} דקות.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.bg};padding:40px 16px;">
     <tr>
@@ -149,7 +148,7 @@ export function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
               <p style="margin:0 0 28px;font-size:14px;font-weight:700;color:${C.olive};">${safeName}</p>
               <h1 style="margin:0 0 24px;font-size:22px;line-height:1.3;font-weight:700;color:${C.white};">קוד הכניסה שלכם</h1>
               <div style="direction:ltr;-webkit-user-select:all;-moz-user-select:all;user-select:all;cursor:pointer;font-family:'SF Mono',Menlo,Consolas,'Courier New',monospace;font-size:38px;font-weight:700;letter-spacing:0.18em;line-height:1;color:${C.white};padding:20px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border};">
-                <span>${first}</span><span style="margin-left:18px;">${second}</span>
+                ${safeDigits}
               </div>
               <p style="margin:20px 0 0;font-size:14px;line-height:1.6;color:${C.muted};">תקף ל־${ttlMinutes} דקות, לשימוש חד־פעמי.</p>
             </td>
@@ -171,6 +170,8 @@ export function buildOtpHtml({ siteName, code, ttlMinutes, appUrl }) {
 
 function buildOtpText({ siteName, code, ttlMinutes, appUrl }) {
   const lines = [
+    `Your verification code is ${code}.`,
+    "",
     `קוד הכניסה שלכם ל${siteName}:`,
     "",
     code,
@@ -187,7 +188,7 @@ export async function sendOtpEmail(email, code) {
   const appUrl = trimEnv("FRONTEND_URL");
 
   // Code first in subject → iOS/Android notification often shows it for one-tap fill/copy
-  const subject = `${code} הוא קוד הכניסה שלכם ל${SITE_NAME_HE}`;
+  const subject = `${code} הוא קוד הכניסה שלכם ל${SITE_NAME_HE} (verification code)`;
   const text = buildOtpText({ siteName: SITE_NAME_HE, code, ttlMinutes: OTP_TTL_MINUTES, appUrl });
   const html = buildOtpHtml({ siteName: SITE_NAME_HE, code, ttlMinutes: OTP_TTL_MINUTES, appUrl });
 

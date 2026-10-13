@@ -165,6 +165,7 @@ const RULES: { stimulus: Stimulus; tap: boolean; label: string }[] = [
 function AttentionTestPage() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [count, setCount] = useState(3);
+  const [trial, setTrial] = useState(0);
   const [visible, setVisible] = useState<Stimulus | null>(null);
   const [flash, setFlash] = useState<"good" | "bad" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -209,6 +210,7 @@ function AttentionTestPage() {
     (i: number) => {
       if (i >= sequence.current.length) return finish();
       current.current = i;
+      setTrial(i);
       answered.current = false;
       tappedDark.current = false;
       shownAt.current = performance.now();
@@ -373,6 +375,19 @@ function AttentionTestPage() {
           </div>
         ) : null}
 
+        {phase === "running" ? (
+          <div className="flex items-center gap-3 px-1 pt-2" aria-hidden>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-iron/20">
+              <div
+                className="h-full origin-right bg-primary transition-transform duration-300"
+                style={{ transform: `scaleX(${(trial + 1) / TRIALS})` }}
+              />
+            </div>
+            <span className="font-mono text-xs tabular-nums text-dust">
+              {trial + 1}/{TRIALS}
+            </span>
+          </div>
+        ) : null}
         {phase === "running" ? (
           <button
             type="button"

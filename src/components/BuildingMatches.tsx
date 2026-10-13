@@ -10,16 +10,19 @@ const BUILD_STEPS = [
 ];
 
 /** Shown while the matches are generated: real steps of the pipeline, ticking forward. */
+/** Seconds at which each step starts; the last one (writing five explanations) is the long one. */
+const STEP_AT = [0, 2.5, 5.5, 9, 13];
+
 export function BuildingMatches() {
-  const [step, setStep] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
-    const id = window.setInterval(
-      () => setStep((value) => Math.min(value + 1, BUILD_STEPS.length - 1)),
-      2600,
-    );
+    const started = Date.now();
+    const id = window.setInterval(() => setElapsed((Date.now() - started) / 1000), 250);
     return () => window.clearInterval(id);
   }, []);
-  const progress = (step + 1) / (BUILD_STEPS.length + 1);
+  const step = STEP_AT.filter((at) => elapsed >= at).length - 1;
+  // Never stalls and never claims to be done: approaches 95% while the answer is still coming.
+  const progress = 0.95 * (1 - Math.exp(-elapsed / 16));
 
   return (
     <section
@@ -36,7 +39,11 @@ export function BuildingMatches() {
           <h2 id="building-matches-heading" className="text-lg font-black text-foreground">
             מכינים לכם את ההתאמות
           </h2>
-          <p className="text-xs text-dust">בדרך כלל פחות מדקה.</p>
+          <p className="text-xs text-dust" aria-live="off">
+            {elapsed < 20
+              ? "בדרך כלל פחות מדקה."
+              : "כמעט שם. כותבים הסבר אישי לכל אחת מחמש ההתאמות, זה החלק הארוך."}
+          </p>
         </div>
       </div>
       <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-iron/20" aria-hidden>

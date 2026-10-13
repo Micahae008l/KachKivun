@@ -296,7 +296,20 @@ function UnlockedRoleCard({
   const headingId = useId();
   const detailsId = useId();
   const featured = role.rank === 1;
-  const why = role.description || role.summary;
+  // The summary is usually the explanation's first sentence; show it once, not twice.
+  const repeats = Boolean(role.summary && role.description?.startsWith(role.summary));
+  const rest = repeats ? role.description.slice(role.summary.length).trim() : "";
+  const showSummary = Boolean(role.summary && role.description) && (!repeats || Boolean(rest));
+  const why = repeats && rest ? rest : role.description || role.summary;
+  // null until measured; true when more than about two lines sit behind the 3-line clamp.
+  const [clampWorthIt, setClampWorthIt] = useState<boolean | null>(null);
+  const whyRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    const el = whyRef.current;
+    if (!el) return;
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 28;
+    setClampWorthIt(el.scrollHeight - el.clientHeight > lineHeight * 1.5);
+  }, [why]);
 
   return (
     <article
@@ -355,15 +368,16 @@ function UnlockedRoleCard({
             <h4 id={`${detailsId}-why`} className="text-sm font-black text-primary">
               למה זה מתאים לכם
             </h4>
-            {role.summary && role.description ? (
+            {showSummary ? (
               <p className="mt-1.5 text-base font-bold leading-7 text-foreground">{role.summary}</p>
             ) : null}
             <p
-              className={`mt-1.5 max-w-prose text-[15px] leading-7 text-foreground/85 ${readMore ? "" : "line-clamp-3"}`}
+              ref={whyRef}
+              className={`mt-1.5 max-w-prose text-[15px] leading-7 text-foreground/85 ${readMore || clampWorthIt === false ? "" : "line-clamp-3"}`}
             >
               {why || "לא סופק הסבר להתאמה זו."}
             </p>
-            {why.length > 180 && !readMore ? (
+            {clampWorthIt && !readMore ? (
               <button
                 type="button"
                 onClick={() => setReadMore(true)}

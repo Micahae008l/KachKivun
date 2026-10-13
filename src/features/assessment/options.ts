@@ -132,7 +132,7 @@ export const TECH_LEVEL_OPTIONS: readonly AssessmentOption<TechnicalLevel>[] = [
   { value: "basic", label: "בסיסי" },
   { value: "intermediate", label: "בינוני, כתבתי קצת קוד" },
   { value: "advanced", label: "גבוה, בניתי פרויקטים" },
-  { value: "expert", label: "מתקדם מאוד / CTF" },
+  { value: "expert", label: "מתקדם מאוד (תחרויות סייבר ופרויקטים גדולים)" },
 ];
 
 export const TECH_AREA_OPTIONS: readonly AssessmentOption<TechnicalArea>[] = [
