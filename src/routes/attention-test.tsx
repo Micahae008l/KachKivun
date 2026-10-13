@@ -49,6 +49,12 @@ const GRACE_MS = 250;
 /** The last third is faster, the way attention tests get harder as you tire. */
 const showMs = (index: number) => (index < TRIALS * 0.66 ? 800 : 650);
 
+/** "1:07", never below "0:00". */
+function formatLeft(ms: number) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
 /**
  * The dark screen between shapes is deliberately uneven: usually short, sometimes a second or
  * two, and now and then long enough that attention drifts before the next shape.
@@ -165,7 +171,9 @@ const RULES: { stimulus: Stimulus; tap: boolean; label: string }[] = [
 function AttentionTestPage() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [count, setCount] = useState(3);
-  const [trial, setTrial] = useState(0);
+  // When the last shape's gap ends; the sequence is fixed at start, so the countdown is exact.
+  const [endsAt, setEndsAt] = useState(0);
+  const [now, setNow] = useState(0);
   const [visible, setVisible] = useState<Stimulus | null>(null);
   const [flash, setFlash] = useState<"good" | "bad" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -185,6 +193,11 @@ function AttentionTestPage() {
     timers.current = [];
   };
   useEffect(() => clearTimers, []);
+  useEffect(() => {
+    if (phase !== "running") return;
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [phase]);
 
   const finish = useCallback(() => {
     const targets = sequence.current.filter((s) => s.target).length;
@@ -210,7 +223,6 @@ function AttentionTestPage() {
     (i: number) => {
       if (i >= sequence.current.length) return finish();
       current.current = i;
-      setTrial(i);
       answered.current = false;
       tappedDark.current = false;
       shownAt.current = performance.now();
@@ -239,6 +251,9 @@ function AttentionTestPage() {
     timers.current.push(
       window.setTimeout(() => {
         setPhase("running");
+        const total = sequence.current.reduce((sum, s, i) => sum + showMs(i) + s.gapMs, 0);
+        setEndsAt(Date.now() + total);
+        setNow(Date.now());
         runTrial(0);
       }, 2100),
     );
@@ -376,15 +391,9 @@ function AttentionTestPage() {
         ) : null}
 
         {phase === "running" ? (
-          <div className="flex items-center gap-3 px-1 pt-2" aria-hidden>
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-iron/20">
-              <div
-                className="h-full origin-right bg-primary transition-transform duration-300"
-                style={{ transform: `scaleX(${(trial + 1) / TRIALS})` }}
-              />
-            </div>
-            <span className="font-mono text-xs tabular-nums text-dust">
-              {trial + 1}/{TRIALS}
+          <div className="flex justify-center pt-3" aria-hidden>
+            <span className="font-mono text-2xl font-black tabular-nums text-primary">
+              {formatLeft(endsAt - now)}
             </span>
           </div>
         ) : null}
