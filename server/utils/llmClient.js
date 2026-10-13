@@ -42,12 +42,6 @@ export async function chatJson({ model, system, user, maxTokens = 8000, temperat
         max_tokens: maxTokens,
         system,
         messages: [{ role: "user", content: user }],
-        // Haiku 5.5 thinks by default: ~3,900 hidden tokens per match (two thirds of the wait) for
-        // picking from an already-ranked pool. Off unless AI_THINKING=on.
-        // ponytail: Haiku only; Opus 5.5 and Sonnet 5.5 reject "disabled".
-        ...(/haiku/i.test(model) && process.env.AI_THINKING !== "on"
-          ? { thinking: { type: "disabled" } }
-          : {}),
       }),
     });
     if (!response.ok) {
