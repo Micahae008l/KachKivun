@@ -263,6 +263,7 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
       return `${focuses} עם רמת פעילות ${FITNESS_LABEL[a.physicalActivityLevel]}. ${tail}`;
     }
     case "environment":
+      return null;
     case "style": {
       // One screen asks both: base and environment, then leadership and stress.
       const parts: string[] = [];
@@ -352,8 +353,7 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
       const line = a.motivations[0] ? (MOTIVATION_LINE[a.motivations[0]] ?? null) : null;
       return line && a.extraNote.trim() ? `${line} והיועץ יענה על הבקשה שלכם בראש התוצאות.` : line;
     }
-    case "identity":
-    case "review": {
+    case "identity": {
       const name = a.preferredName.trim();
       return name ? `נעים להכיר, ${name}. עוד רגע הפרופיל מוכן.` : null;
     }

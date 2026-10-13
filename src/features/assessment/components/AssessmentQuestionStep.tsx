@@ -134,40 +134,43 @@ export function AssessmentQuestionStep({
   }
 
   if (step === "environment") {
+    // Four quick questions on one phone screen: one row of short choices each (full text on hover
+    // and for screen readers).
     content = (
-      <div className="space-y-7">
-        <OptionSection
+      <div className="space-y-4">
+        <CompactChoice
           legend="בסיס פתוח או סגור?"
-          hint="צה״ל לא מפרסם מערכת יציאות קבועה לתפקיד; היא משתנה לפי יחידה ומצב ביטחוני. מה שכן מפורסם הוא אם הבסיס פתוח או סגור, ולפי זה נתאים."
-        >
-          <SingleChoice
-            options={BASE_OPTIONS}
-            value={answers.basePreference}
-            onChange={(basePreference) => update({ basePreference })}
-            cards
-          />
-        </OptionSection>
-        <OptionSection legend="איפה הייתם מעדיפים לעבוד?">
-          <SingleChoice
-            options={ENVIRONMENT_OPTIONS}
-            value={answers.environment}
-            onChange={(environment) => update({ environment })}
-          />
-        </OptionSection>
-        <OptionSection legend="איך אתם מרגישים לגבי מנהיגות ופיקוד?">
-          <SingleChoice
-            options={LEADERSHIP_OPTIONS}
-            value={answers.leadership}
-            onChange={(leadership) => update({ leadership })}
-          />
-        </OptionSection>
-        <OptionSection legend="איך אתם מתפקדים בלחץ ובעומס?">
-          <SingleChoice
-            options={STRESS_OPTIONS}
-            value={answers.stress}
-            onChange={(stress) => update({ stress })}
-          />
-        </OptionSection>
+          options={BASE_OPTIONS}
+          short={{ open: "פתוח (יומיות)", closed: "סגור", no_preference: "לא משנה" }}
+          value={answers.basePreference}
+          onChange={(basePreference) => update({ basePreference })}
+        />
+        <CompactChoice
+          legend="איפה הייתם מעדיפים לעבוד?"
+          options={ENVIRONMENT_OPTIONS}
+          short={{
+            office: "משרד / מסך",
+            field: "שטח / חוץ",
+            mixed: "שילוב",
+            no_preference: "לא משנה",
+          }}
+          value={answers.environment}
+          onChange={(environment) => update({ environment })}
+        />
+        <CompactChoice
+          legend="מנהיגות ופיקוד?"
+          options={LEADERSHIP_OPTIONS}
+          short={{ want_lead: "רוצה לפקד", open: "אם יציעו", prefer_team: "חלק מצוות" }}
+          value={answers.leadership}
+          onChange={(leadership) => update({ leadership })}
+        />
+        <CompactChoice
+          legend="איך אתם בלחץ ובעומס?"
+          options={STRESS_OPTIONS}
+          short={{ high: "טוב בלחץ", moderate: "מסתדר/ת", low: "מעדיף/ה רגוע" }}
+          value={answers.stress}
+          onChange={(stress) => update({ stress })}
+        />
       </div>
     );
   }
@@ -332,7 +335,7 @@ export function AssessmentQuestionStep({
   }
 
   const identityFields = (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
       <FormField label="איך לקרוא לכם?">
         <input
           type="text"
@@ -347,9 +350,6 @@ export function AssessmentQuestionStep({
       <FormField label="תאריך גיוס משוער">
         <DraftDateField value={answers.draftDate} onChange={(draftDate) => update({ draftDate })} />
       </FormField>
-      <p className="text-xs leading-5 text-dust sm:col-span-2">
-        אפשר לעדכן את התאריך והפרטים בהמשך. הם משמשים להתאמה אישית בלבד.
-      </p>
     </div>
   );
   if (step === "identity") content = identityFields;
@@ -426,6 +426,52 @@ function OptionSection({
       <legend className="text-sm font-bold text-foreground">{legend}</legend>
       {hint ? <p className="text-xs leading-5 text-dust">{hint}</p> : null}
       {children}
+    </fieldset>
+  );
+}
+
+/** One row of equal, short choices; the full option text stays as the accessible name. */
+function CompactChoice<T extends string>({
+  legend,
+  options,
+  short,
+  value,
+  onChange,
+}: {
+  legend: string;
+  options: readonly AssessmentOption<T>[];
+  short: Partial<Record<T, string>>;
+  value: T | "";
+  onChange: (value: T) => void;
+}) {
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-bold text-foreground">{legend}</legend>
+      <div
+        className="grid gap-1.5"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
+        {options.map((option) => {
+          const selected = value === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={selected}
+              aria-label={option.label}
+              title={option.label}
+              onClick={() => onChange(option.value)}
+              className={`min-h-11 rounded-sm border px-1 text-center text-[13px] leading-tight transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
+                selected
+                  ? "border-primary bg-primary/15 font-bold text-foreground"
+                  : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {short[option.value] ?? option.label}
+            </button>
+          );
+        })}
+      </div>
     </fieldset>
   );
 }

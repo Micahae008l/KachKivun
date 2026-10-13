@@ -879,8 +879,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               animate={{ opacity: 1, transform: "translateX(0px)" }}
               transition={{ duration: reduceMotion ? 0 : 0.26, ease }}
             >
-              <header className="mb-7 text-center">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center border border-primary/30 bg-primary/5 text-primary">
+              <header className="mb-5 text-center sm:mb-7">
+                <div className="mb-3 hidden h-10 w-10 items-center justify-center border border-primary/30 bg-primary/5 text-primary sm:inline-flex">
                   <MetaIcon className="h-5 w-5" aria-hidden />
                 </div>
                 <h1
@@ -999,7 +999,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
             </motion.div>
 
-            <div className="mt-8 flex items-center justify-between gap-4 border-t border-iron/20 pt-6">
+            <div className="mt-6 flex items-center justify-between gap-4 border-t border-iron/20 pt-4 sm:mt-8 sm:pt-6">
               {!isAuthStep ? (
                 <PrimaryButton loading={loading} onClick={nextQuestion}>
                   {currentStep === "review" && authenticated ? "שמירה וסיום" : "הבא"}

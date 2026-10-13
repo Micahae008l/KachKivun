@@ -1,5 +1,5 @@
-import { useId, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   value: string;
@@ -37,7 +37,9 @@ const SHORT = [
   "דצמ׳",
 ];
 const WEEKDAYS = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
-const YEARS_AHEAD = 3;
+// The server accepts 2000-2038; around today covers both the already-drafted and the very young.
+const YEARS_BACK = 6;
+const YEARS_AHEAD = 8;
 
 function parse(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -47,62 +49,66 @@ function parse(value: string) {
 const pad = (n: number) => String(n).padStart(2, "0");
 const daysIn = (year: number, month: number) => new Date(year, month, 0).getDate();
 
-/** "בעוד 23 ימים" up close, months further out. */
-function countdown(year: number, month: number, day: number, today: Date) {
+/** "בעוד 23 ימים" / "לפני 5 חודשים": days up close, months further out, either direction. */
+function relative(year: number, month: number, day: number, today: Date) {
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const days = Math.round(
     (new Date(year, month - 1, day).getTime() - start.getTime()) / 86_400_000,
   );
-  if (days <= 0) return "היום";
+  if (days === 0) return "היום";
   if (days === 1) return "מחר";
-  if (days < 60) return `בעוד ${days} ימים`;
-  const months = Math.round(days / 30.44);
-  return months === 2 ? "בעוד חודשיים" : `בעוד ${months} חודשים`;
+  if (days === -1) return "אתמול";
+  const abs = Math.abs(days);
+  const amount =
+    abs < 60
+      ? `${abs} ימים`
+      : Math.round(abs / 30.44) === 2
+        ? "חודשיים"
+        : `${Math.round(abs / 30.44)} חודשים`;
+  return days > 0 ? `בעוד ${amount}` : `לפני ${amount}`;
 }
 
 /**
- * Draft date as a tear-off calendar readout, a year switch, the months still ahead, and a day grid
- * for the chosen month. Picking a month sets the 1st (or keeps the chosen day) so the date is valid
- * right away; the day grid then makes it exact. Everything is derived from today's date.
+ * Draft date in three compact rows: the date with a year switcher, a month grid, and a swipeable
+ * strip of that month's days. Any year around today works (already drafted or years away); picking a
+ * month alone already gives a valid date (the 1st, or the day chosen before).
  */
 export function DraftDateField({ value, onChange, invalid, className = "" }: Props) {
-  const reduce = useReducedMotion();
-  const switchId = useId();
   const current = parse(value);
   const today = new Date();
   const thisYear = today.getFullYear();
-  const thisMonth = today.getMonth() + 1;
+  const minYear = Math.max(2000, thisYear - YEARS_BACK);
+  const maxYear = Math.min(2038, thisYear + YEARS_AHEAD);
   const [pendingYear, setPendingYear] = useState<number | null>(null);
-  const year = pendingYear ?? current?.year ?? null;
-  const years = [
-    ...new Set([
-      ...Array.from({ length: YEARS_AHEAD + 1 }, (_, i) => thisYear + i),
-      ...(year ? [year] : []),
-    ]),
-  ].sort((a, b) => a - b);
-  // Months already behind us are not offered at all.
-  const months = Array.from({ length: 12 }, (_, i) => i + 1).filter(
-    (month) => !year || year > thisYear || month >= thisMonth,
-  );
-  const firstAllowedDay = (y: number, m: number) =>
-    y === thisYear && m === thisMonth ? today.getDate() : 1;
+  const year = pendingYear ?? current?.year ?? thisYear;
+  const shownMonth = current && current.year === year ? current.month : null;
+  const strip = useRef<HTMLDivElement>(null);
 
   function commit(nextYear: number, month: number, day = current?.day ?? 1) {
-    const clamped = Math.max(
-      firstAllowedDay(nextYear, month),
-      Math.min(day, daysIn(nextYear, month)),
-    );
     setPendingYear(null);
-    onChange(`${nextYear}-${pad(month)}-${pad(clamped)}`);
+    onChange(`${nextYear}-${pad(month)}-${pad(Math.min(day, daysIn(nextYear, month)))}`);
   }
 
-  const shownMonth = current && current.year === year ? current.month : null;
-  const leading = shownMonth && year ? new Date(year, shownMonth - 1, 1).getDay() : 0;
+  function stepYear(delta: number) {
+    const next = Math.min(maxYear, Math.max(minYear, year + delta));
+    if (current) commit(next, current.month);
+    else setPendingYear(next);
+  }
+
+  // Keep the chosen day in view inside the strip without moving the page.
+  useEffect(() => {
+    strip.current
+      ?.querySelector<HTMLElement>("[aria-pressed='true']")
+      ?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [value]);
 
   return (
-    <div className={`space-y-4 text-right ${className}`.trim()} aria-invalid={invalid || undefined}>
+    <div
+      className={`min-w-0 space-y-2.5 text-right ${className}`.trim()}
+      aria-invalid={invalid || undefined}
+    >
       <div
-        className={`flex items-center gap-4 border p-3 ${
+        className={`flex items-center justify-between gap-3 border px-3 py-2 ${
           current
             ? "border-primary/40 bg-primary/10"
             : invalid
@@ -110,139 +116,96 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
               : "border-dashed border-iron/40"
         }`}
       >
-        <div className="w-16 shrink-0 overflow-hidden rounded-sm border border-iron/30 bg-card text-center shadow-sm">
-          <div className="bg-primary py-0.5 font-mono text-[11px] font-bold tabular-nums text-primary-foreground">
-            {current ? SHORT[current.month - 1] : (year ?? "שנה")}
-          </div>
-          <motion.div
-            key={current ? value : "empty"}
-            initial={reduce ? false : { opacity: 0, transform: "translateY(-6px)" }}
-            animate={{ opacity: 1, transform: "translateY(0px)" }}
-            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="py-1.5 font-mono text-2xl font-black tabular-nums text-foreground"
-          >
-            {current ? current.day : "?"}
-          </motion.div>
-        </div>
         <div className="min-w-0">
-          <p className="text-xs text-dust">{current ? "גיוס משוער" : "מתי הגיוס?"}</p>
-          <p className="text-xl font-black text-foreground">
+          <p className="truncate text-base font-black text-foreground">
             {current
               ? `${current.day} ב${MONTHS[current.month - 1]} ${current.year}`
-              : year
-                ? "בחרו חודש"
-                : "בחרו שנה וחודש"}
+              : "בחרו חודש ויום"}
           </p>
           {current ? (
-            <span className="mt-1 inline-block rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
-              {countdown(current.year, current.month, current.day, today)}
-            </span>
+            <p className="text-[11px] font-bold text-primary">
+              {relative(current.year, current.month, current.day, today)}
+            </p>
           ) : null}
+        </div>
+        <div className="flex shrink-0 items-center" role="group" aria-label="שנה">
+          <button
+            type="button"
+            onClick={() => stepYear(-1)}
+            disabled={year <= minYear}
+            aria-label="שנה קודמת"
+            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust transition hover:text-foreground disabled:opacity-30"
+          >
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>
+          <span className="w-14 text-center font-mono text-base font-bold tabular-nums text-foreground">
+            {year}
+          </span>
+          <button
+            type="button"
+            onClick={() => stepYear(1)}
+            disabled={year >= maxYear}
+            aria-label="שנה הבאה"
+            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust transition hover:text-foreground disabled:opacity-30"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden />
+          </button>
         </div>
       </div>
 
-      <div
-        className="flex rounded-md border border-iron/30 bg-card p-1"
-        role="group"
-        aria-label="שנה"
-      >
-        {years.map((option) => {
-          const selected = year === option;
+      <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="חודש">
+        {SHORT.map((label, index) => {
+          const month = index + 1;
+          const selected = shownMonth === month;
           return (
             <button
-              key={option}
+              key={label}
               type="button"
               aria-pressed={selected}
-              onClick={() =>
-                current && (option > thisYear || current.month >= thisMonth)
-                  ? commit(option, current.month)
-                  : setPendingYear(option)
-              }
-              className={`relative min-h-11 flex-1 rounded-sm py-2 font-mono text-sm font-bold tabular-nums transition-colors duration-150 ${
-                selected ? "text-primary-foreground" : "text-dust hover:text-foreground"
+              aria-label={`${MONTHS[index]} ${year}`}
+              onClick={() => commit(year, month)}
+              className={`h-9 rounded-full border text-xs font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+                selected
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
               }`}
             >
-              {selected ? (
-                <motion.span
-                  layoutId={`${switchId}-year`}
-                  className="absolute inset-0 rounded-sm bg-primary"
-                  transition={{ duration: reduce ? 0 : 0.25, ease: [0.23, 1, 0.32, 1] }}
-                  aria-hidden
-                />
-              ) : null}
-              <span className="relative">{option}</span>
+              {label}
             </button>
           );
         })}
       </div>
 
-      {year ? (
-        <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="חודש">
-          {months.map((month) => {
-            const selected = shownMonth === month;
+      {shownMonth ? (
+        <div
+          ref={strip}
+          className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]"
+          role="group"
+          aria-label={`יום ב${MONTHS[shownMonth - 1]}`}
+        >
+          {Array.from({ length: daysIn(year, shownMonth) }, (_, i) => i + 1).map((day) => {
+            const selected = current?.day === day;
             return (
               <button
-                key={month}
+                key={day}
                 type="button"
                 aria-pressed={selected}
-                aria-label={`${MONTHS[month - 1]} ${year}`}
-                onClick={() => commit(year, month)}
-                className={`min-h-11 rounded-full border py-2 text-xs font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+                aria-label={`${day} ב${MONTHS[shownMonth - 1]} ${year}`}
+                onClick={() => commit(year, shownMonth, day)}
+                className={`flex h-12 w-10 shrink-0 flex-col items-center justify-center rounded-md border transition-[color,background-color,border-color] duration-150 ${
                   selected
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
+                    : "border-iron/30 bg-card text-foreground/80 hover:border-primary/40"
                 }`}
               >
-                {SHORT[month - 1]}
+                <span className={`text-[10px] ${selected ? "" : "text-dust"}`}>
+                  {WEEKDAYS[new Date(year, shownMonth - 1, day).getDay()]}
+                </span>
+                <span className="font-mono text-sm font-bold tabular-nums">{day}</span>
               </button>
             );
           })}
         </div>
-      ) : null}
-
-      {shownMonth && year ? (
-        <motion.div
-          key={`${year}-${shownMonth}`}
-          initial={reduce ? false : { opacity: 0, transform: "translateY(-6px)" }}
-          animate={{ opacity: 1, transform: "translateY(0px)" }}
-          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          className="rounded-md border border-iron/30 bg-card p-3"
-        >
-          <p className="mb-2 text-xs text-dust">
-            יודעים את היום? <span className="text-foreground">{MONTHS[shownMonth - 1]}</span>
-          </p>
-          <div className="grid grid-cols-7 gap-1 text-center" role="group" aria-label="יום">
-            {WEEKDAYS.map((label) => (
-              <span key={label} className="pb-1 text-[11px] font-bold text-dust" aria-hidden>
-                {label}
-              </span>
-            ))}
-            {Array.from({ length: leading }, (_, i) => (
-              <span key={`gap-${i}`} aria-hidden />
-            ))}
-            {Array.from({ length: daysIn(year, shownMonth) }, (_, i) => i + 1).map((day) => {
-              const selected = current?.day === day;
-              const past = day < firstAllowedDay(year, shownMonth);
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  aria-pressed={selected}
-                  aria-label={`${day} ב${MONTHS[shownMonth - 1]} ${year}`}
-                  disabled={past}
-                  onClick={() => commit(year, shownMonth, day)}
-                  className={`aspect-square min-h-9 rounded-full font-mono text-xs font-bold tabular-nums transition-[color,background-color,transform] duration-150 active:scale-[0.92] disabled:cursor-not-allowed disabled:opacity-25 ${
-                    selected
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground/80 hover:bg-primary/15 hover:text-foreground"
-                  }`}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
       ) : null}
     </div>
   );
