@@ -2359,6 +2359,68 @@
         "source": "mitgaisim.idf.il/roles/חובשת-קדמית/"
       },
       "serviceLengthLabel": "טירונות 02 + 3 חודשי קורס; גברים 32, נשים 24"
+    },
+    "חייל/ת שב\"כ": {
+      "daparFloor": 40,
+      "medicalFloor": 45,
+      "serviceLengthLabel": "שירות חובה מלא; טירונות 02 והכשרה תוך כדי התפקיד",
+      "locations": [
+        "משרדי השב\"כ ברחבי הארץ, בתנאי בסיס פתוח"
+      ],
+      "dayToDay": "חיילי וחיילות שב\"כ משרתים בשירות הביטחון הכללי, בימ\"ל (יחידה מחוץ לסד\"כ), בסביבה ממוחשבת. שלושה אשכולות: מודיעיני (חמ\"ל ודסק, מידענות, אבחון ביטחוני וכריית מידע, חלק במשמרות), מקצועי (משאבי אנוש, הדרכה, כספים, מחשוב) ומנהלתי (עבודה בלשכת מנהל בכיר). למתאימים יש אפשרות להדרכה, פיקוד וקצונה.",
+      "requirements": [
+        "פרופיל 25 ומעלה",
+        "דפ\"ר 40 ומעלה",
+        "ניהול וארגון 3+ ועיבוד מידע 3+ במא\"ה",
+        "בשלות ובגרות 3+, מסגרתיות 2+, ציון עברית 7",
+        "יום מיון, ראיון אישי, ראיון פסיכולוג והתאמה ביטחונית של השב\"כ"
+      ],
+      "physicalDemand": 1,
+      "techIntensity": 3,
+      "peopleIntensity": 2,
+      "competitiveness": "high",
+      "keyDimensions": [
+        "dataProcessing",
+        "managementOrganization",
+        "maturity"
+      ],
+      "popularity": "known",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-13",
+        "source": "mitgaisim.idf.il/roles/חיילת-שבכ"
+      }
+    },
+    "חייל/ת מוסד": {
+      "medicalFloor": 45,
+      "serviceLengthLabel": "שירות חובה מלא; טירונות 02 והכשרה תוך כדי התפקיד",
+      "locations": [
+        "משרדי השירות ברחבי הארץ, בתנאי בסיס פתוח"
+      ],
+      "dayToDay": "שירות במוסד למודיעין ולתפקידים מיוחדים, במשרדים אזרחיים, כשמרבית החיילים משרתים במדים ובשעות עבודה לא שגרתיות. חשוב: העמוד הרשמי של התפקיד הוסר מאתר מתגייסים ב־2025, ולכן ייתכן שהמסלול אינו פתוח כרגע. בדקו בלשכת הגיוס לפני שמסמנים אותו בשאלון ההעדפות.",
+      "requirements": [
+        "פרופיל 25 ומעלה",
+        "ניהול וארגון 3+, עיבוד מידע 4+, בגרות ובשלות 4+ במא\"ה",
+        "ראיונות, מבחנים תעסוקתיים וסינון ביטחוני שנמשך כמה חודשים",
+        "לפי עמוד רשמי ארכיוני מיוני 2025; לא מופיע כרגע באתר מתגייסים"
+      ],
+      "physicalDemand": 1,
+      "techIntensity": 2,
+      "peopleIntensity": 2,
+      "competitiveness": "very_high",
+      "keyDimensions": [
+        "dataProcessing",
+        "maturity",
+        "managementOrganization"
+      ],
+      "popularity": "known",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "medium",
+        "enrichedAt": "2026-10-13",
+        "source": "web.archive.org/web/20250603005021/https://www.mitgaisim.idf.il/roles/חיילת-מוסד/"
+      }
     }
   }
 }

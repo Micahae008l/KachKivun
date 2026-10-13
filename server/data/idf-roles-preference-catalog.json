@@ -75,7 +75,7 @@
     "sports",
     "creative"
   ],
-  "roleCount": 305,
+  "roleCount": 307,
   "roles": [
     {
       "roleTitle": "מאבחן/ת מדעי ההתנהגות",
@@ -6779,6 +6779,51 @@
       "aiRecommendationHint": "Suggest as an option when the user clearly likes video, it, design, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official/common IDF role family; exact title and availability should be verified in Mitgaisim portal"
+    },
+    {
+      "roleTitle": "חייל/ת שב\"כ",
+      "category": "שב\"כ ומוסד",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "intelligence",
+        "research",
+        "data",
+        "attention-to-detail",
+        "war-room",
+        "admin"
+      ],
+      "signals": [
+        "עבודת דסק בחמ\"ל",
+        "מידענות",
+        "אבחון ביטחוני",
+        "כריית מידע"
+      ],
+      "bestFor": "Good fit for: intelligence, data, security work; people aiming at a later career in the security services",
+      "aiRecommendationHint": "Suggest when the user likes intelligence, research, data or security work, or says they want a future career in the Shin Bet, Mossad or the security establishment. Service is in Shin Bet offices as IDF soldiers; selection includes a security clearance.",
+      "validationLevel": "official_page_validated",
+      "validationSource": "mitgaisim.idf.il/roles/חיילת-שבכ (checked 2026-10-13)"
+    },
+    {
+      "roleTitle": "חייל/ת מוסד",
+      "category": "שב\"כ ומוסד",
+      "combat": false,
+      "selective": true,
+      "preferenceTags": [
+        "intelligence",
+        "admin",
+        "attention-to-detail",
+        "research"
+      ],
+      "signals": [
+        "עבודה משרדית מסווגת",
+        "תמיכה ביחידות הארגון",
+        "שעות עבודה לא שגרתיות"
+      ],
+      "bestFor": "Good fit for: intelligence-adjacent office work; people aiming at a later career in the Mossad",
+      "aiRecommendationHint": "Suggest when the user wants a future career in the Mossad or the security establishment and likes intelligence or organized office work. Always say the official page was removed from Mitgaisim in 2025, so the track may be closed; confirm with the recruitment office.",
+      "validationLevel": "archived_official_page",
+      "validationSource": "web.archive.org copy (2025-06-03) of mitgaisim.idf.il/roles/חיילת-מוסד; live page now returns 404"
     }
   ]
 }
