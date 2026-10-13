@@ -87,7 +87,7 @@ const STEP_EFFORT: Record<AssessmentStepId, number> = {
   checkpoint: 1,
   motivation: 2,
   identity: 2,
-  review: 2,
+  review: 1,
   email: 1,
   otp: 1,
 };
@@ -162,7 +162,7 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   review: {
     icon: CheckCircle2,
     title: "כמעט סיימנו",
-    subtitle: "שם, תאריך גיוס משוער ומבט אחרון על הפרופיל לפני השמירה.",
+    subtitle: "שם לפנייה ותאריך גיוס משוער, ושומרים.",
   },
   email: {
     icon: Mail,

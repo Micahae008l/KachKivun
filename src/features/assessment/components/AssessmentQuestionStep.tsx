@@ -354,14 +354,9 @@ export function AssessmentQuestionStep({
   );
   if (step === "identity") content = identityFields;
 
-  if (step === "review") {
-    content = (
-      <div className="space-y-8">
-        {identityFields}
-        <AssessmentCheckpoint answers={answers} variant="review" />
-      </div>
-    );
-  }
+  // The last screen only asks name and draft date, then saves; the profile summary and next steps
+  // live on the dashboard.
+  if (step === "review") content = identityFields;
 
   if (step === "motivation") {
     content = (
