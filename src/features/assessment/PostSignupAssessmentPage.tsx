@@ -796,8 +796,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
         />
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mx-auto mb-6 flex w-full max-w-3xl items-center justify-between gap-4">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 short:py-2 sm:px-6 sm:py-10 sm:short:py-4">
+        <div className="mx-auto mb-6 flex w-full max-w-3xl items-center justify-between gap-4 short:mb-2">
           <KachKivunLogo size="md" linked />
           {currentIndex === 0 && !loginIntent ? (
             <Link
@@ -827,7 +827,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
           className="w-full max-w-3xl border border-iron/30 bg-background/90 shadow-[0_4px_40px_-12px_oklch(0_0_0/0.6)] backdrop-blur-sm"
           aria-labelledby="assessment-step-title"
         >
-          <div className="border-b border-iron/20 px-4 py-4 sm:px-6">
+          <div className="border-b border-iron/20 px-4 py-4 short:py-2.5 sm:px-6">
             <div className="mb-2 flex items-center justify-between gap-4 text-[11px] text-dust">
               <span className="font-mono tracking-wide uppercase">
                 {loginIntent
@@ -858,13 +858,13 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               />
             </div>
             {!loginIntent && !isAuthStep ? (
-              <p className="mt-2 text-[11px] leading-4 text-dust">
+              <p className="mt-2 text-[11px] leading-4 text-dust short:hidden">
                 מספר השלבים והזמן מתעדכנים לפי התשובות · נותרו {remainingTimeLabel(remainingEffort)}
               </p>
             ) : null}
           </div>
 
-          <div className="px-4 py-6 sm:px-8 sm:py-8">
+          <div className="px-4 py-6 short:py-3 sm:px-8 sm:py-8 sm:short:py-5">
             <motion.div
               key={currentStep}
               initial={
@@ -879,17 +879,19 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               animate={{ opacity: 1, transform: "translateX(0px)" }}
               transition={{ duration: reduceMotion ? 0 : 0.26, ease }}
             >
-              <header className="mb-5 text-center sm:mb-7">
+              <header className="mb-5 text-center short:mb-3 sm:mb-7 sm:short:mb-4">
                 <div className="mb-3 hidden h-10 w-10 items-center justify-center border border-primary/30 bg-primary/5 text-primary sm:inline-flex">
                   <MetaIcon className="h-5 w-5" aria-hidden />
                 </div>
                 <h1
                   id="assessment-step-title"
-                  className="text-xl font-black text-foreground sm:text-2xl"
+                  className="text-xl font-black text-foreground short:text-lg sm:text-2xl"
                 >
                   {meta.title}
                 </h1>
-                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust">{meta.subtitle}</p>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-dust short:mt-1 short:text-xs short:leading-5">
+                  {meta.subtitle}
+                </p>
               </header>
 
               {!isAuthStep ? (
@@ -999,7 +1001,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
             </motion.div>
 
-            <div className="mt-6 flex items-center justify-between gap-4 border-t border-iron/20 pt-4 sm:mt-8 sm:pt-6">
+            <div className="mt-6 flex items-center justify-between gap-4 border-t border-iron/20 pt-4 pl-12 short:mt-3 short:pt-3 sm:mt-8 sm:pt-6 sm:pl-0">
               {!isAuthStep ? (
                 <PrimaryButton loading={loading} onClick={nextQuestion}>
                   {currentStep === "review" && authenticated ? "שמירה וסיום" : "הבא"}

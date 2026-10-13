@@ -104,11 +104,11 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
 
   return (
     <div
-      className={`min-w-0 space-y-2.5 text-right ${className}`.trim()}
+      className={`min-w-0 space-y-2.5 text-right short:space-y-2 ${className}`.trim()}
       aria-invalid={invalid || undefined}
     >
       <div
-        className={`flex items-center justify-between gap-3 border px-3 py-2 ${
+        className={`flex items-center justify-between gap-3 border px-3 py-2 short:py-1 ${
           current
             ? "border-primary/40 bg-primary/10"
             : invalid
@@ -117,7 +117,7 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
         }`}
       >
         <div className="min-w-0">
-          <p className="truncate text-base font-black text-foreground">
+          <p className="truncate text-base font-black text-foreground max-[359px]:text-sm">
             {current
               ? `${current.day} ב${MONTHS[current.month - 1]} ${current.year}`
               : "בחרו חודש ויום"}
@@ -134,11 +134,11 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
             onClick={() => stepYear(-1)}
             disabled={year <= minYear}
             aria-label="שנה קודמת"
-            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust transition hover:text-foreground disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust max-[359px]:w-7 transition hover:text-foreground disabled:opacity-30"
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
           </button>
-          <span className="w-14 text-center font-mono text-base font-bold tabular-nums text-foreground">
+          <span className="w-14 text-center font-mono text-base font-bold tabular-nums text-foreground max-[359px]:w-11 max-[359px]:text-sm">
             {year}
           </span>
           <button
@@ -146,7 +146,7 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
             onClick={() => stepYear(1)}
             disabled={year >= maxYear}
             aria-label="שנה הבאה"
-            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust transition hover:text-foreground disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-sm text-dust max-[359px]:w-7 transition hover:text-foreground disabled:opacity-30"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
@@ -164,7 +164,7 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
               aria-pressed={selected}
               aria-label={`${MONTHS[index]} ${year}`}
               onClick={() => commit(year, month)}
-              className={`h-9 rounded-full border text-xs font-bold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
+              className={`h-9 rounded-full border text-xs font-bold short:h-8 transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.94] ${
                 selected
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
@@ -192,7 +192,7 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
                 aria-pressed={selected}
                 aria-label={`${day} ב${MONTHS[shownMonth - 1]} ${year}`}
                 onClick={() => commit(year, shownMonth, day)}
-                className={`flex h-12 w-10 shrink-0 flex-col items-center justify-center rounded-md border transition-[color,background-color,border-color] duration-150 ${
+                className={`flex h-12 w-10 shrink-0 flex-col short:h-11 items-center justify-center rounded-md border transition-[color,background-color,border-color] duration-150 ${
                   selected
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-iron/30 bg-card text-foreground/80 hover:border-primary/40"

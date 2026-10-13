@@ -3,6 +3,8 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+/* Short viewports (iPhone SE, small Androids, phones with browser bars): tighter onboarding. */
+@custom-variant short (@media (max-height: 760px));
 
 @theme inline {
   --radius-sm: 2px;

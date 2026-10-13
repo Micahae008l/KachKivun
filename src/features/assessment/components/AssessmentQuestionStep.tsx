@@ -137,7 +137,7 @@ export function AssessmentQuestionStep({
     // Four quick questions on one phone screen: one row of short choices each (full text on hover
     // and for screen readers).
     content = (
-      <div className="space-y-4">
+      <div className="space-y-4 short:space-y-2.5">
         <CompactChoice
           legend="בסיס פתוח או סגור?"
           options={BASE_OPTIONS}
@@ -335,7 +335,7 @@ export function AssessmentQuestionStep({
   }
 
   const identityFields = (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+    <div className="grid grid-cols-1 gap-4 short:gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">
       <FormField label="איך לקרוא לכם?">
         <input
           type="text"
@@ -445,7 +445,7 @@ function CompactChoice<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <fieldset className="space-y-2">
+    <fieldset className="space-y-2 short:space-y-1">
       <legend className="text-sm font-bold text-foreground">{legend}</legend>
       <div
         className="grid gap-1.5"
@@ -461,7 +461,7 @@ function CompactChoice<T extends string>({
               aria-label={option.label}
               title={option.label}
               onClick={() => onChange(option.value)}
-              className={`min-h-11 rounded-sm border px-1 text-center text-[13px] leading-tight transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
+              className={`min-h-11 rounded-sm border px-1 text-center text-[13px] leading-tight short:min-h-10 transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] ${
                 selected
                   ? "border-primary bg-primary/15 font-bold text-foreground"
                   : "border-iron/30 bg-card text-dust hover:border-primary/40 hover:text-foreground"
