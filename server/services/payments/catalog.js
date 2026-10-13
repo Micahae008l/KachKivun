@@ -9,7 +9,7 @@ export const PAYMENT_METHOD_PRIORITY = Object.freeze(["apple_pay", "bit", "googl
  */
 export const SALE = Object.freeze({
   amountMinor: 1499,
-  endsAt: "2026-10-26T21:59:59.000Z", // Monday 26 Oct 2026, 23:59 Israel time
+  endsAt: "2026-10-16T20:59:59.000Z", // Friday 16 Oct 2026, 23:59 Israel time (summer time, UTC+3)
 });
 
 export function isSaleActive(now = new Date()) {
