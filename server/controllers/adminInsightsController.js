@@ -4,6 +4,7 @@ import AiUsageLog from "../models/AiUsageLog.js";
 import MatchGeneration from "../models/MatchGeneration.js";
 import RoleRecommendation from "../models/RoleRecommendation.js";
 import PaymentOrder from "../models/PaymentOrder.js";
+import ResultFeedback from "../models/ResultFeedback.js";
 import { sendServerError } from "../utils/httpError.js";
 
 const TZ = "Asia/Jerusalem";
@@ -58,6 +59,8 @@ export async function getInsights(req, res) {
       topAppearances,
       notes,
       runsPerUser,
+      ratingStats,
+      recentFeedback,
       ...distributions
     ] = await Promise.all([
       perDay(User, "createdAt", since, notAdmin),
@@ -102,6 +105,13 @@ export async function getInsights(req, res) {
         { $group: { _id: "$userId", runs: { $sum: 1 } } },
         { $group: { _id: null, users: { $sum: 1 }, runs: { $sum: "$runs" } } },
       ]),
+      ResultFeedback.aggregate([{ $group: { _id: "$rating", count: { $sum: 1 } } }]),
+      ResultFeedback.find({})
+        .sort({ updatedAt: -1 })
+        .limit(15)
+        .populate("userId", "email")
+        .select("rating reasons comment roleTitles updatedAt userId")
+        .lean(),
       answerCounts("rolesInterested", true),
       answerCounts("motivations", true),
       answerCounts("rolesAvoided", true),
@@ -179,6 +189,26 @@ export async function getInsights(req, res) {
         yomSource,
         gender,
       },
+      ratings: (() => {
+        const distribution = [1, 2, 3, 4, 5].map(
+          (r) => ratingStats.find((x) => x._id === r)?.count ?? 0,
+        );
+        const count = distribution.reduce((a, b) => a + b, 0);
+        const total = distribution.reduce((a, n, i) => a + n * (i + 1), 0);
+        return {
+          count,
+          average: count ? Math.round((total / count) * 10) / 10 : null,
+          distribution,
+          recent: recentFeedback.map((f) => ({
+            rating: f.rating,
+            reasons: f.reasons,
+            comment: f.comment,
+            roleTitles: f.roleTitles,
+            email: f.userId?.email || "",
+            at: f.updatedAt,
+          })),
+        };
+      })(),
     });
   } catch (err) {
     return sendServerError(res, err, "[admin/insights]");

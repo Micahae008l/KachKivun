@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Lock, RefreshCw } from "lucide-react";
 import { RoleMatchCards } from "@/components/RoleMatchCards";
+import { RateResults } from "@/components/RateResults";
 import { MatchExtras } from "@/components/MatchExtras";
 import { BuildingMatches } from "@/components/BuildingMatches";
 import { MatchHistoryPanel } from "@/components/MatchHistoryPanel";
@@ -297,6 +298,9 @@ function AiCounselorPage() {
             ) : null}
             <RoleMatchCards roles={roles} offer={offerQuery.data} />
             <MatchExtras recommendationId={historyId} offer={offerQuery.data} />
+            {historyId && roles.some((role) => role.rank <= 3 && !role.locked) ? (
+              <RateResults key={historyId} resultId={historyId} />
+            ) : null}
             <section
               className="flex flex-col items-center gap-3 border border-iron/25 bg-card/40 px-5 py-6 text-center"
               aria-labelledby="retry-heading"

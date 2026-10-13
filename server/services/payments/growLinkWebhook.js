@@ -9,6 +9,7 @@ import { normalizeGrowAmountMinor } from "./growNormalization.js";
 import { paymentOpenOrderKey } from "./orderState.js";
 import { PAYMENT_PRIVATE_SELECT, paymentPersistence } from "./paymentPersistence.js";
 import { createOpaqueSecret, hashPaymentSecret } from "./secrets.js";
+import { notifySlack } from "../../utils/slack.js";
 
 const CLAIM_CODE_PATTERN = /(?<![A-Z0-9])[A-Z2-9]{6}(?![A-Z0-9])/g;
 const PAID_STATUS_TEXT = /^(?:שולם|paid|success)$/i;
@@ -20,18 +21,6 @@ function text(value, maxLength = 500) {
     .replace(/[\x00-\x1f\x7f]/g, "")
     .trim()
     .slice(0, maxLength);
-}
-
-/** Best-effort ping to the owner's Slack (SLACK_WEBHOOK_URL); never delays or fails the webhook. */
-function notifySlack(env, message) {
-  const url = text(env.SLACK_WEBHOOK_URL, 500);
-  if (!url.startsWith("https://hooks.slack.com/")) return;
-  fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ text: message }),
-    signal: AbortSignal.timeout(5000),
-  }).catch((error) => logGrowLink("warn", "slack notify failed", { error: error.message }));
 }
 
 function isRecord(value) {

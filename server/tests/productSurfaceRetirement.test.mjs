@@ -36,7 +36,7 @@ test("adaptive assessment keeps OTP last and versioned draft migration", () => {
   const draft = read("src/features/assessment/draft.ts");
   const postSignup = read("src/routes/post-signup.tsx");
 
-  assert.match(flow, /steps\.push\("scores", "yom", "checkpoint", "motivation", "identity", "review"\)/);
+  assert.match(flow, /steps\.push\("scores", "yom", "checkpoint", "motivation", "review"\)/);
   // Sign-up stays last: its own email screen, then the one-time code.
   assert.match(flow, /if \(includeAuth\) steps\.push\("email", "otp"\)/);
   assert.match(draft, /ASSESSMENT_DRAFT_VERSION = 3/);

@@ -1073,7 +1073,45 @@ export type AdminInsights = {
     | "gender",
     CountRow[]
   >;
+  ratings?: {
+    count: number;
+    average: number | null;
+    /** How many 1, 2, 3, 4 and 5 star ratings. */
+    distribution: number[];
+    recent: {
+      rating: number;
+      reasons: FeedbackReason[];
+      comment: string;
+      roleTitles: string[];
+      email: string;
+      at: string;
+    }[];
+  };
 };
+
+export type FeedbackReason =
+  "not_me" | "missing_role" | "too_generic" | "wrong_info" | "request_ignored" | "other";
+
+export type ResultFeedback = {
+  rating: number;
+  reasons: FeedbackReason[];
+  comment: string;
+  updatedAt?: string;
+};
+
+export function getResultFeedback(resultId: string) {
+  return apiFetch<{ feedback: ResultFeedback | null }>(
+    `/api/ai/result-feedback?resultId=${encodeURIComponent(resultId)}`,
+  );
+}
+
+export function saveResultFeedback(resultId: string, feedback: Omit<ResultFeedback, "updatedAt">) {
+  return apiFetch<{ feedback: ResultFeedback }>("/api/ai/result-feedback", {
+    method: "POST",
+    body: JSON.stringify({ resultId, ...feedback }),
+    retries: 0,
+  });
+}
 
 export function getAdminInsights(days: 7 | 30 | 90) {
   return apiFetch<AdminInsights>(`/api/admin/insights?days=${days}`);

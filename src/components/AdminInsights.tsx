@@ -408,6 +408,8 @@ export function AdminInsights() {
         </Panel>
       </div>
 
+      <RatingsPanel ratings={d.ratings} />
+
       <Panel title="מה ביקשו מהיועץ" note="15 הבקשות האישיות האחרונות">
         {d.notes.length ? (
           <ul className="grid gap-2 md:grid-cols-2">
@@ -432,5 +434,74 @@ export function AdminInsights() {
         )}
       </Panel>
     </div>
+  );
+}
+
+const REASON_LABEL: Record<string, string> = {
+  not_me: "לא מתאים לי",
+  missing_role: "חסר תפקיד",
+  too_generic: "כללי מדי",
+  wrong_info: "מידע לא מדויק",
+  request_ignored: "התעלם מהבקשה",
+  other: "אחר",
+};
+
+/** Paying users' star ratings: average, how the scores split, and the latest comments. */
+function RatingsPanel({ ratings }: { ratings: Insights["ratings"] }) {
+  if (!ratings) return null;
+  return (
+    <Panel
+      title="דירוג התוצאות"
+      note={ratings.count ? `${ratings.count} דירוגים ממשלמים` : "עוד אין דירוגים"}
+    >
+      {ratings.count ? (
+        <div className="grid gap-5 lg:grid-cols-[14rem_1fr]">
+          <div>
+            <p className="flex items-baseline gap-2">
+              <span className="text-4xl font-black text-foreground">{ratings.average}</span>
+              <span className="text-sm text-dust">מתוך 5</span>
+            </p>
+            <Breakdown
+              rows={[5, 4, 3, 2, 1].map((r) => ({
+                value: String(r),
+                count: ratings.distribution[r - 1] ?? 0,
+              }))}
+              label={(v) => `${"★".repeat(Number(v))}`}
+              total={ratings.count}
+            />
+          </div>
+          <ul className="space-y-2">
+            {ratings.recent.map((f, i) => (
+              <li key={`${f.at}-${i}`} className="border border-iron/20 bg-background/40 p-3">
+                <p className="flex flex-wrap items-center gap-x-2 text-xs">
+                  <span
+                    className={
+                      f.rating <= 3 ? "font-bold text-destructive" : "font-bold text-primary"
+                    }
+                  >
+                    {"★".repeat(f.rating)}
+                    {"☆".repeat(5 - f.rating)}
+                  </span>
+                  <span className="text-dust">
+                    {f.email} · {new Date(f.at).toLocaleDateString("he-IL")}
+                  </span>
+                </p>
+                {f.reasons.length ? (
+                  <p className="mt-1 text-xs text-foreground/85">
+                    {f.reasons.map((r) => REASON_LABEL[r] ?? r).join(" · ")}
+                  </p>
+                ) : null}
+                {f.comment ? (
+                  <p className="mt-1 text-sm leading-6 text-foreground">{f.comment}</p>
+                ) : null}
+                <p className="mt-1 truncate text-[11px] text-dust">{f.roleTitles.join(" · ")}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-xs text-dust">אחרי שמשלמים ידרגו את התוצאות, זה יופיע כאן.</p>
+      )}
+    </Panel>
   );
 }

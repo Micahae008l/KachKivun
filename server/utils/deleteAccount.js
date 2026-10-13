@@ -10,6 +10,7 @@ import RoleReview from "../models/RoleReview.js";
 import Entitlement from "../models/Entitlement.js";
 import AiUsageLog from "../models/AiUsageLog.js";
 import RefreshToken from "../models/RefreshToken.js";
+import ResultFeedback from "../models/ResultFeedback.js";
 import EmailOtp from "../models/EmailOtp.js";
 
 /**
@@ -29,6 +30,7 @@ const PERSONAL_COLLECTIONS = {
   Entitlement,
   AiUsageLog,
   RefreshToken,
+  ResultFeedback,
 };
 
 /** Deletes a user and all their personal data. Returns how many documents each collection lost. */
