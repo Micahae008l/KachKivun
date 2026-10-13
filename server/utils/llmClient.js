@@ -42,14 +42,11 @@ export async function chatJson({ model, system, user, maxTokens = 8000, temperat
         max_tokens: maxTokens,
         system,
         messages: [{ role: "user", content: user }],
-        // Haiku 5.5 thinks by default (effort medium, ~28s per match). Tested on a real profile:
-        // thinking off was 11s but missed what the personal request asked for; effort "low" kept the
-        // same picks and specifics at ~22s. AI_EFFORT overrides; AI_THINKING=off disables it.
+        // Haiku 5.5 thinks by default: ~3,900 hidden tokens per match (two thirds of the wait) for
+        // picking from an already-ranked pool. Off unless AI_THINKING=on.
         // ponytail: Haiku only; Opus 5.5 and Sonnet 5.5 reject "disabled".
-        ...(/haiku/i.test(model)
-          ? process.env.AI_THINKING === "off"
-            ? { thinking: { type: "disabled" } }
-            : { output_config: { effort: process.env.AI_EFFORT || "low" } }
+        ...(/haiku/i.test(model) && process.env.AI_THINKING !== "on"
+          ? { thinking: { type: "disabled" } }
           : {}),
       }),
     });
