@@ -262,39 +262,43 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
       const focuses = [a.focus, ...a.focusExtra].map((f) => FOCUS_LABEL[f]).join(" + ");
       return `${focuses} עם רמת פעילות ${FITNESS_LABEL[a.physicalActivityLevel]}. ${tail}`;
     }
-    case "environment": {
-      if (!a.basePreference) return null;
-      const base =
-        a.basePreference === "open"
-          ? "בסיס פתוח: נעדיף תפקידים עם יומיות"
-          : a.basePreference === "closed"
-            ? "בסיס סגור פותח את רוב התפקידים המבצעיים והקרביים"
-            : "גמישות בבסיס מרחיבה מאוד את מספר התפקידים שנבדוק";
-      const env =
-        a.environment === "field"
-          ? ", עם עבודה בחוץ"
-          : a.environment === "office"
-            ? ", מול מסך"
-            : a.environment === "mixed"
-              ? ", בשילוב של שטח ומשרד"
-              : "";
-      return `${base}${env}.`;
-    }
+    case "environment":
     case "style": {
-      if (!a.leadership) return null;
-      const lead =
-        a.leadership === "want_lead"
-          ? "רוצים לפקד: נשים לב לתפקידים עם המשך לקורס מפקדים וקצונה"
-          : a.leadership === "open"
-            ? "פתוחים לפיקוד אם יציעו: נשאיר את הדלת הזו פתוחה"
-            : "חלק מצוות: נעדיף תפקידים שבהם הכוח הוא בעבודה המשותפת";
-      const stress =
-        a.stress === "high"
-          ? ", ותפקוד טוב בלחץ מתאים לתפקידים מבצעיים."
-          : a.stress === "low"
-            ? ", בסביבה רגועה יחסית."
-            : ".";
-      return lead + stress;
+      // One screen asks both: base and environment, then leadership and stress.
+      const parts: string[] = [];
+      if (a.basePreference) {
+        const base =
+          a.basePreference === "open"
+            ? "בסיס פתוח: נעדיף תפקידים עם יומיות"
+            : a.basePreference === "closed"
+              ? "בסיס סגור פותח את רוב התפקידים המבצעיים והקרביים"
+              : "גמישות בבסיס מרחיבה מאוד את מספר התפקידים שנבדוק";
+        const env =
+          a.environment === "field"
+            ? ", עם עבודה בחוץ"
+            : a.environment === "office"
+              ? ", מול מסך"
+              : a.environment === "mixed"
+                ? ", בשילוב של שטח ומשרד"
+                : "";
+        parts.push(`${base}${env}.`);
+      }
+      if (a.leadership) {
+        const lead =
+          a.leadership === "want_lead"
+            ? "רוצים לפקד: נשים לב לתפקידים עם המשך לקורס מפקדים וקצונה"
+            : a.leadership === "open"
+              ? "פתוחים לפיקוד אם יציעו: נשאיר את הדלת הזו פתוחה"
+              : "חלק מצוות: נעדיף תפקידים שבהם הכוח הוא בעבודה המשותפת";
+        const stress =
+          a.stress === "high"
+            ? ", ותפקוד טוב בלחץ מתאים לתפקידים מבצעיים."
+            : a.stress === "low"
+              ? ", בסביבה רגועה יחסית."
+              : ".";
+        parts.push(lead + stress);
+      }
+      return parts.length ? parts.join(" ") : null;
     }
     case "combat":
       return READINESS_LINE[a.combatDetails.readiness] ?? null;
@@ -348,7 +352,8 @@ export function stepReflection(step: AssessmentStepId, a: AssessmentAnswers): st
       const line = a.motivations[0] ? (MOTIVATION_LINE[a.motivations[0]] ?? null) : null;
       return line && a.extraNote.trim() ? `${line} והיועץ יענה על הבקשה שלכם בראש התוצאות.` : line;
     }
-    case "identity": {
+    case "identity":
+    case "review": {
       const name = a.preferredName.trim();
       return name ? `נעים להכיר, ${name}. עוד רגע הפרופיל מוכן.` : null;
     }

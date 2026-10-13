@@ -154,13 +154,6 @@ export function AssessmentQuestionStep({
             onChange={(environment) => update({ environment })}
           />
         </OptionSection>
-      </div>
-    );
-  }
-
-  if (step === "style") {
-    content = (
-      <div className="space-y-7">
         <OptionSection legend="איך אתם מרגישים לגבי מנהיגות ופיקוד?">
           <SingleChoice
             options={LEADERSHIP_OPTIONS}
@@ -186,8 +179,7 @@ export function AssessmentQuestionStep({
     content = (
       <div className="space-y-7">
         <p className="border-r-2 border-primary bg-primary/5 px-4 py-3 text-sm leading-6 text-dust">
-          השלב הזה הופיע בגלל הכיוון שבחרתם. לא צריך מספר מדויק, וגם ״לא יודע/ת״ היא תשובה
-          טובה.
+          השלב הזה הופיע בגלל הכיוון שבחרתם. לא צריך מספר מדויק, וגם ״לא יודע/ת״ היא תשובה טובה.
         </p>
         <OptionSection legend="ריצת 3 ק״מ">
           <SingleChoice
@@ -339,8 +331,36 @@ export function AssessmentQuestionStep({
     content = <AssessmentCheckpoint answers={answers} />;
   }
 
+  const identityFields = (
+    <div className="grid gap-5 sm:grid-cols-2">
+      <FormField label="איך לקרוא לכם?">
+        <input
+          type="text"
+          autoComplete="nickname"
+          value={answers.preferredName}
+          onChange={(event) => update({ preferredName: event.target.value.slice(0, 120) })}
+          maxLength={120}
+          placeholder="שם פרטי או כינוי"
+          className="input-field"
+        />
+      </FormField>
+      <FormField label="תאריך גיוס משוער">
+        <DraftDateField value={answers.draftDate} onChange={(draftDate) => update({ draftDate })} />
+      </FormField>
+      <p className="text-xs leading-5 text-dust sm:col-span-2">
+        אפשר לעדכן את התאריך והפרטים בהמשך. הם משמשים להתאמה אישית בלבד.
+      </p>
+    </div>
+  );
+  if (step === "identity") content = identityFields;
+
   if (step === "review") {
-    content = <AssessmentCheckpoint answers={answers} variant="review" />;
+    content = (
+      <div className="space-y-8">
+        {identityFields}
+        <AssessmentCheckpoint answers={answers} variant="review" />
+      </div>
+    );
   }
 
   if (step === "motivation") {
@@ -357,9 +377,9 @@ export function AssessmentQuestionStep({
         </OptionSection>
         <FormField label="מה חשוב לכם שהיועץ יידע? (אופציונלי)">
           <p className="mb-2 text-xs leading-5 text-dust">
-            מה שתכתבו כאן משפיע על בחירת התפקידים, והיועץ גם יענה עליו ישירות בתוצאות. כתבו תחום שמעניין
-            אתכם או דילמה. לדוגמה: ״אני ממש בקטע של רחפנים״, ״יש לי פרופיל 97 אבל אני רוצה טכנולוגיה״ או
-            ״אני רוצה 8200 אבל הדפ״ר שלי 60״.
+            מה שתכתבו כאן משפיע על בחירת התפקידים, והיועץ גם יענה עליו ישירות בתוצאות. כתבו תחום
+            שמעניין אתכם או דילמה. לדוגמה: ״אני ממש בקטע של רחפנים״, ״יש לי פרופיל 97 אבל אני רוצה
+            טכנולוגיה״ או ״אני רוצה 8200 אבל הדפ״ר שלי 60״.
           </p>
           <textarea
             value={answers.extraNote}
@@ -372,33 +392,6 @@ export function AssessmentQuestionStep({
         </FormField>
         <p className="-mt-4 text-left font-mono text-[11px] tabular-nums text-dust">
           {answers.extraNote.length}/400
-        </p>
-      </div>
-    );
-  }
-
-  if (step === "identity") {
-    content = (
-      <div className="grid gap-5 sm:grid-cols-2">
-        <FormField label="איך לקרוא לכם?">
-          <input
-            type="text"
-            autoComplete="nickname"
-            value={answers.preferredName}
-            onChange={(event) => update({ preferredName: event.target.value.slice(0, 120) })}
-            maxLength={120}
-            placeholder="שם פרטי או כינוי"
-            className="input-field"
-          />
-        </FormField>
-        <FormField label="תאריך גיוס משוער">
-          <DraftDateField
-            value={answers.draftDate}
-            onChange={(draftDate) => update({ draftDate })}
-          />
-        </FormField>
-        <p className="text-xs leading-5 text-dust sm:col-span-2">
-          אפשר לעדכן את התאריך והפרטים בהמשך. הם משמשים להתאמה אישית בלבד.
         </p>
       </div>
     );

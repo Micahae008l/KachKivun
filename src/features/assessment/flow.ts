@@ -28,12 +28,14 @@ export function buildAssessmentFlow(
   { includeAuth = true }: { includeAuth?: boolean } = {},
 ): AssessmentStepId[] {
   const branches = deriveAssessmentBranches(answers);
-  const steps: AssessmentStepId[] = ["direction", "roles", "preferences", "environment", "style"];
+  // "environment" also asks the style questions, and "review" also asks name and draft date: two
+  // screens fewer, the same answers. The "style" and "identity" ids stay valid for saved drafts.
+  const steps: AssessmentStepId[] = ["direction", "roles", "preferences", "environment"];
 
   if (branches.wantsCombat) steps.push("combat");
   if (branches.wantsTechnical) steps.push("technical");
 
-  steps.push("scores", "yom", "checkpoint", "motivation", "identity", "review");
+  steps.push("scores", "yom", "checkpoint", "motivation", "review");
   // Signed-out users save on a screen of its own: email, then the one-time code.
   if (includeAuth) steps.push("email", "otp");
   return steps;
@@ -60,11 +62,14 @@ export function validateAssessmentStep(
   if (step === "preferences" && (!answers.focus || !answers.physicalActivityLevel)) {
     return "בחרו מיקוד ורמת פעילות לפני שממשיכים";
   }
-  if (step === "environment" && (!answers.basePreference || !answers.environment)) {
-    return "בחרו מערכת יציאות וסביבת עבודה";
+  if (
+    (step === "environment" || step === "style") &&
+    (!answers.basePreference || !answers.environment)
+  ) {
+    return "בחרו בסיס וסביבת עבודה";
   }
-  if (step === "style" && (!answers.leadership || !answers.stress)) {
-    return "ענו על שתי שאלות הסגנון";
+  if ((step === "environment" || step === "style") && (!answers.leadership || !answers.stress)) {
+    return "ענו גם על שאלות המנהיגות והלחץ";
   }
   if (step === "combat") {
     const details = answers.combatDetails;
@@ -102,7 +107,7 @@ export function validateAssessmentStep(
     if (answers.motivations.length > 4) return "אפשר לבחור עד ארבע מוטיבציות";
     if (answers.extraNote.trim().length > 400) return "הבקשה האישית יכולה להכיל עד 400 תווים";
   }
-  if (step === "identity") {
+  if (step === "identity" || step === "review") {
     if (!answers.preferredName.trim()) return "כתבו איך לקרוא לכם";
     if (answers.preferredName.trim().length > 120) return "השם יכול להכיל עד 120 תווים";
     if (!isValidDraftDate(answers.draftDate)) return "בחרו תאריך גיוס תקין";

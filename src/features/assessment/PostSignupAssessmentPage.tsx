@@ -78,7 +78,7 @@ const STEP_EFFORT: Record<AssessmentStepId, number> = {
   direction: 1,
   roles: 2,
   preferences: 2,
-  environment: 2,
+  environment: 3,
   style: 2,
   combat: 4,
   technical: 2,
@@ -87,7 +87,7 @@ const STEP_EFFORT: Record<AssessmentStepId, number> = {
   checkpoint: 1,
   motivation: 2,
   identity: 2,
-  review: 1,
+  review: 2,
   email: 1,
   otp: 1,
 };
@@ -116,8 +116,8 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   environment: {
     icon: MapPin,
-    title: "בסיס וסביבת עבודה",
-    subtitle: "התנאים שבהם יהיה לכם קל יותר להצליח לאורך זמן.",
+    title: "איפה ואיך אתם עובדים",
+    subtitle: "בסיס, סביבת עבודה, מנהיגות ולחץ: ארבע בחירות מהירות.",
   },
   style: {
     icon: Brain,
@@ -161,8 +161,8 @@ const STEP_META: Record<AssessmentStepId, StepMeta> = {
   },
   review: {
     icon: CheckCircle2,
-    title: "זה הפרופיל שנשמור",
-    subtitle: "סיכום האותות שישמשו להתאמה. אפשר לחזור ולתקן לפני השמירה.",
+    title: "כמעט סיימנו",
+    subtitle: "שם, תאריך גיוס משוער ומבט אחרון על הפרופיל לפני השמירה.",
   },
   email: {
     icon: Mail,
