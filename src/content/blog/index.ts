@@ -15,6 +15,10 @@ import * as rolesByProfile from "./roles-by-profile";
 import * as rolesByDapar from "./roles-by-dapar";
 import * as atuda from "./atuda";
 import * as shnatSherut from "./shnat-sherut";
+import * as yomHagiyus from "./yom-hagiyus";
+import * as gibushim from "./gibushim";
+import * as hayalBoded from "./hayal-boded";
+import * as miyunim from "./miyunim";
 
 export type PostFaq = { q: string; a: string };
 
@@ -39,4 +43,8 @@ export const POST_CONTENT: Record<string, PostContent> = {
   "תפקידים-לפי-דפר": rolesByDapar,
   "עתודה-אקדמית": atuda,
   "שנת-שירות-ומכינה": shnatSherut,
+  "מה-להביא-ליום-הגיוס": yomHagiyus,
+  "גיבושים-בצהל": gibushim,
+  "חייל-בודד": hayalBoded,
+  "מיונים-בצבא": miyunim,
 };

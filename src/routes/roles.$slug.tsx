@@ -79,8 +79,15 @@ function RolePage() {
   const paragraphs = role.about.split(/\n\n+/).filter(Boolean);
   // Combat roles get the field-screening guides; the rest get thresholds and the questionnaire.
   const guideSlugs = role.combat
-    ? ["יום-סיירות", "פרופיל-צבאי", "טירונות", "לוחמות-בצהל"]
-    : ["תפקידים-לפי-דפר", "תפקידים-לפי-פרופיל", "שאלון-העדפות", "יום-המאה"];
+    ? ["יום-סיירות", "גיבושים-בצהל", "פרופיל-צבאי", "טירונות", "לוחמות-בצהל", "מה-להביא-ליום-הגיוס"]
+    : [
+        "תפקידים-לפי-דפר",
+        "תפקידים-לפי-פרופיל",
+        "שאלון-העדפות",
+        "מיונים-בצבא",
+        "יום-המאה",
+        "מה-להביא-ליום-הגיוס",
+      ];
   const guides = guideSlugs.flatMap((slug) => getBlogPost(slug) ?? []);
   const floors = [
     role.daparFloor != null ? `דפ״ר ${role.daparFloor}` : "",
