@@ -1,28 +1,45 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Check, RefreshCw, Share2, X } from "lucide-react";
+import { Check, RefreshCw, Swords, X } from "lucide-react";
 import { QuizCta } from "@/components/QuizCta";
+import { ShareButtons } from "@/components/ShareButtons";
 
 const URL = "https://kachkivun.com/attention-test";
 const TITLE = "מבחן קשב לצו ראשון: תרגול חינם של העיגול הירוק | קח כיוון";
 const DESCRIPTION =
   "תרגול למבחן הקשב: צורות בצבעים מופיעות במרווחים לא קבועים, ולוחצים רק על עיגול ירוק. בסוף מקבלים ציון מ־1 עד 5, זמן תגובה וכמה פעמים לחצתם בטעות.";
 
+/** A friend's grade from a shared link: only a whole number on the real 1 to 5 scale counts. */
+function parseVs(raw: unknown) {
+  return (typeof raw === "number" || typeof raw === "string") && /^[1-5]$/.test(String(raw))
+    ? Number(raw)
+    : undefined;
+}
+
 export const Route = createFileRoute("/attention-test")({
   component: AttentionTestPage,
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:url", content: URL },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
-    ],
-    links: [{ rel: "canonical", href: URL }],
+  validateSearch: (search: Record<string, unknown>): { vs?: number } => ({
+    vs: parseVs(search.vs),
   }),
+  head: ({ match }) => {
+    const vs = match.search.vs;
+    const ogTitle = vs ? `מישהו קיבל ${vs} מתוך 5 בתרגול הריכוז. נסו לנצח | קח כיוון` : TITLE;
+    const ogDescription = vs
+      ? "תרגול ריכוז של דקה וחצי: לוחצים רק על עיגול ירוק. בסוף רואים מי ניצח."
+      : DESCRIPTION;
+    return {
+      meta: [
+        { title: TITLE },
+        { name: "description", content: DESCRIPTION },
+        { property: "og:title", content: ogTitle },
+        { property: "og:description", content: ogDescription },
+        { property: "og:url", content: URL },
+        { name: "twitter:title", content: ogTitle },
+        { name: "twitter:description", content: ogDescription },
+      ],
+      links: [{ rel: "canonical", href: URL }],
+    };
+  },
 });
 
 type Shape = "circle" | "square" | "triangle";
@@ -170,6 +187,7 @@ const RULES: { stimulus: Stimulus; tap: boolean; label: string }[] = [
 ];
 
 function AttentionTestPage() {
+  const { vs } = Route.useSearch();
   const [phase, setPhase] = useState<Phase>("intro");
   const [count, setCount] = useState(3);
   // When the last shape's gap ends; the sequence is fixed at start, so the countdown is exact.
@@ -295,20 +313,6 @@ function AttentionTestPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [phase, tap]);
 
-  async function share() {
-    if (!result) return;
-    const text = `קיבלתי ${result.grade} מתוך 5 במבחן הקשב של קח כיוון. נראה אתכם עוקפים אותי:`;
-    try {
-      if (navigator.share) await navigator.share({ text, url: URL });
-      else {
-        await navigator.clipboard.writeText(`${text} ${URL}`);
-        toast.success("הועתק. אפשר להדביק לחברים.");
-      }
-    } catch {
-      // The share sheet was dismissed; nothing to do.
-    }
-  }
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 text-right sm:px-6 sm:py-12" dir="rtl">
       <header>
@@ -321,6 +325,13 @@ function AttentionTestPage() {
           אחת מהן, במרווחים לא קבועים. כאן מתרגלים אותו בדקה וחצי, עם ציון מ־1 עד 5.
         </p>
       </header>
+
+      {vs && phase !== "done" ? (
+        <p className="mt-6 flex items-center gap-3 border border-primary/40 bg-primary/10 p-4 text-base font-bold text-foreground">
+          <Swords className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+          {vs === 5 ? "מישהו קיבל 5 מתוך 5. נסו להשתוות." : `מישהו קיבל ${vs} מתוך 5. נסו לנצח.`}
+        </p>
+      ) : null}
 
       <section
         className="relative mt-6 overflow-hidden border border-iron/30 bg-black"
@@ -463,15 +474,25 @@ function AttentionTestPage() {
                 <dt className="mt-1 text-[11px] leading-4 text-dust">זמן תגובה ממוצע</dt>
               </div>
             </dl>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => void share()}
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-iron/40 px-5 text-sm font-bold text-foreground transition hover:border-primary/50 active:scale-[0.97] sm:flex-none"
-              >
-                <Share2 className="h-4 w-4" aria-hidden />
-                אתגרו חברים
-              </button>
+            {vs ? (
+              <p className="mt-6 border-r-2 border-primary bg-primary/5 p-3 text-base font-black text-foreground">
+                {result.grade > vs
+                  ? `ניצחתם! ${result.grade} מול ${vs}.`
+                  : result.grade === vs
+                    ? `תיקו, ${vs} מול ${vs}. עוד ניסיון?`
+                    : `${result.grade} מול ${vs}. עוד ניסיון?`}
+              </p>
+            ) : null}
+            <div className="mt-6 border-t border-iron/25 pt-5">
+              <p className="mb-3 text-sm font-bold text-foreground">
+                אתגרו חברים לנצח את ה־{result.grade} שלכם
+              </p>
+              <ShareButtons
+                text={`קיבלתי ${result.grade} מתוך 5 בתרגול הריכוז של קח כיוון. נסו לנצח אותי:`}
+                url={`${URL}?vs=${result.grade}`}
+              />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={start}
@@ -486,7 +507,7 @@ function AttentionTestPage() {
       </section>
 
       {phase === "done" ? (
-        <QuizCta className="mt-6" title="ציון קשב לבד לא אומר באיזה תפקיד תשרתו" />
+        <QuizCta className="mt-6" title="עכשיו בדקו לאיזה תפקיד אתם מתאימים" />
       ) : null}
 
       <section className="mt-10 space-y-4 text-base leading-[1.85] text-foreground/85">
