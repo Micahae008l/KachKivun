@@ -231,6 +231,14 @@ export function parseRolesArray(raw) {
 }
 
 const AI_MODEL = process.env.AI_MATCH_MODEL || "gpt-4o";
+const AI_MAX_ATTEMPTS = 2;
+
+/** Worth one more try: rate limits, overload, server errors, timeouts and network failures. */
+export function isRetryableAiError(error) {
+  const status = Number(error?.status);
+  if (!status) return true;
+  return status === 408 || status === 409 || status === 429 || status >= 500;
+}
 const AI_TEMPERATURE = parseFloat(process.env.AI_MATCH_TEMPERATURE) || 0.2;
 
 const configuredMatchEngine = (process.env.AI_MATCH_ENGINE || "v3").toLowerCase();
@@ -794,65 +802,104 @@ export async function matchRoles(req, res) {
     let roles = [];
     let personalAnswer = "";
     try {
-      const completion = await chatJson({
-        model: AI_MODEL,
-        system: systemPrompt,
-        user: userPrompt,
-        maxTokens: 8000,
-        // 0 so the same profile gets the same picks; the profile-hash cache is the hard guarantee.
-        temperature: retry ? 0.8 : isV3 || isV2 ? 0 : AI_TEMPERATURE,
-        // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
-        seed: (isV3 || isV2) && !retry ? seedFromString(profileHash) : undefined,
-      });
-      const durationMs = Date.now() - startedAt;
-      const modelUsed = completion.model || AI_MODEL;
-      const { promptTokens, completionTokens, content, finishReason } = completion;
-      const totalTokens = promptTokens + completionTokens;
-      const parsedRoles = parseRolesArray(content);
-      personalAnswer = parsePersonalAnswer(content);
-      const copyComplete = Array.isArray(parsedRoles) && parsedRoles.length === 5;
-
-      if (finishReason === "length") {
-        console.warn("[ai/match-roles] finish_reason=length (possible truncation)");
-      }
-      if (!copyComplete) {
-        console.error(
-          "[ai/match-roles] Incomplete AI role copy. Raw (first 400 chars):",
-          content.slice(0, 400),
-        );
-      }
-
-      const usageEntry = {
-        userId,
-        userEmail,
-        endpoint: "match-roles",
-        model: modelUsed,
-        promptTokens,
-        completionTokens,
-        totalTokens,
-        durationMs,
-        status: copyComplete ? "success" : "parse_error",
-        finishReason,
-        openaiRequestId: completion.id ?? null,
-        filteredRoleCount,
-        errorMessage: copyComplete ? null : "AI omitted or malformed one or more roles",
-      };
-      if (copyComplete) {
-        deferredSuccessUsage = usageEntry;
-      } else {
-        await recordAiUsage(usageEntry);
-        failureUsageRecorded = true;
-      }
-
-      if (!Array.isArray(parsedRoles) || parsedRoles.length === 0) {
-        if (!isV3) {
-          return res.status(502).json({
-            error: "AI returned invalid response format. Please try again.",
+      // One silent retry: about 3% of runs come back malformed and a few hit a transient API error;
+      // the user would otherwise see an error and have to press "try again" themselves.
+      for (let attempt = 1; attempt <= AI_MAX_ATTEMPTS; attempt += 1) {
+        const lastAttempt = attempt === AI_MAX_ATTEMPTS;
+        let completion;
+        try {
+          completion = await chatJson({
+            model: AI_MODEL,
+            system: systemPrompt,
+            user: userPrompt,
+            maxTokens: 8000,
+            // 0 so the same profile gets the same picks; the profile-hash cache is the hard guarantee.
+            // A second attempt varies a little so it doesn't repeat the same broken answer.
+            temperature: retry ? 0.8 : attempt > 1 ? 0.3 : isV3 || isV2 ? 0 : AI_TEMPERATURE,
+            // Deterministic seed from the profile hash → best-effort identical reruns (caching is the hard guarantee).
+            seed: (isV3 || isV2) && !retry && attempt === 1 ? seedFromString(profileHash) : undefined,
           });
+        } catch (error) {
+          if (lastAttempt || !isRetryableAiError(error)) throw error;
+          console.warn(`[ai/match-roles] attempt ${attempt} failed (${error?.message}); retrying`);
+          await recordAiUsage({
+            userId,
+            userEmail,
+            endpoint: "match-roles",
+            model: AI_MODEL,
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+            durationMs: Date.now() - startedAt,
+            status: "api_error",
+            filteredRoleCount,
+            errorMessage: `${error?.message || "AI error"} (retried)`,
+          });
+          continue;
         }
-        roles = [];
-      } else {
-        roles = parsedRoles;
+        const durationMs = Date.now() - startedAt;
+        const modelUsed = completion.model || AI_MODEL;
+        const { promptTokens, completionTokens, content, finishReason } = completion;
+        const totalTokens = promptTokens + completionTokens;
+        const parsedRoles = parseRolesArray(content);
+        personalAnswer = parsePersonalAnswer(content);
+        const copyComplete = Array.isArray(parsedRoles) && parsedRoles.length === 5;
+        // v2 also needs all five titles to exist in the pool, or the result can't be saved.
+        const usable =
+          copyComplete && (!isV2 || finalizeRolesV2(parsedRoles, candidatePool || []).length === 5);
+
+        if (finishReason === "length") {
+          console.warn("[ai/match-roles] finish_reason=length (possible truncation)");
+        }
+        if (!copyComplete) {
+          console.error(
+            "[ai/match-roles] Incomplete AI role copy. Raw (first 400 chars):",
+            content.slice(0, 400),
+          );
+        }
+
+        const usageEntry = {
+          userId,
+          userEmail,
+          endpoint: "match-roles",
+          model: modelUsed,
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          durationMs,
+          status: copyComplete ? "success" : "parse_error",
+          finishReason,
+          openaiRequestId: completion.id ?? null,
+          filteredRoleCount,
+          errorMessage: copyComplete ? null : "AI omitted or malformed one or more roles",
+        };
+        if (!usable && !lastAttempt) {
+          console.warn(`[ai/match-roles] attempt ${attempt} unusable; retrying`);
+          await recordAiUsage({
+            ...usageEntry,
+            status: "parse_error",
+            errorMessage: "AI omitted, malformed or invented a role (retried)",
+          });
+          continue;
+        }
+        if (copyComplete) {
+          deferredSuccessUsage = usageEntry;
+        } else {
+          await recordAiUsage(usageEntry);
+          failureUsageRecorded = true;
+        }
+
+        if (!Array.isArray(parsedRoles) || parsedRoles.length === 0) {
+          if (!isV3) {
+            return res.status(502).json({
+              error: "AI returned invalid response format. Please try again.",
+            });
+          }
+          roles = [];
+        } else {
+          roles = parsedRoles;
+        }
+        break;
       }
     } catch (error) {
       if (!isV3) throw error;
