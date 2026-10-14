@@ -4,26 +4,44 @@ import { ArrowUp, ChevronLeft } from "lucide-react";
 import catalog from "@/content/blog/role-calculator.json";
 import { roleInsightSlug } from "@/lib/api";
 import { QuizCta } from "@/components/QuizCta";
+import { ShareButtons } from "@/components/ShareButtons";
 
 const URL = "https://kachkivun.com/role-calculator";
 const TITLE = "מחשבון תפקידים: מה פתוח לי עם הדפ״ר והפרופיל שלי | קח כיוון";
 const DESCRIPTION =
   "בחרו דפ״ר ופרופיל רפואי וראו מיד אילו מתוך יותר מ־300 תפקידים בצה״ל פתוחים לכם, לפי ספים שאומתו מול אתר מתגייסים, ומה היה נפתח עם צעד אחד למעלה.";
 
+/** A value from a shared link counts only if it is exactly one of the steps on the picker. */
+const pick = (raw: unknown, steps: number[]) =>
+  (typeof raw === "number" || typeof raw === "string") && /^\d{2}$/.test(String(raw))
+    ? steps.find((step) => step === Number(raw))
+    : undefined;
+
 export const Route = createFileRoute("/role-calculator")({
   component: RoleCalculatorPage,
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:url", content: URL },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
-    ],
-    links: [{ rel: "canonical", href: URL }],
+  validateSearch: (search: Record<string, unknown>): { dapar?: number; profile?: number } => ({
+    dapar: pick(search.dapar, DAPAR_STEPS),
+    profile: pick(search.profile, PROFILE_STEPS),
   }),
+  head: ({ match }) => {
+    const { dapar, profile } = match.search;
+    const shared = dapar && profile;
+    const ogTitle = shared
+      ? `עם דפ״ר ${dapar} ופרופיל ${profile} נפתחים ${countOpen(dapar, profile)} תפקידים. וכמה לכם? | קח כיוון`
+      : TITLE;
+    return {
+      meta: [
+        { title: TITLE },
+        { name: "description", content: DESCRIPTION },
+        { property: "og:title", content: ogTitle },
+        { property: "og:description", content: DESCRIPTION },
+        { property: "og:url", content: URL },
+        { name: "twitter:title", content: ogTitle },
+        { name: "twitter:description", content: DESCRIPTION },
+      ],
+      links: [{ rel: "canonical", href: URL }],
+    };
+  },
 });
 
 type Threshold = {
@@ -134,8 +152,9 @@ function FieldGroup({ field, roles, open }: { field: string; roles: Threshold[];
 }
 
 function RoleCalculatorPage() {
-  const [dapar, setDapar] = useState(50);
-  const [profile, setProfile] = useState(64);
+  const search = Route.useSearch();
+  const [dapar, setDapar] = useState(search.dapar ?? 50);
+  const [profile, setProfile] = useState(search.profile ?? 64);
 
   const open = useMemo(
     () => ROLES.filter((role) => isOpen(role, dapar, profile)),
@@ -184,6 +203,11 @@ function RoleCalculatorPage() {
         <p className="mt-3 max-w-2xl text-base leading-[1.8] text-dust">
           בחרו את שני המספרים וראו אילו תפקידים עומדים בסף. בלי הרשמה.
         </p>
+        {search.dapar || search.profile ? (
+          <p className="mt-3 border-r-2 border-primary bg-primary/5 p-3 text-sm font-bold text-foreground">
+            המספרים מולאו מהקישור ששיתפו איתכם. בחרו את שלכם למטה.
+          </p>
+        ) : null}
       </header>
 
       <div className="mt-6 border border-iron/30 bg-card">
@@ -256,6 +280,16 @@ function RoleCalculatorPage() {
               <strong className="font-mono text-foreground">{blocked}</strong> חסומים כרגע
             </li>
           </ul>
+
+          <div className="mt-5 border-t border-iron/25 pt-4">
+            <p className="mb-3 text-sm font-bold text-foreground">
+              שתפו את התוצאה וראו כמה נפתחים לחברים
+            </p>
+            <ShareButtons
+              text={`עם דפ״ר ${dapar} ופרופיל ${profile} נפתחים לי ${open.length} תפקידים בצה״ל. כמה נפתחים לכם?`}
+              url={`${URL}?dapar=${dapar}&profile=${profile}`}
+            />
+          </div>
         </section>
       </div>
 
