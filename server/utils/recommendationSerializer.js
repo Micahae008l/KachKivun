@@ -1,4 +1,5 @@
 import { AI_COUNSELOR_TOP_TWO_PRODUCT_KEY } from "./recommendationAccess.js";
+import { fitReasonsFor } from "./fitReasons.js";
 
 const text = (value) => (typeof value === "string" ? value : "");
 const numberOrNull = (value) => {
@@ -85,28 +86,11 @@ function broadField(category) {
 }
 
 /**
- * Up to two of the profile reasons the match rests on ("טכנולוגיה", "צוות"): personal, and they
- * cannot name the role. Any reason that shares a word with the title is dropped, just in case.
- */
-function fitReasons(role) {
-  const titleWords = new Set(
-    text(role.roleTitle)
-      .replace(/[^\u05D0-\u05EAa-z0-9\s]/gi, " ")
-      .split(/\s+/)
-      .filter((w) => w.length > 1),
-  );
-  return (Array.isArray(role.tags) ? role.tags : [])
-    .map((tag) => text(tag).slice(0, 24))
-    .filter((tag) => tag && !tag.split(/\s+/).some((w) => titleWords.has(w)))
-    .slice(0, 2);
-}
-
-/**
  * A locked place shows a few teaser hints besides its score: the broad field, combat or not, the
  * fit reasons (why it suits this user) and the admission-chance level. Never the title itself, the sub-field, the
  * chance's reasoning, the service length or anything else from the role.
  */
-function serializeLockedRole(role, rank) {
+function serializeLockedRole(role, rank, snapshot) {
   const level = role.admissionChance?.level;
   return {
     kind: "locked",
@@ -115,7 +99,7 @@ function serializeLockedRole(role, rank) {
     matchPercentage: numberOrNull(role.matchPercentage) ?? 0,
     field: broadField(role.category),
     combat: typeof role.combat === "boolean" ? role.combat : null,
-    because: fitReasons(role),
+    because: fitReasonsFor(role, snapshot),
     admissionChance: ["high", "medium", "low"].includes(level)
       ? { level, label: text(role.admissionChance.label) }
       : null,
@@ -129,7 +113,7 @@ export function serializeRecommendationRoles(doc, access) {
   const resolvedAccess = normalizedAccess(access);
   return rankedRoles(doc).map(({ role, rank }) =>
     !resolvedAccess.topTwoUnlocked && rank <= LOCKED_TOP_RANKS
-      ? serializeLockedRole(role, rank)
+      ? serializeLockedRole(role, rank, doc?.profileSnapshot)
       : serializeFullRole(role, rank),
   );
 }

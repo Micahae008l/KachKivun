@@ -142,20 +142,24 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
   ]) {
     assert.equal(json.includes(secret), false, `locked payload leaked ${secret}`);
   }
-  // Up to two profile reasons are a deliberate teaser; they appear only in "because".
-  assert.deepEqual(serialized.roles[0].because, ["תגית-LOCKED-ONE"]);
-  assert.equal(JSON.stringify({ ...serialized.roles[0], because: [] }).includes("תגית"), false);
+  // Without a saved profile there are no reasons to show (tags are not sent).
+  assert.deepEqual(serialized.roles[0].because, []);
 });
 
-test("a fit reason that shares a word with the locked title is never sent", () => {
+test("fit reasons come from the user's own answers matched to the role, never the title", () => {
   const doc = {
     _id: "r1",
-    roles: [
-      { rank: 1, roleTitle: "מגן/ת סייבר", tags: ["סייבר", "עיבוד מידע", "צוות", "פיקוד"], matchPercentage: 95 },
-    ],
+    profileSnapshot: {
+      physicalActivityLevel: "High",
+      yomSource: "official",
+      yom: {},
+      assessmentSignals: { rolesInterested: ["combat"], motivations: [], technicalDetails: {} },
+    },
+    roles: [{ rank: 1, roleTitle: "פרמדיק/ית", tags: ["פרמדיק"], matchPercentage: 95 }],
   };
   const role = serializeRecommendation(doc, lockedAccess).roles[0];
-  assert.deepEqual(role.because, ["עיבוד מידע", "צוות"]);
+  assert.deepEqual(role.because, ["העניין שלכם בלחימה", "הכושר הגבוה שלכם"]);
+  assert.equal(JSON.stringify(role).includes("פרמדיק"), false);
 });
 
 test("history list and detail use the same locked serializer", () => {
