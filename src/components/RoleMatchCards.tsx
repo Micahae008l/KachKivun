@@ -580,11 +580,15 @@ function TopPlacesVault({
                       className="mt-2 h-3.5 w-36 max-w-full rounded-sm bg-iron/40 opacity-60 blur-[3px]"
                       aria-hidden
                     />
-                    {role.field || role.admissionChance || role.initial || role.combat != null ? (
+                    {role.field ||
+                    role.admissionChance ||
+                    role.because?.length ||
+                    role.combat != null ? (
                       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-dust">
-                        {role.initial ? (
-                          <span>
-                            מתחיל ב־<strong className="text-foreground">{role.initial}׳</strong>
+                        {role.because?.length ? (
+                          <span className="basis-full">
+                            מתאים לכם בזכות:{" "}
+                            <strong className="text-primary">{role.because.join(" · ")}</strong>
                           </span>
                         ) : null}
                         {role.field ? (

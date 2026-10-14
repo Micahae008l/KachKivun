@@ -75,9 +75,9 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
   const serialized = serializeRecommendation(recommendation, lockedAccess);
   assert.deepEqual(Object.keys(serialized.roles[0]).sort(), [
     "admissionChance",
+    "because",
     "combat",
     "field",
-    "initial",
     "kind",
     "locked",
     "matchPercentage",
@@ -85,9 +85,9 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
   ]);
   assert.deepEqual(Object.keys(serialized.roles[1]).sort(), [
     "admissionChance",
+    "because",
     "combat",
     "field",
-    "initial",
     "kind",
     "locked",
     "matchPercentage",
@@ -95,9 +95,9 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
   ]);
   assert.deepEqual(Object.keys(serialized.roles[2]).sort(), [
     "admissionChance",
+    "because",
     "combat",
     "field",
-    "initial",
     "kind",
     "locked",
     "matchPercentage",
@@ -128,7 +128,6 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
     "כותרת-LOCKED-ONE",
     "תקציר-LOCKED-ONE",
     "תיאור-LOCKED-ONE",
-    "תגית-LOCKED-ONE",
     "שאלה-LOCKED-ONE",
     "קטגוריה-LOCKED-ONE",
     "יומיום-LOCKED-ONE",
@@ -143,6 +142,20 @@ test("locked serialization exposes only rank, percentage and the teaser hints", 
   ]) {
     assert.equal(json.includes(secret), false, `locked payload leaked ${secret}`);
   }
+  // Up to two profile reasons are a deliberate teaser; they appear only in "because".
+  assert.deepEqual(serialized.roles[0].because, ["תגית-LOCKED-ONE"]);
+  assert.equal(JSON.stringify({ ...serialized.roles[0], because: [] }).includes("תגית"), false);
+});
+
+test("a fit reason that shares a word with the locked title is never sent", () => {
+  const doc = {
+    _id: "r1",
+    roles: [
+      { rank: 1, roleTitle: "מגן/ת סייבר", tags: ["סייבר", "עיבוד מידע", "צוות", "פיקוד"], matchPercentage: 95 },
+    ],
+  };
+  const role = serializeRecommendation(doc, lockedAccess).roles[0];
+  assert.deepEqual(role.because, ["עיבוד מידע", "צוות"]);
 });
 
 test("history list and detail use the same locked serializer", () => {

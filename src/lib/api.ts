@@ -677,7 +677,8 @@ export type LockedRoleMatch = {
   field?: string;
   /** Teaser hints; missing on results saved or served before they existed. */
   combat?: boolean | null;
-  initial?: string;
+  /** Up to two profile reasons the match rests on, e.g. "טכנולוגיה". */
+  because?: string[];
   admissionChance?: { level: "high" | "medium" | "low"; label: string } | null;
 };
 
