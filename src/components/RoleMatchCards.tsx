@@ -24,7 +24,9 @@ import {
   ListChecks,
   Lock,
   MapPin,
+  RotateCcw,
   Shield,
+  ShieldCheck,
   Sparkles,
   Trophy,
   Users,
@@ -476,13 +478,14 @@ function UnlockedRoleCard({
   );
 }
 
+// Only what the unlocked cards and MatchExtras really show.
 const VAULT_PERKS = [
-  "שם התפקיד, והסבר למה הוא מתאים דווקא לכם",
-  "סיכויי קבלה ועובדות מפתח על התפקיד",
-  "תוכנית מוכנה לשאלון ההעדפות: מה לדרג 5, 4 ו־3",
-  "מה היה נפתח לכם עם דפ״ר או פרופיל גבוה יותר",
-  "נפתח לתמיד, גם בכל סבב התאמות חדש",
-  "תשלום אחד, בלי מנוי",
+  "שם כל תפקיד, ולמה הוא מתאים דווקא לכם",
+  "סיכוי קבלה, דרישות, משך שירות ואיפה משרתים",
+  "שאלות מוכנות לשאול את מיטב (1111) על כל תפקיד",
+  "תוכנית לשאלון ההעדפות: מה לדרג 5, 4 ו־3",
+  "מה עוד היה נפתח לכם עם דפ״ר או פרופיל גבוה יותר",
+  "נשאר פתוח בחשבון, גם בכל סבב התאמות חדש",
 ];
 
 /** "מקומות 3, 2 ו־1" for the given ranks, highest number first. */
@@ -516,6 +519,14 @@ function TopPlacesVault({
   const top = locked.find((role) => role.rank === 1);
   const lift = top && bestFreeMatch != null ? top.matchPercentage - bestFreeMatch : 0;
   const price = offer?.enabled ? formatPaymentPrice(offer.product) : null;
+  // "כ־₪5 לתפקיד": the real price split over the locked places, rounded to the agora.
+  const perRole =
+    offer?.enabled && locked.length > 1
+      ? formatPaymentPrice({
+          ...offer.product,
+          amountMinor: Math.round(offer.product.amountMinor / locked.length),
+        })
+      : null;
   const places = placesLabel(locked.map((role) => role.rank));
   const title =
     locked.length > 1
@@ -607,9 +618,23 @@ function TopPlacesVault({
             })}
         </ul>
 
+        <section className="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <h4 className="flex items-center gap-1.5 text-sm font-black text-foreground">
+            <ListChecks className="h-4 w-4 text-primary" aria-hidden />
+            למה זה חשוב לשאלון ההעדפות
+          </h4>
+          <p className="mt-1.5 text-sm leading-6 text-dust">
+            לפי אתר מתגייסים, בלי מספיק תפקידים בדירוג גבוה אי אפשר להתחשב בשאלון.{" "}
+            {locked.length > 1
+              ? "אלה המועמדים הכי חזקים לדירוג הגבוה שלכם."
+              : "זה המועמד הכי חזק לדירוג הגבוה שלכם."}
+          </p>
+        </section>
+
         {price ? (
           <>
-            <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+            <h4 className="mt-5 text-sm font-black text-foreground">מה נפתח לכם</h4>
+            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
               {VAULT_PERKS.map((perk) => (
                 <li key={perk} className="flex items-start gap-2 text-sm leading-6 text-foreground">
                   <Check className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
@@ -621,8 +646,13 @@ function TopPlacesVault({
               <div>
                 <p className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-foreground">{price}</span>
-                  <span className="text-sm text-dust">פעם אחת · בלי מנוי</span>
+                  <span className="text-sm text-dust">תשלום חד־פעמי · בלי מנוי</span>
                 </p>
+                {perRole ? (
+                  <p className="mt-1 text-xs text-dust">
+                    כ־<span dir="ltr">{perRole}</span> לתפקיד
+                  </p>
+                ) : null}
                 {offer?.enabled ? <SaleTag product={offer.product} className="mt-2" /> : null}
               </div>
               <Link
@@ -633,8 +663,32 @@ function TopPlacesVault({
                 פתחו את {places}
               </Link>
             </div>
+            <ul className="mt-4 grid gap-2 text-xs leading-5 text-dust sm:grid-cols-2">
+              <li className="flex items-start gap-2">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                תשלום מאובטח בעמוד של Grow. פרטי האשראי לא עוברים אלינו.
+              </li>
+              <li className="flex items-start gap-2">
+                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                הפתיחה אוטומטית, בדרך כלל תוך דקה מאישור התשלום.
+              </li>
+              <li className="flex items-start gap-2">
+                <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <span>
+                  אפשר לבקש ביטול והחזר דרך{" "}
+                  <Link to="/cancellation" className="font-semibold text-primary hover:underline">
+                    עמוד הביטול
+                  </Link>
+                  .
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Users className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                מתחת לגיל 18? בקופה אפשר לשלוח להורה קישור תשלום.
+              </li>
+            </ul>
             <p className="mt-3 text-xs leading-5 text-dust/80">
-              תשלום מאובטח דרך Grow, כולל מע״מ ככל שחל. נשאר פתוח בחשבון לתמיד.{" "}
+              המחיר כולל מע״מ ככל שחל.{" "}
               <Link
                 to="/payment/return"
                 search={{ interrupted: false }}
@@ -807,6 +861,7 @@ export function RoleMatchCards({
             onClick={() => go(index + 1)}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
           >
+            {nextSlide === "vault" ? <Lock className="h-3.5 w-3.5" aria-hidden /> : null}
             {nextSlide === "vault" ? `ל${lockedLabel}` : `למקום ${nextSlide.rank}`}
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </button>
@@ -814,8 +869,8 @@ export function RoleMatchCards({
       </div>
 
       <p className="text-xs leading-5 text-dust">
-        ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי הסף, המיונים והנתונים העדכניים נקבעים רק על ידי
-        צה״ל ויש לאמת אותם בערוצים הרשמיים.
+        קח כיוון הוא כלי עזר לא רשמי ואינו קשור לצה״ל. ההתאמה אינה אישור זכאות או הבטחת שיבוץ. תנאי
+        הסף, המיונים והנתונים העדכניים נקבעים רק על ידי צה״ל ויש לאמת אותם בערוצים הרשמיים.
       </p>
       <RoleInsightSheet slug={infoSlug} onClose={closeInfo} />
     </section>

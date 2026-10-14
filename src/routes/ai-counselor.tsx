@@ -17,6 +17,7 @@ import { dashboardQueryOptions } from "@/lib/queries";
 import { getToken } from "@/lib/auth";
 import { AI_PROFILE_MISSING_LABELS } from "@/lib/profile-preference-data";
 import { trackEvent } from "@/lib/analytics";
+import { formatPaymentPrice } from "@/lib/payment-offer";
 
 export const Route = createFileRoute("/ai-counselor")({
   component: AiCounselorPage,
@@ -65,6 +66,11 @@ function AiCounselorPage() {
     retry: 1,
   });
   const dashboard = dashboardQuery.data;
+  // Say up front what is free and what is paid, only while places are actually locked.
+  const unlockPrice =
+    offerQuery.data?.enabled && roles?.some((role) => role.kind === "locked")
+      ? formatPaymentPrice(offerQuery.data.product)
+      : null;
   const aiReady = Boolean(dashboard?.aiReady);
   const missingLabels =
     dashboard?.aiProfileMissing
@@ -183,7 +189,14 @@ function AiCounselorPage() {
             חמש התאמות התפקיד שלכם
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-dust">
-            מתחילים ממקום 5, וההתאמה הכי חזקה מחכה בסוף.
+            {unlockPrice ? (
+              <>
+                מקומות 5 ו־4 פתוחים לכם בחינם. מקומות 3, 2 ו־1, ההתאמות הכי חזקות, נפתחים ב־
+                <span dir="ltr">{unlockPrice}</span> בתשלום חד־פעמי.
+              </>
+            ) : (
+              "מתחילים ממקום 5, וההתאמה הכי חזקה מחכה בסוף."
+            )}
           </p>
         </header>
 
@@ -229,13 +242,13 @@ function AiCounselorPage() {
             <span>
               דפ״ר{" "}
               <strong className="text-foreground" dir="ltr">
-                {dashboard.stats?.daparScore ?? "—"}
+                {dashboard.stats?.daparScore ?? "לא צוין"}
               </strong>
             </span>
             <span>
               פרופיל רפואי{" "}
               <strong className="text-foreground" dir="ltr">
-                {dashboard.stats?.medicalProfile ?? "—"}
+                {dashboard.stats?.medicalProfile ?? "לא צוין"}
               </strong>
             </span>
           </section>

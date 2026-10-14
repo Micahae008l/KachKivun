@@ -79,6 +79,13 @@ const METHOD_LABELS: Record<PaymentMethod, { title: string; detail: string }> = 
   card: { title: "כרטיס אשראי", detail: "תשלום חד־פעמי מאובטח" },
 };
 
+const CHECKOUT_PERKS = [
+  "3 התפקידים הכי מתאימים, עם הסבר לכל אחד",
+  "סיכוי קבלה, דרישות ותוכנית לשאלון ההעדפות",
+  "נשאר פתוח בחשבון, גם בסבבים חדשים",
+  "תשלום חד־פעמי, בלי מנוי",
+];
+
 function createIdempotencyKey() {
   const cryptoApi = globalThis.crypto;
   if (typeof cryptoApi?.randomUUID === "function") {
@@ -435,8 +442,8 @@ export function CheckoutPage({ shareToken }: Props) {
           <p className="font-mono text-[10px] tracking-wide text-primary uppercase">תשלום מאובטח</p>
           <h1 className="mt-2 text-2xl font-black text-foreground">פתיחת מקומות 3, 2 ו־1</h1>
           <p className="mt-2 text-sm leading-6 text-dust">
-            גישה קבועה לשלוש ההתאמות המובילות בחשבון, כולל חישובים מחדש בעתיד. תשלום חד־פעמי, ללא
-            מנוי וללא חיובים חוזרים.
+            שלוש ההתאמות הכי חזקות, עם כל הפרטים, נשארות פתוחות בחשבון, גם בכל סבב התאמות חדש. תשלום
+            חד־פעמי, בלי מנוי ובלי חיובים חוזרים.
           </p>
         </header>
 
@@ -462,18 +469,12 @@ export function CheckoutPage({ shareToken }: Props) {
             <SaleTag product={info.product} className="mt-3" />
             <p className="mt-2 text-xs leading-5 text-dust">המחיר כולל מע״מ ככל שחל.</p>
             <ul className="mt-5 space-y-3 text-sm text-dust">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                תשלום חד־פעמי
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                פתיחה קבועה בחשבון
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                ללא מנוי
-              </li>
+              {CHECKOUT_PERKS.map((perk) => (
+                <li key={perk} className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  {perk}
+                </li>
+              ))}
             </ul>
             <div className="mt-5 border-t border-iron/20 pt-4 text-xs leading-5 text-dust">
               {info.processor ? (
@@ -566,11 +567,13 @@ export function CheckoutPage({ shareToken }: Props) {
                     התשלום מתבצע בעמוד המאובטח של Grow
                   </p>
                   <p className="mt-1">
-                    אחרי האישור נציג לכם קוד הזמנה קצר. שם, נייד ואמצעי תשלום
+                    {accountEmail
+                      ? "בלחיצה תעברו ישר לעמוד התשלום. שם, נייד ואמצעי תשלום"
+                      : "אחרי האישור נציג לכם קוד הזמנה קצר. שם, נייד ואמצעי תשלום"}
                     {methods.length
                       ? ` (${methods.map((item) => METHOD_LABELS[item].title).join(" / ")})`
                       : ""}{" "}
-                    ממלאים בעמוד של Grow.
+                    ממלאים בעמוד של Grow. אחרי התשלום הפתיחה אוטומטית, בדרך כלל תוך דקה.
                   </p>
                 </div>
               ) : (
@@ -744,7 +747,9 @@ export function CheckoutPage({ shareToken }: Props) {
                 ) : (
                   <LockKeyhole className="h-4 w-4" aria-hidden />
                 )}
-                {hosted && !accountEmail ? `המשך לתשלום · ${price}` : `מעבר לתשלום מאובטח · ${price}`}
+                {hosted && !accountEmail
+                  ? `המשך לתשלום · ${price}`
+                  : `מעבר לתשלום מאובטח · ${price}`}
               </button>
               <p className="text-center text-xs leading-5 text-dust">
                 {hosted
@@ -781,10 +786,10 @@ export function CheckoutPage({ shareToken }: Props) {
                     type="button"
                     disabled={sharing}
                     onClick={() => void createShareLink()}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline disabled:opacity-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-primary/50 px-4 text-sm font-bold text-primary transition hover:bg-primary/10 disabled:opacity-50"
                   >
                     <Share2 className="h-4 w-4" aria-hidden />
-                    יצירת קישור לתשלום על ידי הורה
+                    מתחת לגיל 18? קישור תשלום להורה
                   </button>
                   {shareUrl ? (
                     <div className="mt-3 flex gap-2">

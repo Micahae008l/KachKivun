@@ -1056,7 +1056,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             {!loginIntent && currentStep === "direction" ? (
               <p className="mt-5 text-xs leading-5 text-dust/80">
                 {offer?.enabled
-                  ? "ההערכה בחינם."
+                  ? "השאלון ו־2 התאמות בחינם."
                   : "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."}{" "}
                 ההמלצות אינן רשמיות ואינן מבטיחות זכאות, מיון או שיבוץ בצה״ל.
               </p>

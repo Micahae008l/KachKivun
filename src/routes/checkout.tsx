@@ -9,7 +9,7 @@ export const Route = createFileRoute("/checkout")({
       { title: "תשלום מאובטח | קח כיוון" },
       {
         name: "description",
-        content: "פתיחה קבועה של שתי התאמות התפקיד המובילות בתשלום חד־פעמי.",
+        content: "פתיחה קבועה של שלוש התאמות התפקיד המובילות בתשלום חד־פעמי.",
       },
     ],
   }),
