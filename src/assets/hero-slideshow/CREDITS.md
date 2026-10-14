@@ -1,7 +1,7 @@
 # Site photo credits
 
 All photos in this folder are openly licensed and taken from Wikimedia Commons. Each is credited on the site next to the image (component `IdfPhotoCredit`).
-Resized to 1920px wide for the web; no other changes.
+Resized to 1920px wide for the web; no other changes. The site serves WebP copies at 640/960/1280/1920px (`slide-N-<width>.webp`, made by `python scripts/hero-webp.py`).
 
 | File | Author | License | Source |
 | --- | --- | --- | --- |

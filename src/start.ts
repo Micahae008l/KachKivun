@@ -40,6 +40,49 @@ const securityHeaders = createMiddleware().server(async ({ next }) => {
   };
 });
 
+/** First path segments of public pages whose case is normalized (/About → /about). */
+const PUBLIC_SECTIONS = new Set([
+  "about",
+  "contact",
+  "role-insights",
+  "roles",
+  "blog",
+  "attention-test",
+  "role-calculator",
+  "privacy",
+  "terms",
+  "accessibility",
+  "cancellation",
+]);
+
+/**
+ * Canonical page URL, or null when the path already is one. Drops trailing slashes, and lowercases
+ * the first segment of public pages only: slugs are Hebrew (percent-encoded, never touched) and
+ * other routes carry case-sensitive tokens (/report/$id, /checkout/$token).
+ */
+function canonicalPath(pathname: string): string | null {
+  let path = pathname.length > 1 ? pathname.replace(/\/+$/, "") || "/" : pathname;
+  const first = path.split("/")[1] ?? "";
+  if (/[A-Z]/.test(first) && PUBLIC_SECTIONS.has(first.toLowerCase())) {
+    path = `/${first.toLowerCase()}${path.slice(first.length + 1)}`;
+  }
+  return path === pathname ? null : path;
+}
+
+/**
+ * 301 to the canonical page URL. Without it the router answers a trailing slash with a 307 and
+ * serves /About as a duplicate page.
+ */
+const canonicalRedirect = createMiddleware().server(({ request, pathname, handlerType, next }) => {
+  if (handlerType !== "router" || (request.method !== "GET" && request.method !== "HEAD")) {
+    return next();
+  }
+  const target = canonicalPath(pathname);
+  if (!target) return next();
+  const { search } = new URL(request.url);
+  return new Response(null, { status: 301, headers: { Location: target + search } });
+});
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [securityHeaders],
+  requestMiddleware: [securityHeaders, canonicalRedirect],
 }));

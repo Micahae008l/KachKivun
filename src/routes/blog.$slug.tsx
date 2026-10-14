@@ -9,17 +9,19 @@ const SITE_URL = "https://kachkivun.com";
 
 /** One guide per page: body, FAQ, official sources and a path into the assessment. */
 export const Route = createFileRoute("/blog/$slug")({
-  loader: ({ params }) => {
+  // Dynamic import: a static one here (loader/head stay in the main bundle) shipped every
+  // guide's body to every page, the homepage included.
+  loader: async ({ params }) => {
     const post = getBlogPost(params.slug);
-    if (!post || !POST_CONTENT[post.slug]) throw notFound();
-    return { post };
+    const content = post ? (await import("@/content/blog")).POST_CONTENT[post.slug] : undefined;
+    if (!post || !content) throw notFound();
+    return { post, faq: content.faq };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return {};
-    const { post } = loaderData;
+    const { post, faq } = loaderData;
     const url = blogUrl(post.slug);
     const title = `${post.title} | קח כיוון`;
-    const faq = POST_CONTENT[post.slug].faq;
     return {
       meta: [
         { title },

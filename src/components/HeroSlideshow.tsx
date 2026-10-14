@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { HERO_SLIDES, type HeroSlide } from "@/lib/hero-slideshow";
 import { ARIA } from "@/lib/a11y";
+import { IDF_PHOTO_SIZES } from "@/lib/idf-photo-catalog";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const INTERVAL_MS = 5500;
@@ -46,6 +47,8 @@ export function HeroSlideshow({ className = "", slides = HERO_SLIDES, controls =
         <motion.img
           key={slide.id}
           src={slide.src}
+          srcSet={slide.srcSet}
+          sizes={IDF_PHOTO_SIZES}
           alt={slide.alt}
           className="absolute inset-0 h-full w-full object-cover"
           style={{ objectPosition: slide.position ?? "center" }}
@@ -54,6 +57,7 @@ export function HeroSlideshow({ className = "", slides = HERO_SLIDES, controls =
           exit={{ opacity: 0 }}
           transition={{ duration: 0.85, ease }}
           decoding="async"
+          fetchPriority={index === 0 ? "high" : "auto"}
         />
       </AnimatePresence>
 

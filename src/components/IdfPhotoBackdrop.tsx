@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
+import { IDF_PHOTO_SIZES } from "@/lib/idf-photo-catalog";
+
 type Props = {
   src: string;
+  /** Responsive candidates (dropped on a retry, which goes through `src`). */
+  srcSet?: string;
   alt: string;
   /** CSS object-position */
   objectPosition?: string;
@@ -28,7 +32,7 @@ function withRetryParam(url: string, attempt: number): string {
  * The image is always painted at full opacity (no "invisible until onLoad" — that breaks with cache + SPA).
  * Base gradient stays underneath until pixels arrive; optional retries on hard failures.
  */
-export function IdfPhotoBackdrop({ src, alt, objectPosition, overlayClassName, imgClassName, loading = "eager", fetchPriority = "high" }: Props) {
+export function IdfPhotoBackdrop({ src, srcSet, alt, objectPosition, overlayClassName, imgClassName, loading = "eager", fetchPriority = "high" }: Props) {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
@@ -49,6 +53,8 @@ export function IdfPhotoBackdrop({ src, alt, objectPosition, overlayClassName, i
         <img
           key={`${src}-${attempt}`}
           src={effectiveSrc}
+          srcSet={attempt === 0 ? srcSet : undefined}
+          sizes={attempt === 0 && srcSet ? IDF_PHOTO_SIZES : undefined}
           alt={alt}
           width={1600}
           height={1067}

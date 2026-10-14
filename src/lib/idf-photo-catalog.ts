@@ -2,22 +2,40 @@
  * Site photo catalog: hero slideshow assets used across panels, role cards, and backdrops.
  * Every photo is openly licensed (Wikimedia Commons). Credits and licenses: src/assets/hero-slideshow/CREDITS.md.
  */
-import slide1 from "@/assets/hero-slideshow/slide-1.jpg?url";
-import slide2 from "@/assets/hero-slideshow/slide-2.jpg?url";
-import slide3 from "@/assets/hero-slideshow/slide-3.jpg?url";
-import slide4 from "@/assets/hero-slideshow/slide-4.jpg?url";
-import slide5 from "@/assets/hero-slideshow/slide-5.jpg?url";
-import slide6 from "@/assets/hero-slideshow/slide-6.jpg?url";
-import slide7 from "@/assets/hero-slideshow/slide-7.jpg?url";
-import slide8 from "@/assets/hero-slideshow/slide-8.jpg?url";
-import slide9 from "@/assets/hero-slideshow/slide-9.jpg?url";
-import slide10 from "@/assets/hero-slideshow/slide-10.jpg?url";
-import slide11 from "@/assets/hero-slideshow/slide-11.jpg?url";
-import slide12 from "@/assets/hero-slideshow/slide-12.jpg?url";
+/**
+ * Responsive WebP copies of each slide (640/960/1280/1920 wide), made by scripts/hero-webp.py
+ * from the slide-N.jpg masters in the same folder.
+ */
+const WEBP = import.meta.glob<string>("/src/assets/hero-slideshow/slide-*.webp", {
+  eager: true,
+  import: "default",
+});
+const WEBP_WIDTHS = [640, 960, 1280, 1920] as const;
+
+function webp(n: number, w: number): string {
+  return WEBP[`/src/assets/hero-slideshow/slide-${n}-${w}.webp`];
+}
+
+/** `src` (a mid size, also the fallback) and `srcSet` for slide N. */
+function slide(n: number): { src: string; srcSet: string } {
+  return {
+    src: webp(n, 1280),
+    srcSet: WEBP_WIDTHS.map((w) => `${webp(n, w)} ${w}w`).join(", "),
+  };
+}
+
+/**
+ * `sizes` for every full-bleed photo. One shared value on purpose: the homepage renders the
+ * slideshow twice (mobile background + desktop panel), and the root preload must name the same
+ * candidate the <img> picks, so the preloaded file is the one actually used.
+ */
+export const IDF_PHOTO_SIZES = "(min-width: 1280px) 760px, (min-width: 1024px) 60vw, 100vw";
 
 export type IdfPhoto = {
   id: string;
   src: string;
+  /** Responsive WebP candidates; pair with IDF_PHOTO_SIZES */
+  srcSet: string;
   alt: string;
   /** CSS object-position for crops */
   objectPosition?: string;
@@ -32,7 +50,7 @@ export type IdfPhoto = {
 export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   {
     id: "s1",
-    src: slide1,
+    ...slide(1),
     alt: "לוחם בצללית על רקע שקיעה",
     objectPosition: "center 40%",
     creditShort: "צילום: דובר צה״ל",
@@ -57,7 +75,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s2",
-    src: slide2,
+    ...slide(2),
     alt: "טנק מרכבה באימון ברמת הגולן",
     objectPosition: "center 55%",
     creditShort: "צילום: דובר צה״ל",
@@ -69,7 +87,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s3",
-    src: slide3,
+    ...slide(3),
     alt: "לוחם משגר רחפן תצפית בשטח פתוח",
     objectPosition: "center 45%",
     creditShort: "צילום: דובר צה״ל",
@@ -98,7 +116,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s4",
-    src: slide4,
+    ...slide(4),
     alt: "צוות על סיפון ספינת טילים בשקיעה",
     objectPosition: "center 55%",
     creditShort: "צילום: דובר צה״ל",
@@ -110,7 +128,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s5",
-    src: slide5,
+    ...slide(5),
     alt: "לוחמים מסתערים לצד טנק בשטח",
     objectPosition: "center 45%",
     creditShort: "צילום: דובר צה״ל",
@@ -134,7 +152,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s6",
-    src: slide6,
+    ...slide(6),
     alt: "לוחם בתצפית על קו הרכס",
     objectPosition: "center 40%",
     creditShort: "צילום: דובר צה״ל",
@@ -158,7 +176,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s7",
-    src: slide7,
+    ...slide(7),
     alt: "טנקים בתרגיל עם עשן צבעוני",
     objectPosition: "center 50%",
     creditShort: "צילום: דובר צה״ל",
@@ -170,7 +188,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s8",
-    src: slide8,
+    ...slide(8),
     alt: "לוחמים נושאים אלונקה במסע",
     objectPosition: "center 35%",
     creditShort: "צילום: דובר צה״ל",
@@ -196,7 +214,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s9",
-    src: slide9,
+    ...slide(9),
     alt: "טנק בצללית בשקיעה",
     objectPosition: "center 60%",
     creditShort: "צילום: דובר צה״ל",
@@ -208,7 +226,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s10",
-    src: slide10,
+    ...slide(10),
     alt: "מטוס F-35I אדיר של חיל האוויר",
     objectPosition: "center 50%",
     creditShort: "צילום: U.S. Air Force",
@@ -232,7 +250,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s11",
-    src: slide11,
+    ...slide(11),
     alt: "טקס סיום מסלול עם כומתות",
     objectPosition: "center 30%",
     creditShort: "צילום: דובר צה״ל",
@@ -257,7 +275,7 @@ export const IDF_PHOTO_CATALOG: readonly IdfPhoto[] = [
   },
   {
     id: "s12",
-    src: slide12,
+    ...slide(12),
     alt: "לוחמי נח״ל בזחילה בתרגיל",
     objectPosition: "center 45%",
     creditShort: "צילום: דובר צה״ל",
@@ -338,7 +356,14 @@ export function pickRolePhoto(
   return photo;
 }
 
-export const IDF_BACKDROP_IMAGE_URLS: readonly string[] = IDF_PHOTO_CATALOG.map((p) => p.src);
+/**
+ * Homepage slideshow and backdrop order. Opens on non-weapon scenes (air force, navy, drone/tech,
+ * intelligence, rescue) since most users serve in non-combat roles; the heavier combat shots
+ * (s1 silhouette, s5, s7, s9 armour) stay in the catalog for role cards but are left out of the hero.
+ */
+export const HERO_PHOTO_IDS = ["s10", "s4", "s3", "s11", "s8", "s2", "s6", "s12"] as const;
+
+export const IDF_BACKDROP_PHOTOS: readonly IdfPhoto[] = HERO_PHOTO_IDS.map((id) => catalogById[id]);
 
 export function getIdfPhoto(id: string): IdfPhoto {
   const resolved = resolvePhotoId(id);

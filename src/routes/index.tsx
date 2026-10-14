@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import {
+  ChevronDown,
   ChevronLeft,
   Target,
   Lock,
@@ -26,6 +27,34 @@ import { SITE_NAME_HE } from "@/lib/brand";
 const HOME_TITLE = "לאיזה תפקיד בצה״ל אתם מתאימים? שאלון התאמה לפי דפ״ר ופרופיל | קח כיוון";
 const HOME_DESCRIPTION =
   "שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי וציוני מא״ה מול יותר מ־300 תפקידים בצה״ל, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. 2 התאמות בחינם, ושלוש החזקות ביותר בתשלום חד־פעמי.";
+
+/** Plain-text answers: rendered on the page and in the FAQPage JSON-LD, so both say the same thing. */
+const FAQ: readonly { q: string; a: string }[] = [
+  {
+    q: "מה זה קח כיוון?",
+    a: "כלי עזר שמתאים תפקידים בצה״ל לפי הנתונים שלכם. שאלון אישי מצליב דפ״ר, פרופיל רפואי, ציוני מא״ה ומה שחשוב לכם בשירות מול יותר מ־300 תפקידים, ומחזיר 5 התאמות מדורגות עם הסבר וסיכויי קבלה לכל אחת.",
+  },
+  {
+    q: "כמה זמן לוקח השאלון, וצריך להירשם?",
+    a: "כ־8 דקות. מתחילים את השאלון בלי הרשמה. בסוף מאמתים כתובת אימייל בקוד חד־פעמי, בלי סיסמה, וכך ההתאמות נשמרות ומוצגות לכם.",
+  },
+  {
+    q: "מה בחינם ומה בתשלום?",
+    a: "השאלון ומקומות 5 ו־4 בחינם, כולל הסבר וסיכויי קבלה. שלוש ההתאמות החזקות ביותר, מקומות 3, 2 ו־1, נפתחות בתשלום חד־פעמי, בלי מנוי. רואים את מקומות 5 ו־4 לפני שמחליטים.",
+  },
+  {
+    q: "עוד אין לי דפ״ר או ציוני מא״ה. אפשר להתחיל?",
+    a: "כן. בדפ״ר ובפרופיל הרפואי אפשר לבחור ״לא יודע/ת כרגע״, ואת ציוני המא״ה אפשר להעריך בעצמכם או לדלג ולהוסיף אחר כך. בלי דפ״ר ופרופיל ההתאמה פחות מדויקת, ואי אפשר להעריך סיכויי קבלה.",
+  },
+  {
+    q: "זה שירות רשמי של צה״ל? ההמלצות מחייבות?",
+    a: "לא. קח כיוון הוא כלי עזר לא רשמי ואינו קשור לצה״ל. ההתאמות הן הכוונה בלבד, לא אישור זכאות ולא הבטחת שיבוץ. את הדרישות כדאי תמיד לאמת מול אתר מתגייסים ולשכת הגיוס.",
+  },
+  {
+    q: "אילו נתונים נשמרים עליי?",
+    a: "האימייל שאיתו נכנסים, הנתונים שמילאתם בשאלון (דפ״ר, פרופיל רפואי, ציוני מא״ה והעדפות) וההתאמות שקיבלתם. לא מבקשים תעודת זהות או מסמכים רפואיים, לא מוכרים את המידע למפרסמים, ואפשר למחוק את החשבון ואת הנתונים בעצמכם בדשבורד.",
+  },
+];
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -57,6 +86,14 @@ export const Route = createFileRoute("/")({
               name: "קח כיוון",
               url: "https://kachkivun.com/",
               inLanguage: "he-IL",
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: FAQ.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
             },
           ],
         }),
@@ -150,35 +187,27 @@ function HomePage() {
               התאמת תפקידים בצה״ל, לפי הנתונים שלכם
             </p>
 
-            <h1
-              className="animate-slide-up text-[2.5rem] font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
-              style={{ animationDelay: "150ms" }}
-            >
+            {/* Headline, intro and CTA are static: they are the first paint and the LCP, so no fade-in. */}
+            <h1 className="text-[2.5rem] font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
               לאיזה תפקיד בצה״ל
               <br />
               <span className="text-primary">אתם מתאימים?</span>
             </h1>
 
-            <p
-              className="animate-slide-up mt-5 max-w-md text-base leading-[1.7] text-foreground/85"
-              style={{ animationDelay: "200ms" }}
-            >
+            <p className="mt-5 max-w-md text-base leading-[1.7] text-foreground/85">
               שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי ו־11 ציוני מא״ה מול יותר מ־300 תפקידים, ומחזיר
               5 התאמות עם הסבר וסיכויי קבלה.
             </p>
 
-            <div
-              className="animate-slide-up mt-8 flex flex-col gap-3 sm:items-start"
-              style={{ animationDelay: "250ms" }}
-            >
+            <div className="mt-8 flex flex-col gap-3 sm:items-start">
               <HomePrimaryCta />
               <p className="flex items-start gap-1.5 text-xs leading-5 text-dust">
                 <Lock className="mt-1 h-3 w-3 shrink-0" aria-hidden />
                 {paywallEnabled
                   ? `השאלון ו־2 התאמות בחינם. שלוש החזקות ביותר ב־${price}, תשלום חד־פעמי בלי מנוי.`
                   : betaOpen
-                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות; חשבון נדרש לשמירת התוצאות."
-                    : "מתחילים מיד בלי הרשמה; חשבון נדרש לשמירת התוצאות."}
+                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות; בסוף השאלון מאמתים אימייל כדי לשמור ולראות אותן."
+                    : "מתחילים את השאלון בלי הרשמה; בסוף מאמתים אימייל כדי לשמור ולראות את ההתאמות."}
               </p>
             </div>
 
@@ -244,12 +273,17 @@ function HomePage() {
 
       <div className="section-divider" />
 
+      {/* ── 2b. What a result looks like (illustrative; role fields from the real catalog) ── */}
+      <SampleResult />
+
+      <div className="section-divider" />
+
       {/* ── 3. How it works ── */}
       <section id="how" className="scroll-mt-16 py-14 sm:py-24" aria-labelledby="how-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <SectionHead eyebrow="איך זה עובד" id="how-heading" title="שלושה צעדים, תשובה אישית" />
           <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
-            <Step num="01" title="מתחילים בשאלון" desc="בלי הרשמה, ישר לשאלון האישי." />
+            <Step num="01" title="מתחילים בשאלון" desc="בלי הרשמה, ישר לשאלון האישי. כ־8 דקות." />
             <Step
               num="02"
               title="ממלאים את הנתונים"
@@ -257,8 +291,8 @@ function HomePage() {
             />
             <Step
               num="03"
-              title="מקבלים 5 התאמות"
-              desc="מדורגות, עם הסבר וסיכויי קבלה לכל תפקיד."
+              title="מאמתים אימייל ומקבלים 5 התאמות"
+              desc="קוד חד־פעמי לאימייל שומר את התוצאות. ההתאמות מדורגות, עם הסבר וסיכויי קבלה לכל תפקיד."
             />
           </ol>
         </div>
@@ -275,7 +309,12 @@ function HomePage() {
             title={betaOpen ? "בתקופת הבטא הכול פתוח" : "2 התאמות בחינם, 3 החזקות בתשלום חד־פעמי"}
           />
           <ul className="mt-8 border border-iron/30 bg-card">
-            <PriceRow title="השאלון האישי" note="מתחילים בלי הרשמה" value="בחינם" free />
+            <PriceRow
+              title="השאלון האישי"
+              note="מתחילים בלי הרשמה, ובסוף מאמתים אימייל כדי לשמור את ההתאמות"
+              value="בחינם"
+              free
+            />
             <PriceRow title="מקומות 5 ו־4" note="כולל הסבר וסיכויי קבלה" value="בחינם" free />
             <PriceRow
               title="מקומות 3, 2 ו־1"
@@ -343,6 +382,42 @@ function HomePage() {
 
       <div className="section-divider" />
 
+      {/* ── 5b. FAQ (same text as the FAQPage JSON-LD in head) ── */}
+      <section className="py-14 sm:py-24" aria-labelledby="faq-heading">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <SectionHead eyebrow="שאלות נפוצות" id="faq-heading" title="מה שואלים לפני שמתחילים" />
+          <div className="mt-8 border border-iron/30 bg-card">
+            {FAQ.map(({ q, a }, i) => (
+              <details key={q} className="group border-b border-iron/25 last:border-b-0">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 p-4 text-right text-base font-bold text-foreground sm:p-5 [&::-webkit-details-marker]:hidden">
+                  {q}
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-dust transition-transform group-open:rotate-180"
+                    aria-hidden
+                  />
+                </summary>
+                <p className="px-4 pb-4 text-sm leading-relaxed text-dust sm:px-5 sm:pb-5">
+                  {i === 2 && betaOpen
+                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות בחינם. בהמשך מקומות 3, 2 ו־1 ייפתחו בתשלום חד־פעמי, בלי מנוי."
+                    : a}
+                  {i === 2 && paywallEnabled && price ? ` המחיר כרגע: ${price}.` : ""}
+                  {i === 5 ? (
+                    <>
+                      {" "}
+                      <Link to="/privacy" className="font-semibold text-primary hover:underline">
+                        מדיניות הפרטיות
+                      </Link>
+                    </>
+                  ) : null}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
       {/* ── 6. Closing CTA ── */}
       <section className="py-14 sm:py-24">
         <motion.div
@@ -405,6 +480,62 @@ const EXTRAS = [
 
 /* ── Sub-components ── */
 
+/**
+ * One result card, clearly marked as an example. Role fields are copied from the catalog entry
+ * for מגן/ת סייבר (server/data/role-enrichment-v3.json, checked against mitgaisim.idf.il);
+ * the personal parts are described, not invented.
+ */
+function SampleResult() {
+  return (
+    <section className="py-14 sm:py-24" aria-labelledby="sample-heading">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <SectionHead eyebrow="דוגמה להמחשה" id="sample-heading" title="ככה נראית התאמה" />
+        <article className="mt-8 border border-iron/30 bg-card text-right">
+          <header className="flex flex-wrap items-center justify-between gap-2 border-b border-iron/25 p-4 sm:p-5">
+            <div>
+              <p className="font-mono text-xs text-primary">מקום 4 · סייבר</p>
+              <h3 className="mt-1 text-xl font-bold text-foreground">
+                <Link to="/roles/$slug" params={{ slug: "מגן-ת-סייבר" }} className="hover:text-primary">
+                  מגן/ת סייבר
+                </Link>
+              </h3>
+            </div>
+            <span className="rounded-sm border border-iron/40 px-2 py-1 text-xs text-dust">
+              דוגמה להמחשה, לא תוצאה אמיתית
+            </span>
+          </header>
+          <dl className="grid gap-4 p-4 text-sm leading-relaxed sm:p-5">
+            <SampleField label="מה עושים ביום־יום">
+              מאתרים, מנתחים ומטפלים באיומי סייבר בזמן אמת, ומבצעים חקירת עומק ופורנזיקה דיגיטלית
+              לזיהוי מקור התקיפה והיקפה.
+            </SampleField>
+            <SampleField label="דרישות">
+              דפ״ר 70 ומעלה · סיווג ביטחוני · לא נדרש ידע מוקדם, רק חשיבה לוגית
+            </SampleField>
+            <SampleField label="משך והכשרה">שירות חובה מלא; קורס כ־19 שבועות בבסמ״ח</SampleField>
+            <SampleField label="למה זה מתאים לכם">
+              בתוצאה שלכם: הסבר אישי לפי הנתונים וההעדפות שמילאתם.
+            </SampleField>
+            <SampleField label="סיכויי קבלה">
+              בתוצאה שלכם: גבוה, בינוני או נמוך, עם הסיבה. בתפקיד הזה למשל המיון תחרותי מאוד, ומשקל
+              גדול יש לפער בין הדפ״ר שלכם לסף.
+            </SampleField>
+          </dl>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function SampleField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="font-bold text-foreground">{label}</dt>
+      <dd className="mt-0.5 text-dust">{children}</dd>
+    </div>
+  );
+}
+
 function SectionHead({ eyebrow, id, title }: { eyebrow: string; id: string; title: string }) {
   return (
     <motion.div
@@ -426,7 +557,8 @@ function DataPoint({ value, label }: { value: string; label: string }) {
   const num = parseInt(value.replace(/[^0-9]/g, ""), 10);
   const prefix = value.startsWith("+") ? "+" : "";
   const suffix = value.replace(/[+0-9]/g, "");
-  const [display, setDisplay] = useState(0);
+  // Real number in the server HTML (a pre-hydration "+0" looked broken); the count-up runs after.
+  const [display, setDisplay] = useState(num);
   const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
