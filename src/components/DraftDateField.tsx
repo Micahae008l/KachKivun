@@ -138,9 +138,19 @@ export function DraftDateField({ value, onChange, invalid, className = "" }: Pro
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
           </button>
-          <span className="w-14 text-center font-mono text-base font-bold tabular-nums text-foreground max-[359px]:w-11 max-[359px]:text-sm">
-            {year}
-          </span>
+          {/* People tap the year itself, so it opens the phone's own year picker too. */}
+          <select
+            value={year}
+            onChange={(e) => stepYear(Number(e.target.value) - year)}
+            aria-label="בחירת שנה"
+            className="w-14 cursor-pointer appearance-none bg-transparent text-center font-mono text-base font-bold tabular-nums text-foreground underline decoration-iron/50 decoration-dotted underline-offset-4 max-[359px]:w-11 max-[359px]:text-sm"
+          >
+            {Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i).map((y) => (
+              <option key={y} value={y} className="bg-card">
+                {y}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={() => stepYear(1)}
