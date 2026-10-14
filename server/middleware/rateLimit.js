@@ -8,14 +8,25 @@ function parsePositiveInt(value, fallback) {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+/**
+ * Not counted against the shared API budget: the health check, and the public read-only role
+ * catalog. Role pages are rendered on Cloudflare, so every visitor and crawler reaches the API
+ * from a few Cloudflare IPs; counting those reads made a single crawl 404 every role page.
+ */
+export function isRateLimitExempt(req) {
+  if (req.method !== "GET") return false;
+  const url = String(req.originalUrl || "");
+  return req.path === "/health" || url === "/api/health" || url === "/api/roles" ||
+    url.startsWith("/api/roles/") || url.startsWith("/api/roles?");
+}
+
 /** All /api routes — generous default so normal app use is unaffected. */
 export const apiLimiter = rateLimit({
   windowMs: parsePositiveInt(process.env.API_RATE_LIMIT_WINDOW_MS, FIFTEEN_MINUTES_MS),
   max: parsePositiveInt(process.env.API_RATE_LIMIT_MAX, 100),
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) =>
-    req.method === "GET" && (req.path === "/health" || req.originalUrl === "/api/health"),
+  skip: isRateLimitExempt,
   handler: (req, res, _next, options) => {
     logSecurityEvent("rate_limit_api", req, { statusCode: options.statusCode });
     res.status(options.statusCode).json({

@@ -310,7 +310,9 @@ export async function requestOtp(req, res) {
       expiresInSeconds: OTP_TTL_MINUTES * 60,
       delivery: delivery.delivered ? "email" : "console",
     };
-    if (!delivery.delivered && process.env.NODE_ENV !== "production") {
+    // Fail-safe: only an explicit development environment ever gets the code back. An unset or
+    // mistyped NODE_ENV on a server must never hand out login codes (account takeover).
+    if (!delivery.delivered && process.env.NODE_ENV === "development") {
       payload.devCode = code;
     }
     res.json(payload);

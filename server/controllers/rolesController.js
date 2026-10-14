@@ -5,6 +5,9 @@ import {
   listRoleInsights,
 } from "../utils/roleInsights.js";
 
+// The catalog only changes on deploy; let Cloudflare and browsers reuse it for a few minutes.
+const ROLE_CACHE = "public, max-age=300";
+
 /** Public catalog for role-insights UI — no auth required. */
 export function listRoles(req, res) {
   try {
@@ -32,6 +35,7 @@ export function listRoles(req, res) {
       a.localeCompare(b, "he")
     );
 
+    res.set("Cache-Control", ROLE_CACHE);
     res.json({
       count: roles.length,
       total: listRoleInsights().length,
@@ -68,6 +72,7 @@ export function getRole(req, res) {
       return res.status(404).json({ error: "התפקיד לא נמצא בקטלוג", code: "ROLE_NOT_FOUND" });
     }
 
+    res.set("Cache-Control", ROLE_CACHE);
     res.json({ role });
   } catch (err) {
     return sendServerError(res, err, "[roles/get]");
