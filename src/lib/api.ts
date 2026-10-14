@@ -372,6 +372,8 @@ export type DashboardResponse = {
     phone?: string;
     status: string;
     createdAt?: string;
+    /** Opted in to marketing email (signup checkbox or dashboard toggle). */
+    marketingConsent?: boolean;
   };
   stats: MilitaryStatsDto | null;
   preferences: PreferencesDto | null;
@@ -701,6 +703,14 @@ export function matchRolesRequest(options: { retry?: boolean } = {}) {
 }
 
 /** Permanently deletes the signed-in user's account and personal data. */
+/** Marketing email opt-in or opt-out; only an explicit choice by the user ever sets it. */
+export function setMarketingConsent(granted: boolean, source: "signup" | "dashboard") {
+  return apiFetch<{ ok: true; granted: boolean }>("/api/profile/marketing-consent", {
+    method: "PUT",
+    body: JSON.stringify({ granted, source }),
+  });
+}
+
 export function deleteAccount(confirm: string) {
   return apiFetch<{ message: string }>("/api/profile/account", {
     method: "DELETE",

@@ -36,6 +36,7 @@ import {
   completeAssessment,
   getLatestAssessment,
   requestOtp,
+  setMarketingConsent,
   verifyOtp,
   type DashboardResponse,
   type PaymentOffer,
@@ -262,6 +263,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   const [clientDraftId, setClientDraftId] = useState("");
   const [step, setStep] = useState<AssessmentStepId>("direction");
   const [email, setEmail] = useState("");
+  // Unchecked by default: marketing email needs an explicit opt-in (anti-spam law, section 30A).
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -706,6 +709,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
       trackEvent("otp_verify", { intent: loginIntent ? "login" : "signup" });
       setAuthSession(response.token, response.role);
       authedRef.current = true;
+      if (!loginIntent && marketingOptIn) {
+        void setMarketingConsent(true, "signup").catch(() => {});
+      }
       prefetchAuthedData(queryClient, response.token);
 
       if (loginIntent) {
@@ -906,7 +912,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               ) : null}
 
               {currentStep === "email" ? (
-                <div className="mx-auto max-w-md space-y-5">
+                <div className="mx-auto max-w-md space-y-5 short:space-y-3">
                   <FormField label="אימייל" error={authErrors.email}>
                     <input
                       type="email"
@@ -926,7 +932,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                     />
                   </FormField>
                   {!loginIntent && !legacyMode ? (
-                    <ul className="space-y-3 border border-iron/25 bg-card/60 p-4">
+                    <ul className="space-y-3 border border-iron/25 bg-card/60 p-4 short:space-y-1.5 short:p-3">
                       {SAVE_PERKS.map(({ icon: Icon, text }) => (
                         <li
                           key={text}
@@ -939,6 +945,20 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                         </li>
                       ))}
                     </ul>
+                  ) : null}
+                  {!loginIntent ? (
+                    <label className="flex cursor-pointer items-start gap-3 text-xs leading-5 text-dust">
+                      <input
+                        type="checkbox"
+                        checked={marketingOptIn}
+                        onChange={(event) => setMarketingOptIn(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      />
+                      <span>
+                        אשמח לקבל במייל עדכונים, מדריכים ומבצעים מקח כיוון. לא חובה, ואפשר לבטל בכל
+                        רגע.
+                      </span>
+                    </label>
                   ) : null}
                 </div>
               ) : null}

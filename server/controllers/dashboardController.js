@@ -47,6 +47,7 @@ export async function getStats(req, res) {
         phone: user.phone || "",
         status: user.status,
         createdAt: user.createdAt,
+        marketingConsent: Boolean(user.marketingConsent?.granted),
       },
       stats,
       preferences,

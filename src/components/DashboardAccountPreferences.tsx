@@ -3,7 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PencilLine, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { deleteAccount, logoutRequest, type DashboardResponse } from "@/lib/api";
+import {
+  deleteAccount,
+  logoutRequest,
+  setMarketingConsent,
+  type DashboardResponse,
+} from "@/lib/api";
 import { getErrorMessage } from "@/lib/api-errors";
 
 type Props = {
@@ -46,10 +51,49 @@ export function DashboardAccountPreferences({ data }: Props) {
         <PencilLine className="h-4 w-4" aria-hidden />
         עריכת הפרופיל
       </Link>
+      <MarketingEmailToggle initial={Boolean(data.user.marketingConsent)} />
       <div className="mt-5">
         <DeleteAccount />
       </div>
     </section>
+  );
+}
+
+/** Opt in or out of marketing email; saved right away, the dashboard refetches afterwards. */
+function MarketingEmailToggle({ initial }: { initial: boolean }) {
+  const queryClient = useQueryClient();
+  const [on, setOn] = useState(initial);
+  const [saving, setSaving] = useState(false);
+
+  async function toggle(next: boolean) {
+    setSaving(true);
+    setOn(next);
+    try {
+      await setMarketingConsent(next, "dashboard");
+      toast.success(next ? "נרשמתם לעדכונים במייל" : "הוסרתם מהעדכונים במייל");
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    } catch (error) {
+      setOn(!next);
+      toast.error(getErrorMessage(error, "השמירה נכשלה. נסו שוב."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <label className="mt-5 flex cursor-pointer items-start gap-3 border-t border-iron/20 pt-4 text-sm leading-6 text-dust">
+      <input
+        type="checkbox"
+        checked={on}
+        disabled={saving}
+        onChange={(event) => void toggle(event.target.checked)}
+        className="mt-1 h-4 w-4 shrink-0 accent-primary"
+      />
+      <span>
+        <strong className="block text-foreground">עדכונים ומבצעים במייל</strong>
+        מדריכים לקראת הגיוס ומבצעים מקח כיוון. אפשר לבטל בכל רגע.
+      </span>
+    </label>
   );
 }
 

@@ -5,6 +5,31 @@ import { deleteUserData } from "../utils/deleteAccount.js";
 import { clearRefreshCookie } from "../utils/refreshTokens.js";
 import { buildAttribution } from "../utils/userSource.js";
 
+const CONSENT_SOURCES = ["signup", "dashboard"];
+
+/** Strict body for the marketing opt-in: a real boolean and where it was set, nothing else. */
+export function parseConsentBody(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return null;
+  const keys = Object.keys(body);
+  if (keys.some((k) => k !== "granted" && k !== "source")) return null;
+  if (typeof body.granted !== "boolean" || !CONSENT_SOURCES.includes(body.source)) return null;
+  return { granted: body.granted, source: body.source };
+}
+
+export async function setMarketingConsent(req, res) {
+  try {
+    const consent = parseConsentBody(req.body);
+    if (!consent) return res.status(400).json({ error: "Invalid body", code: "VALIDATION_ERROR" });
+    await User.updateOne(
+      { _id: req.userId },
+      { $set: { marketingConsent: { ...consent, at: new Date() } } },
+    );
+    return res.json({ ok: true, granted: consent.granted });
+  } catch (err) {
+    return sendServerError(res, err, "[profile/marketing-consent]");
+  }
+}
+
 export async function updateProfile(req, res) {
   try {
     const { status, stats, preferences, user: userPatch } = req.body;

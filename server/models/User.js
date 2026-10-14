@@ -65,6 +65,21 @@ const userSchema = new mongoose.Schema(
       ),
       default: undefined,
     },
+    /**
+     * Opt-in to marketing email (Israeli anti-spam law, section 30A): only an explicit "yes"
+     * counts. `at` and `source` are the record of when and where it was given or withdrawn.
+     */
+    marketingConsent: {
+      type: new mongoose.Schema(
+        {
+          granted: { type: Boolean, default: false },
+          at: { type: Date },
+          source: { type: String, enum: ["signup", "dashboard"] },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
   },
   { timestamps: true }
 );
