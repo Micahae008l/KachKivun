@@ -1,19 +1,24 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronLeft, ExternalLink, Shield } from "lucide-react";
+import { UL } from "@/components/blog/Prose";
 import { IntensityBar } from "@/components/RoleInsightSheet";
 import { QuizCta } from "@/components/QuizCta";
 import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
+import type { RoleInsightDetail, RolePageContent } from "@/lib/api";
 import { getBlogPost } from "@/lib/blog";
 import { fetchRoleCatalog, fetchRoleDetail, roleUrl, SITE_URL } from "@/lib/roles-public";
 
 /** One indexable page per role: what the role is, its thresholds, and a path into the assessment. */
 export const Route = createFileRoute("/roles/$slug")({
   loader: async ({ params }) => {
-    const [role, catalog] = await Promise.all([fetchRoleDetail(params.slug), fetchRoleCatalog()]);
+    const role = await fetchRoleDetail(params.slug);
     if (!role) throw notFound();
-    const related = (catalog?.roles ?? [])
-      .filter((r) => r.slug !== role.slug && r.category === role.category)
-      .slice(0, 6);
+    // The API ranks related roles; an older API without `page` falls back to same category.
+    const related =
+      role.page?.related ??
+      ((await fetchRoleCatalog())?.roles ?? [])
+        .filter((r) => r.slug !== role.slug && r.category === role.category)
+        .slice(0, 6);
     return { role, related };
   },
   head: ({ loaderData }) => {
@@ -25,10 +30,13 @@ export const Route = createFileRoute("/roles/$slug")({
       role.serviceLengthLabel ? `שירות ${role.serviceLengthLabel}` : "",
     ].filter(Boolean);
     const title = `${role.roleTitle} בצה״ל: דרישות, דפ״ר ופרופיל | קח כיוון`;
-    const description = `${role.roleTitle}${role.combat ? " (קרבי)" : ""}: מה עושים ביומיום${
-      facts.length ? `, ${facts.join(", ")}` : ""
-    }. בדקו בחינם אם התפקיד מתאים לכם.`.slice(0, 160);
+    const description =
+      role.page?.metaDescription ||
+      `${role.roleTitle}${role.combat ? " (קרבי)" : ""}: מה עושים ביומיום${
+        facts.length ? `, ${facts.join(", ")}` : ""
+      }. בדקו בחינם אם התפקיד מתאים לכם.`.slice(0, 160);
     const url = roleUrl(role.slug);
+    const faq = role.page?.faq ?? [];
     return {
       meta: [
         { title },
@@ -45,16 +53,32 @@ export const Route = createFileRoute("/roles/$slug")({
           type: "application/ld+json",
           children: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "קח כיוון", item: `${SITE_URL}/` },
+            "@graph": [
               {
-                "@type": "ListItem",
-                position: 2,
-                name: "תפקידים בצה״ל",
-                item: `${SITE_URL}/role-insights`,
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "קח כיוון", item: `${SITE_URL}/` },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "תפקידים בצה״ל",
+                    item: `${SITE_URL}/role-insights`,
+                  },
+                  { "@type": "ListItem", position: 3, name: role.roleTitle, item: url },
+                ],
               },
-              { "@type": "ListItem", position: 3, name: role.roleTitle, item: url },
+              ...(faq.length
+                ? [
+                    {
+                      "@type": "FAQPage",
+                      mainEntity: faq.map((f) => ({
+                        "@type": "Question",
+                        name: f.q,
+                        acceptedAnswer: { "@type": "Answer", text: f.a },
+                      })),
+                    },
+                  ]
+                : []),
             ],
           }),
         },
@@ -74,25 +98,66 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
+const GENDER_LABEL = { all: "גברים ונשים", male_only: "גברים בלבד", female_only: "נשים בלבד" };
+
+/** Guides that match what this role's data actually mentions, topped up with the general ones. */
+function pickGuides(role: RoleInsightDetail, page: RolePageContent) {
+  const text = [
+    ...page.selection,
+    ...page.training,
+    ...page.requirements,
+    page.serviceLengthLabel,
+    role.category,
+  ].join(" ");
+  const womenCombat =
+    role.combat && (role.genderEligibility === "all" || role.genderEligibility === "female_only");
+  const slugs = [
+    role.daparFloor != null ? "דפר" : "",
+    page.profileFloor != null || /פרופיל/.test(text) ? "פרופיל-צבאי" : "",
+    /גיבוש/.test(text) ? "גיבושים-בצהל" : "",
+    /יום סיירות/.test(text) ? "יום-סיירות" : "",
+    /מיון|מיוני/.test(text) || role.selective ? "מיונים-בצבא" : "",
+    /מא״ה/.test(text) ? "יום-המאה" : "",
+    /טירונות|רובאי/.test(text) ? "טירונות" : "",
+    womenCombat ? "לוחמות-בצהל" : "",
+    /פסיכומטרי|עתודה/.test(text) ? "עתודה-אקדמית" : "",
+    ...(role.combat
+      ? ["גיבושים-בצהל", "יום-סיירות", "פרופיל-צבאי", "טירונות", "מה-להביא-ליום-הגיוס"]
+      : ["תפקידים-לפי-דפר", "תפקידים-לפי-פרופיל", "שאלון-העדפות", "מיונים-בצבא", "יום-המאה"]),
+  ];
+  return [...new Set(slugs.filter(Boolean))].slice(0, 6).flatMap((slug) => getBlogPost(slug) ?? []);
+}
+
 function RolePage() {
   const { role, related } = Route.useLoaderData();
-  const paragraphs = role.about.split(/\n\n+/).filter(Boolean);
-  // Combat roles get the field-screening guides; the rest get thresholds and the questionnaire.
-  const guideSlugs = role.combat
-    ? ["יום-סיירות", "גיבושים-בצהל", "פרופיל-צבאי", "טירונות", "לוחמות-בצהל", "מה-להביא-ליום-הגיוס"]
-    : [
-        "תפקידים-לפי-דפר",
-        "תפקידים-לפי-פרופיל",
-        "שאלון-העדפות",
-        "מיונים-בצבא",
-        "יום-המאה",
-        "מה-להביא-ליום-הגיוס",
-      ];
-  const guides = guideSlugs.flatMap((slug) => getBlogPost(slug) ?? []);
+  // An older API has no `page`: show its raw fields, nothing derived.
+  const page: RolePageContent = role.page ?? {
+    profileFloor: role.medicalFloor,
+    requirements: role.requirements,
+    selection: [],
+    training: [],
+    serviceLengthLabel: role.serviceLengthLabel,
+    locations: role.locations,
+    dayToDay: role.dayToDay,
+    faq: [],
+    metaDescription: "",
+    related: [],
+  };
+  const guides = pickGuides(role, page);
+  const gender = role.genderEligibility ? GENDER_LABEL[role.genderEligibility] : null;
+  const facts = [
+    role.daparFloor != null ? { label: "דפ״ר מינימלי", value: String(role.daparFloor) } : null,
+    page.profileFloor != null ? { label: "פרופיל מינימלי", value: String(page.profileFloor) } : null,
+    gender ? { label: "פתוח ל", value: gender } : null,
+    role.selective ? { label: "קבלה", value: "סלקטיבית" } : null,
+  ].filter((f): f is { label: string; value: string } => f !== null);
   const floors = [
     role.daparFloor != null ? `דפ״ר ${role.daparFloor}` : "",
-    role.medicalFloor != null ? `פרופיל ${role.medicalFloor}` : "",
+    page.profileFloor != null ? `פרופיל ${page.profileFloor}` : "",
   ].filter(Boolean);
+  const hasTraining = Boolean(
+    page.serviceLengthLabel || page.training.length || page.locations.length,
+  );
 
   return (
     <article
@@ -122,71 +187,68 @@ function RolePage() {
             </span>
           ) : null}
         </h1>
-        {paragraphs[0] ? (
-          <p className="mt-4 text-base leading-[1.8] text-foreground/90">{paragraphs[0]}</p>
+        {page.dayToDay ? (
+          <p className="mt-4 text-base leading-[1.8] text-foreground/90">{page.dayToDay}</p>
+        ) : null}
+        {role.signals.length ? (
+          <div className="mt-4">
+            <h2 className="text-xs text-dust">מאפייני התפקיד</h2>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {role.signals.map((s) => (
+                <li
+                  key={s}
+                  className="border border-iron/30 bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-foreground"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
       </header>
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Fact
-          label="דפ״ר מינימלי"
-          value={role.daparFloor != null ? String(role.daparFloor) : "לא צוין"}
-        />
-        <Fact
-          label="פרופיל מינימלי"
-          value={role.medicalFloor != null ? String(role.medicalFloor) : "לא צוין"}
-        />
-        <Fact label="משך שירות" value={role.serviceLengthLabel || "לא צוין"} />
-        <Fact label="מיון" value={role.selective ? "יש מיון" : "ללא מיון ייעודי"} />
-      </dl>
+      {facts.length || page.requirements.length ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-black text-foreground">דרישות ותנאי קבלה</h2>
+          {facts.length ? (
+            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {facts.map((f) => (
+                <Fact key={f.label} label={f.label} value={f.value} />
+              ))}
+            </dl>
+          ) : null}
+          {page.requirements.length ? <UL items={page.requirements} /> : null}
+        </section>
+      ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <IntensityBar label="עומס פיזי" value={role.physicalDemand} />
-        <IntensityBar label="טכנולוגיה" value={role.techIntensity} />
-        <IntensityBar label="עבודה עם אנשים" value={role.peopleIntensity} />
-      </div>
+      {role.intensityFromData ? (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <IntensityBar label="עומס פיזי" value={role.physicalDemand} />
+          <IntensityBar label="טכנולוגיה" value={role.techIntensity} />
+          <IntensityBar label="עבודה עם אנשים" value={role.peopleIntensity} />
+        </div>
+      ) : null}
 
       <QuizCta compact title={`עומדים בסף? זה עוד לא אומר ש${role.roleTitle} מתאים לכם.`} />
 
-      {role.dayToDay ? (
-        <section>
-          <h2 className="text-lg font-black text-foreground">מה עושים ביומיום</h2>
-          <p className="mt-2 text-sm leading-7 text-foreground/90">{role.dayToDay}</p>
-        </section>
-      ) : null}
-
-      {paragraphs.length > 1 ? (
+      {page.selection.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-black text-foreground">על התפקיד</h2>
-          {paragraphs.slice(1).map((p) => (
-            <p key={p.slice(0, 40)} className="text-sm leading-7 text-foreground/90">
-              {p}
-            </p>
-          ))}
+          <h2 className="text-lg font-black text-foreground">איך מגיעים לתפקיד</h2>
+          <UL items={page.selection} />
         </section>
       ) : null}
 
-      {role.requirements.length || role.locations.length ? (
-        <section className="grid gap-5 sm:grid-cols-2">
-          {role.requirements.length ? (
-            <div>
-              <h2 className="mb-2 text-sm font-black text-foreground">דרישות ותנאים</h2>
-              <ul className="flex flex-wrap gap-1.5">
-                {role.requirements.map((r) => (
-                  <li
-                    key={r}
-                    className="border border-iron/30 bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-foreground"
-                  >
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {hasTraining ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-black text-foreground">מסלול והכשרה</h2>
+          {page.serviceLengthLabel ? (
+            <p className="text-base leading-[1.8] text-foreground/90">{page.serviceLengthLabel}</p>
           ) : null}
-          {role.locations.length ? (
+          {page.training.length ? <UL items={page.training} /> : null}
+          {page.locations.length ? (
             <div>
-              <h2 className="mb-2 text-sm font-black text-foreground">איפה משרתים</h2>
-              <p className="text-sm text-foreground/90">{role.locations.join(" · ")}</p>
+              <h3 className="mb-1 text-sm font-black text-foreground">בסיסים ומיקומים</h3>
+              <UL items={page.locations} />
             </div>
           ) : null}
         </section>
@@ -197,36 +259,62 @@ function RolePage() {
         body={`${floors.length ? `${floors.join(" ו")} ${floors.length > 1 ? "הם" : "הוא"} רק תנאי סף. ` : ""}השאלון האישי מצליב את הדפ״ר, הפרופיל הרפואי ו־11 ציוני המא״ה מול יותר מ־300 תפקידים, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. כך תדעו אם ${role.roleTitle} באמת ביניהן.`}
       />
 
+      {page.faq.length ? (
+        <section className="space-y-4">
+          <h2 className="text-lg font-black text-foreground">שאלות נפוצות</h2>
+          <dl className="divide-y divide-iron/25 border-y border-iron/25">
+            {page.faq.map((f) => (
+              <div key={f.q} className="py-4">
+                <dt className="text-base font-bold text-foreground">{f.q}</dt>
+                <dd className="mt-1.5 text-sm leading-7 text-foreground/85">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
+
       <a
-        href={role.officialSearchUrl}
+        href={role.sourceUrl || role.officialSearchUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex min-h-11 items-center gap-2 text-sm text-dust underline decoration-iron/50 underline-offset-4 transition hover:text-foreground"
       >
         <ExternalLink className="h-4 w-4" aria-hidden />
-        התפקיד באתר מתגייסים
+        {role.sourceUrl ? "מקור: אתר מתגייסים" : "התפקיד באתר מתגייסים"}
       </a>
 
       <RoleReviewsPanel roleSlug={role.slug} roleTitle={role.roleTitle} />
 
       {related.length ? (
         <section>
-          <h2 className="mb-3 text-lg font-black text-foreground">
-            תפקידים דומים ב{role.category}
-          </h2>
+          <h2 className="mb-3 text-lg font-black text-foreground">תפקידים דומים</h2>
           <ul className="grid gap-2 sm:grid-cols-2">
-            {related.map((r) => (
-              <li key={r.slug}>
-                <Link
-                  to="/roles/$slug"
-                  params={{ slug: r.slug }}
-                  className="flex items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
-                >
-                  <span className="font-bold text-foreground">{r.roleTitle}</span>
-                  <ChevronLeft className="h-4 w-4 shrink-0 text-dust" aria-hidden />
-                </Link>
-              </li>
-            ))}
+            {related.map((r) => {
+              const floors =
+                "daparFloor" in r
+                  ? [
+                      r.daparFloor != null ? `דפ״ר ${r.daparFloor}` : "",
+                      r.profileFloor != null ? `פרופיל ${r.profileFloor}` : "",
+                    ].filter(Boolean)
+                  : [];
+              return (
+                <li key={r.slug}>
+                  <Link
+                    to="/roles/$slug"
+                    params={{ slug: r.slug }}
+                    className="flex min-h-11 items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
+                  >
+                    <span>
+                      <span className="block font-bold text-foreground">{r.roleTitle}</span>
+                      {floors.length ? (
+                        <span className="mt-0.5 block text-xs text-dust">{floors.join(" · ")}</span>
+                      ) : null}
+                    </span>
+                    <ChevronLeft className="h-4 w-4 shrink-0 text-dust" aria-hidden />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       ) : null}
@@ -239,7 +327,7 @@ function RolePage() {
               <Link
                 to="/blog/$slug"
                 params={{ slug: p.slug }}
-                className="flex items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
+                className="flex min-h-11 items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
               >
                 <span className="font-bold text-foreground">{p.shortTitle}</span>
                 <ChevronLeft className="h-4 w-4 shrink-0 text-dust" aria-hidden />

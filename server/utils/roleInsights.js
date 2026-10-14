@@ -1,4 +1,5 @@
-import { getIdfRoleCatalogV3 } from "./roleCatalogV3.js";
+import { getIdfRoleCatalogV3, getRoleEnrichmentOverride } from "./roleCatalogV3.js";
+import { officialSourceUrl } from "./rolePage.js";
 
 const MITGAISIM_ROLES = "https://www.mitgaisim.idf.il/roles/";
 
@@ -132,6 +133,8 @@ function buildAboutHe(role) {
 
 function toPublicInsight(role) {
   const title = role.roleTitle;
+  // Normalized roles carry derived defaults; page facts read only what the data states.
+  const override = getRoleEnrichmentOverride(title) || {};
   return {
     slug: roleSlug(title),
     roleTitle: title,
@@ -151,6 +154,9 @@ function toPublicInsight(role) {
     physicalDemand: role.physicalDemand ?? null,
     techIntensity: role.techIntensity ?? null,
     peopleIntensity: role.peopleIntensity ?? null,
+    genderEligibility: override.genderEligibility || null,
+    intensityFromData: override.physicalDemand != null,
+    sourceUrl: officialSourceUrl(override.enrichment?.source, role.validationSource),
     officialDirectoryUrl: MITGAISIM_ROLES,
     officialSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(`"${title}" site:mitgaisim.idf.il`)}`,
   };

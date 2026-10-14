@@ -4,6 +4,7 @@ import {
   getRoleInsightByTitle,
   listRoleInsights,
 } from "../utils/roleInsights.js";
+import { buildRolePage } from "../utils/rolePage.js";
 
 // The catalog only changes on deploy; let Cloudflare and browsers reuse it for a few minutes.
 const ROLE_CACHE = "public, max-age=300";
@@ -73,7 +74,7 @@ export function getRole(req, res) {
     }
 
     res.set("Cache-Control", ROLE_CACHE);
-    res.json({ role });
+    res.json({ role: { ...role, page: buildRolePage(role, listRoleInsights()) } });
   } catch (err) {
     return sendServerError(res, err, "[roles/get]");
   }
