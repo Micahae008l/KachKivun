@@ -32,7 +32,7 @@ import {
 } from "@/lib/a11y-prefs";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { CookieConsent } from "@/components/CookieConsent";
-import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
+import { IDF_BACKDROP_PHOTOS, IDF_PHOTO_SIZES, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
 import { startAttribution } from "@/lib/attribution";
@@ -55,11 +55,6 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_DESCRIPTION },
       { name: "description", content: SITE_DESCRIPTION },
-      {
-        name: "keywords",
-        content:
-          "צבא, צה״ל, גיוס, דפ״ר, מא״ה, יום המאה, פרופיל רפואי, התאמת תפקיד, שירות צבאי, הכנה לשירות",
-      },
       { name: "robots", content: "index, follow" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "he_IL" },
@@ -86,11 +81,15 @@ export const Route = createRootRoute({
       // Fetched early but applied by FONT_LOADER_SCRIPT, so it never blocks the first paint.
       { rel: "preload", as: "style", href: FONT_CSS },
       // Only the first backdrop: it is the one on screen first (often the LCP image).
-      ...IDF_BACKDROP_IMAGE_URLS.slice(0, 1).map((href) => ({
-        rel: "preload" as const,
-        href,
-        as: "image" as const,
-      })),
+      // Same srcset/sizes as the <img>, so the browser preloads the exact file it will use.
+      {
+        rel: "preload",
+        as: "image",
+        href: IDF_BACKDROP_PHOTOS[0].src,
+        imageSrcSet: IDF_BACKDROP_PHOTOS[0].srcSet,
+        imageSizes: IDF_PHOTO_SIZES,
+        fetchPriority: "high",
+      },
     ],
   }),
 });
@@ -258,7 +257,8 @@ function RootLayoutInner() {
         </a>
       )}
       {!isBareShell && <SiteHeader authed={authed} tokenPresent={authed} onLogout={logout} />}
-      <main id={MAIN_CONTENT_ID} className="animate-fade-in" aria-label={ARIA.main} tabIndex={-1}>
+      {/* No fade-in: main is not keyed per route, so it only ever hid the first paint. */}
+      <main id={MAIN_CONTENT_ID} aria-label={ARIA.main} tabIndex={-1}>
         <Outlet />
       </main>
       <AccessibilityMenu />
@@ -323,7 +323,8 @@ function SiteHeader({
   return (
     <motion.header
       aria-label={ARIA.siteHeader}
-      initial={{ y: -12, opacity: 0 }}
+      // initial={false}: an SSR opacity:0 kept the header (and its CTA) hidden until hydration.
+      initial={false}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={`sticky top-0 z-50 transition-all duration-200 ${

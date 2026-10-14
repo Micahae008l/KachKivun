@@ -30,6 +30,7 @@ export function IdfPhotoPanel({
     <div className={`relative overflow-hidden ${aspectClassName} ${className}`}>
       <IdfPhotoBackdrop
         src={photo.src}
+        srcSet={photo.srcSet}
         alt={photo.alt}
         objectPosition={photo.objectPosition}
         overlayClassName={overlayClassName ?? "from-background/30 via-background/50 to-background/85"}

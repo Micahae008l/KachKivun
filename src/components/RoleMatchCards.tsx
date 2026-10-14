@@ -331,6 +331,8 @@ function UnlockedRoleCard({
           <div className={`relative overflow-hidden ${featured ? "min-h-52" : "min-h-40"}`}>
             <img
               src={photo.src}
+              srcSet={photo.srcSet}
+              sizes="(min-width: 768px) 240px, 100vw"
               alt={photo.alt}
               className="h-full w-full object-cover opacity-75"
               loading="lazy"
