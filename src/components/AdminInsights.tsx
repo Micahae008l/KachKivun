@@ -249,6 +249,7 @@ export function AdminInsights() {
         />
       </div>
 
+      <FunnelPanel funnel={d.funnel} />
       <SourcesPanel sources={d.sources} />
 
       <SignupFunnel funnel={d.allTime.funnel} />
@@ -504,6 +505,70 @@ function RatingsPanel({ ratings }: { ratings: Insights["ratings"] }) {
       ) : (
         <p className="text-xs text-dust">אחרי שמשלמים ידרגו את התוצאות, זה יופיע כאן.</p>
       )}
+    </Panel>
+  );
+}
+
+const FUNNEL_LABEL: Record<string, string> = {
+  home: "דף הבית",
+  direction: "שאלון: כיוון",
+  roles: "שאלון: תחומים",
+  preferences: "שאלון: העדפות",
+  environment: "שאלון: איפה ואיך",
+  combat: "שאלון: קרבי",
+  technical: "שאלון: טכנולוגי",
+  scores: "שאלון: דפ״ר ופרופיל",
+  yom: "שאלון: מא״ה",
+  checkpoint: "שאלון: סיכום ביניים",
+  motivation: "שאלון: מוטיבציה",
+  review: "שאלון: שם ותאריך",
+  email: "מסך האימייל",
+  otp: "מסך הקוד",
+  results: "עמוד התוצאות",
+  checkout: "עמוד התשלום",
+};
+
+/**
+ * Where people drop: anonymous sessions per step. "combat" and "technical" only show for those
+ * answers, so a dip there is expected; compare each step with the one before it otherwise.
+ */
+function FunnelPanel({ funnel }: { funnel: Insights["funnel"] }) {
+  if (!funnel) return null;
+  const top = Math.max(...funnel.map((f) => f.count), 0);
+  return (
+    <Panel
+      title="משפך: איפה אנשים נוטשים"
+      note={top ? "סשנים אנונימיים, בלי עוגיות" : "עוד אין נתונים (נאסף מהפריסה הזו והלאה)"}
+    >
+      <ul className="space-y-1.5">
+        {funnel.map((f, i) => {
+          const prev = funnel
+            .slice(0, i)
+            .reverse()
+            .find((p) => p.step !== "combat" && p.step !== "technical");
+          const drop =
+            prev && prev.count && f.step !== "combat" && f.step !== "technical"
+              ? Math.round((1 - f.count / prev.count) * 100)
+              : null;
+          return (
+            <li key={f.step} className="grid grid-cols-[9.5rem_1fr_6.5rem] items-center gap-3 text-xs">
+              <span className="truncate text-foreground">{FUNNEL_LABEL[f.step] ?? f.step}</span>
+              <span className="h-2 overflow-hidden rounded-full bg-iron/20">
+                <span
+                  className="block h-full rounded-full bg-primary"
+                  style={{ width: `${top ? (f.count / top) * 100 : 0}%` }}
+                />
+              </span>
+              <span className="text-left font-mono tabular-nums text-dust" dir="ltr">
+                {f.count}
+                {drop != null && drop > 0 ? (
+                  <span className={drop >= 25 ? " text-destructive" : ""}> −{drop}%</span>
+                ) : null}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </Panel>
   );
 }

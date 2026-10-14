@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { markFunnelStep } from "@/lib/funnel";
 import {
   createRootRoute,
   HeadContent,
@@ -181,6 +182,13 @@ function RootLayoutInner() {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isBareShell = pathname === "/post-signup";
+
+  // Funnel ends outside the quiz (the quiz counts its own screens).
+  useEffect(() => {
+    if (pathname === "/") markFunnelStep("home");
+    else if (pathname === "/ai-counselor") markFunnelStep("results");
+    else if (pathname.startsWith("/checkout")) markFunnelStep("checkout");
+  }, [pathname]);
   const navigate = useNavigate();
   const [authReady, setAuthReady] = useState(false);
   const [authed, setAuthed] = useState(false);

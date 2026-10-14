@@ -44,6 +44,7 @@ import {
 import { authErrorField, getErrorMessage } from "@/lib/api-errors";
 import { progressBarProps } from "@/lib/a11y";
 import { trackEvent } from "@/lib/analytics";
+import { isQuizFunnelStep, markFunnelStep } from "@/lib/funnel";
 import { getToken, setAuthSession } from "@/lib/auth";
 import { consumeAuthReturnTarget } from "@/lib/auth-return";
 import { SITE_NAME_HE } from "@/lib/brand";
@@ -420,6 +421,12 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   // Answers can add steps (combat, tech), which made "2/12" follow "1/11": the finish line moved
   // back. Show a percentage that never goes down during the quiz instead of a step count.
   const peakProgress = useRef(0);
+  // Anonymous count of sessions reaching each new-user screen (not login or profile edits).
+  useEffect(() => {
+    if (!loginIntent && !legacyMode && !editMode && isQuizFunnelStep(currentStep)) {
+      markFunnelStep(currentStep);
+    }
+  }, [currentStep, editMode, legacyMode, loginIntent]);
   const progress = loginIntent || legacyMode ? rawProgress : Math.max(peakProgress.current, rawProgress);
   peakProgress.current = progress;
   const meta =

@@ -5,6 +5,8 @@ import MatchGeneration from "../models/MatchGeneration.js";
 import RoleRecommendation from "../models/RoleRecommendation.js";
 import PaymentOrder from "../models/PaymentOrder.js";
 import ResultFeedback from "../models/ResultFeedback.js";
+import FunnelCount from "../models/FunnelCount.js";
+import { FUNNEL_STEPS, israelDay } from "../utils/funnel.js";
 import { sourcesForUsers } from "../utils/userSource.js";
 import { sendServerError } from "../utils/httpError.js";
 
@@ -205,6 +207,16 @@ export async function getInsights(req, res) {
           rows.set(source, row);
         }
         return [...rows.values()].sort((a, b) => b.users - a.users);
+      })(),
+      funnel: await (async () => {
+        const rows = await FunnelCount.aggregate([
+          { $match: { day: { $gte: israelDay(since) } } },
+          { $group: { _id: "$step", count: { $sum: "$count" } } },
+        ]);
+        return FUNNEL_STEPS.map((step) => ({
+          step,
+          count: rows.find((r) => r._id === step)?.count ?? 0,
+        }));
       })(),
       ratings: (() => {
         const distribution = [1, 2, 3, 4, 5].map(

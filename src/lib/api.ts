@@ -1087,6 +1087,8 @@ export type AdminInsights = {
     CountRow[]
   >;
   sources?: { source: string; users: number; paid: number; estimated: number }[];
+  /** Anonymous sessions that reached each step, in funnel order. */
+  funnel?: { step: string; count: number }[];
   ratings?: {
     count: number;
     average: number | null;
