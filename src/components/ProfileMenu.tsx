@@ -7,7 +7,6 @@ import {
   Pencil,
   ReceiptText,
   Shield,
-  Sparkles,
   User,
 } from "lucide-react";
 
@@ -55,14 +54,7 @@ export function ProfileMenu({
 
   const items = (
     <>
-      <Link
-        to="/ai-counselor"
-        onClick={close}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-foreground transition hover:bg-iron/10"
-      >
-        <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-        היועץ האישי
-      </Link>
+      {/* Results are the header's primary button, so the menu starts at the dashboard. */}
       <Link
         to="/dashboard"
         onClick={close}

@@ -3,20 +3,29 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-import { ChevronLeft, BarChart3, Brain, Target, Lock, Shield, ArrowUpLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  Target,
+  Lock,
+  Shield,
+  MessageSquareText,
+  Gauge,
+  Info,
+  CreditCard,
+  RotateCcw,
+} from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
-import { getIdfPhoto, idfPhotoAt, type IdfPhoto } from "@/lib/idf-images";
+import { getIdfPhoto } from "@/lib/idf-images";
 import { getDashboardStats, getPaymentOffer } from "@/lib/api";
 import { getToken, subscribeAuth } from "@/lib/auth";
-import { formatPaymentPrice } from "@/lib/payment-offer";
+import { formatPaymentPrice, salePercentOff } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
-import { BLOG_POSTS } from "@/lib/blog";
 
 const HOME_TITLE = "קח כיוון | לאיזה תפקיד בצה״ל אתם מתאימים?";
 const HOME_DESCRIPTION =
-  "שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי וציוני מא״ה מול יותר מ־300 תפקידים בצה״ל, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. מתחילים בחינם.";
+  "שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי וציוני מא״ה מול יותר מ־300 תפקידים בצה״ל, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. 2 התאמות בחינם, ושלוש החזקות ביותר בתשלום חד־פעמי.";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -57,11 +66,15 @@ export const Route = createFileRoute("/")({
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;
-function HomePrimaryCta({ className }: { className: string }) {
+const CTA_CLASS =
+  "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-7 py-3 text-base font-bold text-primary-foreground transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.97] sm:w-auto";
+
+/** The one primary action on the page; signed-in visitors go where their profile left off. */
+function HomePrimaryCta({ className = CTA_CLASS }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [to, setTo] = useState("/post-signup");
-  const [label, setLabel] = useState("בדקו התאמה בחינם");
+  const [label, setLabel] = useState("קבלו 2 התאמות בחינם");
 
   useEffect(() => {
     setMounted(true);
@@ -96,8 +109,8 @@ function HomePrimaryCta({ className }: { className: string }) {
 
   return (
     <Link to={to} className={className}>
-      <ChevronLeft className="h-4 w-4" />
       {label}
+      <ChevronLeft className="h-4 w-4" aria-hidden />
     </Link>
   );
 }
@@ -112,62 +125,57 @@ function HomePage() {
   const paywallEnabled = offer?.enabled === true;
   const betaOpen = offer?.enabled === false;
   const price = offer ? formatPaymentPrice(offer.product) : "";
+  const listPrice =
+    offer && offer.product.listAmountMinor && salePercentOff(offer.product) > 0
+      ? formatPaymentPrice({ ...offer.product, amountMinor: offer.product.listAmountMinor })
+      : "";
 
   return (
     <div className="topo-lines">
-      {/* ── Hero: asymmetric 5/7 split ── */}
+      {/* ── 1. Hero: what it is + the primary action ── */}
       <section className="relative min-h-[calc(100dvh-3.5rem)]">
         {/* Mobile background slideshow */}
         <div className="absolute inset-0 lg:hidden">
           <HeroSlideshow className="h-full w-full" controls={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/75 to-background/45" />
         </div>
 
         <div className="relative z-10 mx-auto grid max-w-7xl items-stretch px-4 sm:px-6 lg:grid-cols-[5fr_7fr] lg:min-h-[calc(100vh-3.5rem)]">
-          {/* Text column, right side in RTL */}
           {/* CSS entrance, not framer: it runs from the first paint, before hydration. */}
-          <div className="flex flex-col justify-center py-16 lg:py-24">
+          <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col justify-center py-10 lg:min-h-0 lg:py-24">
             <p
-              className="animate-slide-up font-mono text-xs tracking-wide text-dust uppercase mb-6"
+              className="animate-slide-up mb-4 font-mono text-xs tracking-wide text-dust uppercase sm:mb-6"
               style={{ animationDelay: "100ms" }}
             >
-              פלטפורמת הכנה לשירות צה״ל
+              התאמת תפקידים בצה״ל, לפי הנתונים שלכם
             </p>
 
             <h1
-              className="animate-slide-up text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
+              className="animate-slide-up text-[2.5rem] font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
               style={{ animationDelay: "150ms" }}
             >
-              שירות מתחיל
+              לאיזה תפקיד בצה״ל
               <br />
-              <span className="text-primary">בתכנון.</span>
+              <span className="text-primary">אתם מתאימים?</span>
             </h1>
 
             <p
-              className="animate-slide-up mt-6 max-w-md text-base leading-[1.7] text-dust"
+              className="animate-slide-up mt-5 max-w-md text-base leading-[1.7] text-foreground/85"
               style={{ animationDelay: "200ms" }}
             >
-              שאלון אישי אחד, וחמשת התפקידים שהכי מתאימים לכם, עם הסבר למה.
+              שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי ו־11 ציוני מא״ה מול יותר מ־300 תפקידים, ומחזיר
+              5 התאמות עם הסבר וסיכויי קבלה.
             </p>
 
             <div
-              className="animate-slide-up mt-10 flex flex-col gap-3"
+              className="animate-slide-up mt-8 flex flex-col gap-3 sm:items-start"
               style={{ animationDelay: "250ms" }}
             >
-              <div className="flex items-center gap-4">
-                <HomePrimaryCta className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
-                <Link
-                  to="/about"
-                  className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-dust transition hover:text-foreground"
-                >
-                  איך זה עובד
-                  <ArrowUpLeft className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-              <p className="flex items-center gap-1.5 text-xs text-dust/70">
-                <Lock className="h-3 w-3" />
+              <HomePrimaryCta />
+              <p className="flex items-start gap-1.5 text-xs leading-5 text-dust">
+                <Lock className="mt-1 h-3 w-3 shrink-0" aria-hidden />
                 {paywallEnabled
-                  ? "מתחילים מיד בלי הרשמה. המחיר כולל מע״מ ככל שחל; חשבון נדרש לשמירת התוצאות."
+                  ? `השאלון ו־2 התאמות בחינם. שלוש החזקות ביותר ב־${price}, תשלום חד־פעמי בלי מנוי.`
                   : betaOpen
                     ? "בתקופת הבטא כל חמש ההתאמות פתוחות; חשבון נדרש לשמירת התוצאות."
                     : "מתחילים מיד בלי הרשמה; חשבון נדרש לשמירת התוצאות."}
@@ -175,11 +183,11 @@ function HomePage() {
             </div>
 
             <div
-              className="animate-slide-up mt-12 flex gap-6 sm:mt-16 sm:gap-10"
+              className="animate-slide-up mt-10 flex gap-6 sm:mt-14 sm:gap-10"
               style={{ animationDelay: "300ms" }}
             >
               <DataPoint value="+300" label="תפקידים ומסלולים" />
-              <DataPoint value="11" label="ממדי מא״ה" />
+              <DataPoint value="11" label="ציוני מא״ה" />
               <DataPoint value="5" label="התאמות אישיות" />
             </div>
           </div>
@@ -198,195 +206,145 @@ function HomePage() {
 
       <div className="section-divider" />
 
-      {/* ── Capabilities, staggered asymmetric cards ── */}
-      <section className="py-14 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.4, ease }}
-            className="mb-14 max-w-xl text-right"
-          >
-            <p className="font-mono text-xs tracking-wide text-primary uppercase mb-3">כלים</p>
-            <h2 className="text-3xl font-bold leading-tight sm:text-4xl">שלושה כלים, מסך אחד</h2>
-            <p className="mt-3 text-base text-dust leading-relaxed">
-              כל מה שצריך כדי להתכונן לשירות, מרוכז ונגיש.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-px bg-iron/20 grid-cols-1 sm:grid-cols-3">
-            <CapabilityCard
-              icon={<BarChart3 className="h-5 w-5" />}
-              title="מעקב נתונים"
-              description="דפ״ר, פרופיל רפואי, ויום המאה. הכל במסך אחד עם ספירה לאחור חיה."
-              photo={idfPhotoAt(0)}
-              idx={0}
-            />
-            <CapabilityCard
-              icon={<Target className="h-5 w-5" />}
-              title="התאמת תפקיד"
-              description="מנוע התאמה שמצליב את הנתונים שלכם מול 300+ תפקידים ומסלולים בצה״ל, עם ספי דפ״ר ופרופיל רשמיים, ומציג ציון התאמה לכל אחד."
-              photo={idfPhotoAt(1)}
-              idx={1}
-            />
-            <CapabilityCard
-              icon={<Brain className="h-5 w-5" />}
-              title="יועץ AI אישי"
-              description="יועץ מבוסס AI שמנתח את הפרופיל שלכם ונותן המלצות מותאמות אישית."
-              photo={idfPhotoAt(2)}
-              idx={2}
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      {/* ── Evidence: photo + text, offset grid ── */}
-      <section className="py-14 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid items-center gap-12 lg:grid-cols-[2fr_3fr] lg:gap-20">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="relative aspect-[4/3] overflow-hidden rounded-sm"
-            >
-              <IdfPhotoPanel
-                photo={getIdfPhoto("s8")}
-                aspectClassName="h-full min-h-0"
-                overlayClassName="from-background/20 via-transparent to-background/60"
-                imgClassName="object-[center_40%]"
-                loading="lazy"
-                fetchPriority="auto"
+      {/* ── 2. What you get ── */}
+      <section className="py-14 sm:py-24" aria-labelledby="get-heading">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[3fr_2fr] lg:gap-20">
+          <div className="text-right">
+            <SectionHead eyebrow="מה מקבלים" id="get-heading" title="5 תפקידים, מדורגים בשבילכם" />
+            <ul className="mt-8 grid gap-px bg-iron/20 sm:grid-cols-3 lg:grid-cols-1">
+              <Feature
+                icon={<Target className="h-5 w-5" />}
+                title="התאמה אישית"
+                desc="חמישה תפקידים מתוך יותר מ־300, מדורגים ממקום 5 עד מקום 1 לפי הנתונים וההעדפות שלכם."
               />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.4, delay: 0.1, ease }}
-              className="text-right"
-            >
-              <p className="font-mono text-xs tracking-wide text-olive uppercase mb-3">
-                איך זה עובד
-              </p>
-              <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
-                מהנתונים שלכם לתפקיד שמתאים
-              </h2>
-              <p className="mt-4 max-w-lg text-base leading-[1.7] text-dust">
-                מילאתם דפ״ר, פרופיל רפואי, וציוני מא״ה. המערכת מצליבה את הנתונים מול מאגר התפקידים
-                ומדרגת חמש המלצות.{" "}
-                {paywallEnabled
-                  ? `מקומות 5 ו־4 מוצגים בחינם; מקומות 3, 2 ו־1 נפתחים ב־${price} בתשלום חד־פעמי וללא מנוי.`
-                  : betaOpen
-                    ? "בתקופת הבטא כל חמש ההתאמות פתוחות בחינם."
-                    : "חמש ההתאמות מדורגות ממקום 5 עד מקום 1, עם הסבר לכל אחת."}
-              </p>
-
-              <div className="mt-10 grid grid-cols-1 gap-4 border-t border-iron/30 pt-8 sm:grid-cols-3 sm:gap-6">
-                <StepBlock num="01" title="מתחילים" desc="בלי הרשמה, ישר לשאלון" idx={0} />
-                <StepBlock num="02" title="נתונים" desc="דפ״ר, רפואי, מא״ה והעדפות" idx={1} />
-                <StepBlock num="03" title="התאמות" desc="5 תפקידים, עם הסבר למה" idx={2} />
-              </div>
-            </motion.div>
+              <Feature
+                icon={<MessageSquareText className="h-5 w-5" />}
+                title="הסבר לכל התאמה"
+                desc="למה התפקיד מתאים דווקא לכם, ומה עושים בו ביום־יום."
+              />
+              <Feature
+                icon={<Gauge className="h-5 w-5" />}
+                title="סיכויי קבלה"
+                desc="הערכה של הסיכוי להתקבל לכל תפקיד, עם הסיבה."
+              />
+            </ul>
+          </div>
+          <div className="relative hidden aspect-[4/5] overflow-hidden rounded-sm border border-iron/25 lg:block">
+            <IdfPhotoPanel
+              photo={getIdfPhoto("s8")}
+              aspectClassName="h-full min-h-0"
+              overlayClassName="from-background/20 via-transparent to-background/60"
+              imgClassName="object-[center_40%]"
+              loading="lazy"
+              fetchPriority="auto"
+            />
           </div>
         </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* ── Trust, horizontal bar ── */}
-      <section className="py-14 sm:py-28">
+      {/* ── 3. How it works ── */}
+      <section id="how" className="scroll-mt-16 py-14 sm:py-24" aria-labelledby="how-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.4 }}
-            className="mb-10 text-center font-mono text-xs tracking-wide text-dust/60 uppercase"
-          >
-            למה לסמוך עלינו
-          </motion.p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <TrustBlock
-              icon={<Lock className="h-5 w-5" />}
-              title="כניסה בלי סיסמה"
-              desc="נכנסים עם קוד חד־פעמי לאימייל, אז אין סיסמה שיכולה לדלוף. וכל התעבורה באתר מוצפנת."
-              idx={0}
+          <SectionHead eyebrow="איך זה עובד" id="how-heading" title="שלושה צעדים, תשובה אישית" />
+          <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
+            <Step num="01" title="מתחילים בשאלון" desc="בלי הרשמה, ישר לשאלון האישי." />
+            <Step
+              num="02"
+              title="ממלאים את הנתונים"
+              desc="דפ״ר, פרופיל רפואי, ציוני מא״ה ומה חשוב לכם בשירות."
             />
-            <TrustBlock
-              icon={<Shield className="h-5 w-5" />}
-              title="לא מוכרים את המידע"
-              desc="לא מוכרים ולא מעבירים למפרסמים. המידע משמש רק כדי לבנות לכם התאמה, ואפשר לבקש למחוק אותו בכל רגע."
-              idx={1}
+            <Step
+              num="03"
+              title="מקבלים 5 התאמות"
+              desc="מדורגות, עם הסבר וסיכויי קבלה לכל תפקיד."
             />
-            <TrustBlock
-              icon={<Target className="h-5 w-5" />}
-              title={paywallEnabled ? "מחיר שקוף" : betaOpen ? "בטא פתוחה" : "הסבר לכל התאמה"}
-              desc={
-                paywallEnabled
-                  ? `ההערכה ושתי התאמות בחינם; מקומות 3, 2 ו־1 ב־${price} סופיים כולל מע״מ ככל שחל, ללא מנוי.`
-                  : betaOpen
-                    ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
-                    : "לכל תפקיד תראו למה הוא מתאים לכם, ומה הסיכוי להתקבל."
+          </ol>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      {/* ── 4. Free vs paid, said plainly ── */}
+      <section className="py-14 sm:py-24" aria-labelledby="price-heading">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <SectionHead
+            eyebrow="מה בחינם ומה בתשלום"
+            id="price-heading"
+            title={betaOpen ? "בתקופת הבטא הכול פתוח" : "2 התאמות בחינם, 3 החזקות בתשלום חד־פעמי"}
+          />
+          <ul className="mt-8 border border-iron/30 bg-card">
+            <PriceRow title="השאלון האישי" note="מתחילים בלי הרשמה" value="בחינם" free />
+            <PriceRow title="מקומות 5 ו־4" note="כולל הסבר וסיכויי קבלה" value="בחינם" free />
+            <PriceRow
+              title="מקומות 3, 2 ו־1"
+              note={
+                betaOpen
+                  ? "ההתאמות החזקות ביותר, פתוחות בתקופת הבטא"
+                  : "ההתאמות החזקות ביותר. תשלום אחד, בלי מנוי, כולל מע״מ ככל שחל"
               }
-              idx={2}
+              value={betaOpen ? "בחינם" : paywallEnabled ? price : "חד־פעמי"}
+              listValue={paywallEnabled ? listPrice : ""}
+              free={betaOpen}
             />
+          </ul>
+          <div className="mt-8 flex flex-col items-center gap-3 text-center">
+            <HomePrimaryCta />
+            <p className="text-xs text-dust">
+              רואים את מקומות 5 ו־4 לפני שמחליטים אם לפתוח את השאר.
+            </p>
           </div>
         </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* ── Guides ── */}
-      <section className="py-14 sm:py-28" aria-labelledby="guides-heading">
+      {/* ── 5. Trust ── */}
+      <section className="py-14 sm:py-24" aria-labelledby="trust-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">מדריכים</p>
-              <h2
-                id="guides-heading"
-                className="text-2xl font-bold leading-tight text-foreground sm:text-3xl"
-              >
-                לפני שמדרגים תפקיד
-              </h2>
-            </div>
-            <Link
-              to="/blog"
-              className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary"
-            >
-              לכל המדריכים
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </Link>
-          </div>
-          <ul className="grid gap-4 sm:grid-cols-3">
-            {BLOG_POSTS.slice(0, 3).map((p) => (
-              <li key={p.slug}>
-                <Link
-                  to="/blog/$slug"
-                  params={{ slug: p.slug }}
-                  className="flex h-full flex-col border border-iron/30 bg-card p-5 transition hover:border-primary/50"
-                >
-                  <p className="font-mono text-xs text-primary">{p.tag}</p>
-                  <h3 className="mt-2 text-base font-black leading-snug text-foreground">
-                    {p.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-dust">{p.description}</p>
-                </Link>
-              </li>
-            ))}
+          <SectionHead eyebrow="שקיפות" id="trust-heading" title="כדאי לדעת לפני שמתחילים" />
+          <ul className="mt-8 grid gap-px bg-iron/20 sm:grid-cols-2">
+            <Feature
+              icon={<Info className="h-5 w-5" />}
+              title="לא רשמי, ולא מטעם צה״ל"
+              desc={`${SITE_NAME_HE} הוא כלי עזר לא רשמי ואינו קשור לצה״ל. ההתאמה אינה אישור זכאות או הבטחת שיבוץ.`}
+            />
+            {!betaOpen && (
+              <Feature
+                icon={<CreditCard className="h-5 w-5" />}
+                title="תשלום מאובטח"
+                desc="התשלום מתבצע בעמוד המאובטח של Grow. פרטי האשראי לא עוברים אלינו."
+              />
+            )}
+            {!betaOpen && (
+              <Feature
+                icon={<RotateCcw className="h-5 w-5" />}
+                title="ביטול והחזר"
+                desc={
+                  <>
+                    אפשר לבקש ביטול של הרכישה החד־פעמית בעמוד{" "}
+                    <Link to="/cancellation" className="font-semibold text-primary hover:underline">
+                      ביטול עסקה והחזרים
+                    </Link>
+                    . הזכאות להחזר כפופה לדין ולנסיבות העסקה.
+                  </>
+                }
+              />
+            )}
+            <Feature
+              icon={<Shield className="h-5 w-5" />}
+              title="המידע שלכם"
+              desc="כניסה בקוד חד־פעמי לאימייל, בלי סיסמה. לא מוכרים את המידע ולא מעבירים למפרסמים, ואפשר לבקש למחוק אותו."
+            />
           </ul>
         </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* ── CTA with photo ── */}
-      <section className="pt-20 pb-6 sm:pt-28 sm:pb-8">
+      {/* ── 6. Closing CTA ── */}
+      <section className="py-14 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -394,7 +352,7 @@ function HomePage() {
           transition={{ duration: 0.4, ease }}
           className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12"
         >
-          <div className="order-2 lg:order-1 overflow-hidden rounded-sm border border-iron/30">
+          <div className="order-2 hidden overflow-hidden rounded-sm border border-iron/30 sm:block lg:order-1">
             <IdfPhotoPanel
               photo={getIdfPhoto("s4")}
               aspectClassName="aspect-[16/10] min-h-[220px]"
@@ -403,30 +361,66 @@ function HomePage() {
               fetchPriority="auto"
             />
           </div>
-          <div className="order-1 lg:order-2 max-w-xl text-right">
+          <div className="order-1 max-w-xl text-right lg:order-2">
             <h2 className="text-3xl font-bold sm:text-4xl">
               השירות שלכם, <span className="text-primary">בראש שקט.</span>
             </h2>
-            <p className="mt-4 text-base text-dust">
-              {paywallEnabled
-                ? `ההערכה ושתי התאמות בחינם. פתיחת שלוש המובילות ב־${price} סופיים כולל מע״מ ככל שחל, פעם אחת וללא מנוי.`
-                : betaOpen
-                  ? "בתקופת הבטא ההערכה וכל חמש ההתאמות פתוחות בחינם."
-                  : "שאלון אחד, חמש התאמות, והסבר ברור לכל אחת."}
-            </p>
-            <HomePrimaryCta className="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]" />
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-dust/70">
-              <Lock className="h-3 w-3" />
-              המלצות לא רשמיות. אין הבטחת זכאות, מיון או שיבוץ בצה״ל
-            </p>
+            <p className="mt-4 text-base text-dust">שאלון אחד, 5 התאמות, והסבר ברור לכל אחת.</p>
+            <div className="mt-8">
+              <HomePrimaryCta />
+            </div>
           </div>
         </motion.div>
+      </section>
+
+      <div className="section-divider" />
+
+      {/* ── 7. Extras: the free tools, one quiet line (the footer lists them too) ── */}
+      <section className="py-8 sm:py-10" aria-label="כלים חינמיים">
+        <p className="mx-auto max-w-6xl px-4 text-center text-sm leading-7 text-dust sm:px-6">
+          גם בחינם, לבדיקה מהירה:{" "}
+          {EXTRAS.map(([to, label], i) => (
+            <span key={to}>
+              {i ? " · " : ""}
+              <Link
+                to={to}
+                className="font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline"
+              >
+                {label}
+              </Link>
+            </span>
+          ))}
+        </p>
       </section>
     </div>
   );
 }
 
+const EXTRAS = [
+  ["/role-insights", "קטלוג התפקידים"],
+  ["/role-calculator", "מחשבון תפקידים"],
+  ["/attention-test", "תרגול מבחן קשב"],
+  ["/blog", "מדריכים"],
+] as const;
+
 /* ── Sub-components ── */
+
+function SectionHead({ eyebrow, id, title }: { eyebrow: string; id: string; title: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.4, ease }}
+      className="max-w-xl text-right"
+    >
+      <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">{eyebrow}</p>
+      <h2 id={id} className="text-3xl font-bold leading-tight sm:text-4xl">
+        {title}
+      </h2>
+    </motion.div>
+  );
+}
 
 function DataPoint({ value, label }: { value: string; label: string }) {
   const num = parseInt(value.replace(/[^0-9]/g, ""), 10);
@@ -471,94 +465,74 @@ function DataPoint({ value, label }: { value: string; label: string }) {
   );
 }
 
-function CapabilityCard({
-  icon,
-  title,
-  description,
-  photo,
-  idx,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  photo: IdfPhoto;
-  idx: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 24 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="overflow-hidden bg-card text-right transition-colors hover:bg-secondary"
-    >
-      <IdfPhotoPanel
-        photo={photo}
-        aspectClassName="aspect-[21/9]"
-        overlayClassName="from-card via-background/10 to-transparent"
-        showCredit={false}
-        loading="lazy"
-        fetchPriority="auto"
-      />
-      <div className="p-5 sm:p-8">
-        <div className="text-primary mb-4">{icon}</div>
-        <h3 className="text-base font-bold text-foreground">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-dust">{description}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-function StepBlock({
-  num,
-  title,
-  desc,
-  idx,
-}: {
-  num: string;
-  title: string;
-  desc: string;
-  idx: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.35, delay: 0.15 + idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
-      className="text-right"
-    >
-      <p className="font-mono text-xs font-bold text-primary mb-2">{num}</p>
-      <p className="text-sm font-bold text-foreground">{title}</p>
-      <p className="mt-1 text-xs text-dust leading-relaxed">{desc}</p>
-    </motion.div>
-  );
-}
-
-function TrustBlock({
+function Feature({
   icon,
   title,
   desc,
-  idx = 0,
 }: {
   icon: React.ReactNode;
   title: string;
-  desc: string;
-  idx?: number;
+  desc: React.ReactNode;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      className="group border border-iron/20 bg-card p-8 text-right transition-colors hover:border-primary/30"
-    >
-      <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+    <li className="flex gap-4 bg-card p-5 text-right sm:p-6">
+      <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
         {icon}
       </div>
-      <h3 className="text-base font-bold text-foreground mb-2">{title}</h3>
-      <p className="text-sm leading-relaxed text-dust">{desc}</p>
-    </motion.div>
+      <div>
+        <h3 className="text-base font-bold text-foreground">{title}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-dust">{desc}</p>
+      </div>
+    </li>
+  );
+}
+
+function Step({ num, title, desc }: { num: string; title: string; desc: string }) {
+  return (
+    <li className="border-t-2 border-primary/60 pt-4 text-right">
+      <p className="mb-1 font-mono text-xs font-bold text-primary">{num}</p>
+      <h3 className="text-base font-bold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm leading-relaxed text-dust">{desc}</p>
+    </li>
+  );
+}
+
+function PriceRow({
+  title,
+  note,
+  value,
+  listValue = "",
+  free = false,
+}: {
+  title: string;
+  note: string;
+  value: string;
+  listValue?: string;
+  free?: boolean;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-4 border-b border-iron/25 p-4 last:border-b-0 sm:p-5">
+      <div className="min-w-0 text-right">
+        <h3 className="text-base font-bold text-foreground">{title}</h3>
+        <p className="mt-0.5 text-xs leading-5 text-dust">{note}</p>
+      </div>
+      <p className="flex shrink-0 items-baseline gap-2">
+        {listValue && (
+          <span className="text-xs text-dust line-through">
+            <span className="sr-only">במקום </span>
+            {listValue}
+          </span>
+        )}
+        <span
+          className={
+            free
+              ? "rounded-sm bg-primary/15 px-2 py-1 text-sm font-bold text-primary"
+              : "font-mono text-lg font-bold text-foreground"
+          }
+        >
+          {value}
+        </span>
+      </p>
+    </li>
   );
 }

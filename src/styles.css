@@ -311,3 +311,21 @@ html.a11y-reduce-motion *::after {
     scroll-behavior: auto !important;
   }
 }
+
+/* The one solid button class used outside Tailwind utilities (404 and error screens). It was
+   referenced but never defined, so those buttons rendered as plain text. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 800;
+  transition: filter 0.15s ease;
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
