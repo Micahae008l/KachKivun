@@ -8,6 +8,10 @@ import {
   thirdPartyAnalyticsConfigured,
 } from "@/lib/third-party-analytics";
 
+// One-screen flows whose main button sits where the banner would cover it. The notice waits for
+// any other page; nothing is tracked until the visitor accepts either way.
+const FLOW_PREFIXES = ["/post-signup", "/checkout", "/payment/return"];
+
 /** Cookie notice for GA4 and Clarity; nothing loads until the visitor accepts. */
 export function CookieConsent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -24,7 +28,7 @@ export function CookieConsent() {
     sendAnalyticsPageView();
   }, [pathname]);
 
-  if (!undecided) return null;
+  if (!undecided || FLOW_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   function choose(consent: "granted" | "denied") {
     saveAnalyticsConsent(consent);

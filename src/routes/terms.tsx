@@ -3,7 +3,7 @@ import { Bullets, LegalDoc, Section } from "@/components/LegalDoc";
 import { SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 
 const CONTACT_EMAIL = SUPPORT_EMAIL;
-const LAST_UPDATED = "18 בספטמבר 2026";
+const LAST_UPDATED = "14 באוקטובר 2026";
 
 // TODO(legal-launch): Israeli counsel must review the minor-payer and
 // digital-service cancellation wording before live charges are enabled.
@@ -26,7 +26,7 @@ function TermsPage() {
   return (
     <LegalDoc title="תנאי שימוש" lastUpdated={LAST_UPDATED}>
       <p>
-        השימוש ב־{SITE_NAME_HE} כפוף לתנאים שלהלן. השירות נמצא בבטא ואינו שירות רשמי של צה״ל. אם
+        השימוש ב־{SITE_NAME_HE} כפוף לתנאים שלהלן. השירות אינו שירות רשמי של צה״ל. אם
         משהו כאן לא מקובל עליכם, אל תשתמשו בשירות ואל תבצעו רכישה.
       </p>
       <p className="border border-primary/40 bg-primary/10 px-4 py-3 font-semibold text-foreground">
@@ -192,8 +192,7 @@ function TermsPage() {
           <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline" dir="ltr">
             {CONTACT_EMAIL}
           </a>
-          . שם המפעיל המשפטי, הטלפון והכתובת המלאים הנדרשים על פי דין יוצגו בעמוד הקופה לפני חיוב;
-          איננו מפרסמים כאן פרטים שטרם הוגדרו. ראו גם את{" "}
+          . מפעיל השירות: חדד מייקל, עוסק מס׳ 216868562. ראו גם את{" "}
           <Link to="/privacy" className="text-primary hover:underline">
             מדיניות הפרטיות
           </Link>

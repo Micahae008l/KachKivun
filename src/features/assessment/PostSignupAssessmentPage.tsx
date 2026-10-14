@@ -416,7 +416,12 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   const remainingEffort = steps
     .slice(currentIndex)
     .reduce((sum, item) => sum + STEP_EFFORT[item], 0);
-  const progress = Math.round((completedEffort / Math.max(totalEffort, 1)) * 100);
+  const rawProgress = Math.round((completedEffort / Math.max(totalEffort, 1)) * 100);
+  // Answers can add steps (combat, tech), which made "2/12" follow "1/11": the finish line moved
+  // back. Show a percentage that never goes down during the quiz instead of a step count.
+  const peakProgress = useRef(0);
+  const progress = loginIntent || legacyMode ? rawProgress : Math.max(peakProgress.current, rawProgress);
+  peakProgress.current = progress;
   const meta =
     loginIntent && currentStep === "email"
       ? {
@@ -846,15 +851,13 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                         ? "עדכון ההערכה"
                         : "היכרות אישית"}
               </span>
-              <span className="font-mono tabular-nums">
-                {currentIndex + 1}/{steps.length}
-              </span>
+              <span className="font-mono tabular-nums">{progress}%</span>
             </div>
             <div
               className="h-1.5 overflow-hidden rounded-full bg-iron/20"
               {...progressBarProps(
                 progress,
-                `התקדמות בהערכה: שלב ${currentIndex + 1} מתוך ${steps.length}`,
+                `התקדמות בהערכה: ${progress}%`,
               )}
             >
               <div

@@ -4,7 +4,7 @@ import { SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 import { saveAnalyticsConsent } from "@/lib/third-party-analytics";
 
 const CONTACT_EMAIL = SUPPORT_EMAIL;
-const LAST_UPDATED = "18 בספטמבר 2026";
+const LAST_UPDATED = "14 באוקטובר 2026";
 
 // TODO(legal-launch): Israeli counsel must review payment/minor retention and
 // digital-service cancellation disclosures before live charges are enabled.

@@ -49,7 +49,12 @@ export const Route = createFileRoute("/blog/$slug")({
                 inLanguage: "he-IL",
                 mainEntityOfPage: url,
                 image: `${SITE_URL}/og-image.png`,
-                author: { "@type": "Organization", name: "קח כיוון", url: `${SITE_URL}/about` },
+                author: {
+                  "@type": "Person",
+                  name: "מייקל חדד",
+                  jobTitle: "מייסד קח כיוון",
+                  url: `${SITE_URL}/about`,
+                },
                 publisher: {
                   "@type": "Organization",
                   name: "קח כיוון",
@@ -106,7 +111,14 @@ function BlogPostPage() {
         <h1 className="mt-2 text-3xl font-black leading-[1.15] tracking-tight text-foreground sm:text-[2.6rem]">
           {post.title}
         </h1>
-        <p className="mt-4 font-mono text-xs text-dust/80">
+        <p className="mt-4 text-sm text-dust">
+          באחריות{" "}
+          <Link to="/about" className="font-semibold text-foreground hover:text-primary">
+            מייקל חדד
+          </Link>
+          , מייסד {"קח כיוון"}. המקורות מופיעים בסוף המדריך.
+        </p>
+        <p className="mt-2 font-mono text-xs text-dust/80">
           עודכן ב־<time dateTime={post.updated}>{formatPostDate(post.updated)}</time> ·{" "}
           {post.readMinutes} דקות קריאה
         </p>
