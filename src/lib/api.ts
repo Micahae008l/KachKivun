@@ -941,6 +941,8 @@ export type AdminOverviewResponse = {
 
 export type AdminUserRow = {
   id: string;
+  /** Where they came from; estimated when guessed from an old session's browser. */
+  source?: { source: string; estimated: boolean };
   email: string;
   preferredName: string;
   phone: string;
@@ -1073,6 +1075,7 @@ export type AdminInsights = {
     | "gender",
     CountRow[]
   >;
+  sources?: { source: string; users: number; paid: number; estimated: number }[];
   ratings?: {
     count: number;
     average: number | null;

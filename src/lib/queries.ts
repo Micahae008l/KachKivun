@@ -66,7 +66,7 @@ export const adminOverviewQueryOptions = (token: string | null) =>
 export const adminUsersQueryOptions = (token: string | null, search: string) =>
   queryOptions({
     queryKey: queryKeys.adminUsers(token, search),
-    queryFn: () => getAdminUsers({ q: search || undefined, limit: 50 }),
+    queryFn: () => getAdminUsers({ q: search || undefined, limit: 500 }),
     enabled: !!token,
     staleTime: STALE.admin,
   });

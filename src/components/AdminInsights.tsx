@@ -21,7 +21,7 @@ import {
 } from "@/features/assessment/options";
 import { COMBAT_PREFERENCE_OPTIONS, FOCUS_PREFERENCE_OPTIONS } from "@/lib/profile-preference-data";
 import { getAdminInsights, type AdminInsights as Insights } from "@/lib/api";
-import { SignupFunnel } from "@/components/AdminUserJourney";
+import { SignupFunnel, SourceBadge } from "@/components/AdminUserJourney";
 
 // One accent for "the thing that matters", a quiet step of it for context (no rainbow).
 const ACCENT = "var(--primary)";
@@ -248,6 +248,8 @@ export function AdminInsights() {
           sub={`עלות AI $${d.allTime.aiCostUsd} · ${d.allTime.runsPerUser} ריצות למשתמש`}
         />
       </div>
+
+      <SourcesPanel sources={d.sources} />
 
       <SignupFunnel funnel={d.allTime.funnel} />
 
@@ -502,6 +504,67 @@ function RatingsPanel({ ratings }: { ratings: Insights["ratings"] }) {
       ) : (
         <p className="text-xs text-dust">אחרי שמשלמים ידרגו את התוצאות, זה יופיע כאן.</p>
       )}
+    </Panel>
+  );
+}
+
+/** Users and payers per platform, best converting first among the big ones. */
+function SourcesPanel({ sources }: { sources: Insights["sources"] }) {
+  if (!sources?.length) return null;
+  const max = Math.max(...sources.map((s) => s.users));
+  const estimated = sources.reduce((a, s) => a + s.estimated, 0);
+  return (
+    <Panel
+      title="מאיפה הגיעו המשתמשים"
+      note={
+        estimated
+          ? `${estimated} מהמשתמשים מלפני שהתחלנו לתעד מקור: מוערכים לפי הדפדפן (≈) או לא ידועים`
+          : "לפי הקישור או האפליקציה שממנה נכנסו"
+      }
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[30rem] text-right text-sm">
+          <thead>
+            <tr className="border-b border-iron/20 text-xs text-dust">
+              <th className="py-2 pl-3 font-medium">מקור</th>
+              <th className="w-2/5 py-2 pl-3 font-medium">משתמשים</th>
+              <th className="py-2 pl-3 font-medium">שילמו</th>
+              <th className="py-2 font-medium">המרה</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sources.map((s) => (
+              <tr key={s.source} className="border-b border-iron/10">
+                <td className="py-2.5 pl-3">
+                  <SourceBadge
+                    source={s.source}
+                    estimated={s.estimated === s.users && s.users > 0}
+                  />
+                </td>
+                <td className="py-2.5 pl-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 shrink-0 font-mono tabular-nums text-foreground">
+                      {s.users}
+                    </span>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary/10">
+                      <div
+                        className="h-full rounded-e-[4px] bg-primary/60"
+                        style={{ width: `${(s.users / max) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td className="py-2.5 pl-3 font-mono font-bold tabular-nums text-primary">
+                  {s.paid}
+                </td>
+                <td className="py-2.5 font-mono tabular-nums text-dust">
+                  {s.users ? `${Math.round((s.paid / s.users) * 100)}%` : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Panel>
   );
 }

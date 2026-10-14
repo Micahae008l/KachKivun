@@ -273,3 +273,38 @@ export function AdminUserJourney({ userId }: { userId: string }) {
     </div>
   );
 }
+
+export const SOURCE_LABEL: Record<string, string> = {
+  tiktok: "TikTok",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  google: "Google",
+  whatsapp: "WhatsApp",
+  youtube: "YouTube",
+  x: "X",
+  referral: "אתר אחר",
+  direct: "ישיר",
+  browser: "דפדפן רגיל",
+  unknown: "לא ידוע",
+};
+const SOURCE_STYLE: Record<string, string> = {
+  tiktok: "bg-[#25f4ee]/15 text-[#7ff7f3]",
+  instagram: "bg-[#e1306c]/15 text-[#f58fb4]",
+  facebook: "bg-[#1877f2]/15 text-[#8fb9f8]",
+};
+export const sourceLabel = (source: string) => SOURCE_LABEL[source] ?? source;
+
+/** Where a user came from; "≈" marks a guess from an old session's browser. */
+export function SourceBadge({ source, estimated }: { source: string; estimated?: boolean }) {
+  return (
+    <span
+      title={estimated ? "הערכה לפי הדפדפן של הכניסה הראשונה" : undefined}
+      className={`whitespace-nowrap rounded-sm px-2 py-0.5 text-[11px] font-bold ${
+        SOURCE_STYLE[source] ?? "bg-iron/20 text-dust"
+      }`}
+    >
+      {estimated && source !== "unknown" ? "≈ " : ""}
+      {sourceLabel(source)}
+    </span>
+  );
+}

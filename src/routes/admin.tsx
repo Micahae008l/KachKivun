@@ -17,7 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSkeleton, AdminUsersTableSkeleton } from "@/components/skeletons/PageSkeletons";
-import { AdminUserJourney, StageBadge } from "@/components/AdminUserJourney";
+import {
+  AdminUserJourney,
+  SourceBadge,
+  STAGE_LABEL,
+  StageBadge,
+  sourceLabel,
+} from "@/components/AdminUserJourney";
 import { AdminInsights } from "@/components/AdminInsights";
 import {
   ApiError,
@@ -26,6 +32,7 @@ import {
   moderateRoleReview,
   updateAdminUserRole,
   updateAdminUserTokenCap,
+  type AdminJourneyStage,
   type AdminUserRow,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -38,7 +45,7 @@ import {
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
-  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -76,6 +83,49 @@ function statusHebrew(status: string) {
   return "לפני גיוס";
 }
 
+type AdminTab = "overview" | "users" | "ai" | "reviews";
+const TABS: { id: AdminTab; label: string; icon: typeof Users }[] = [
+  { id: "overview", label: "סקירה", icon: Sparkles },
+  { id: "users", label: "משתמשים", icon: Users },
+  { id: "ai", label: "AI ועלויות", icon: DollarSign },
+  { id: "reviews", label: "ביקורות", icon: MessageSquare },
+];
+const PAGE = 50;
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="mt-1.5 w-10 shrink-0 text-[11px] font-bold text-dust">{label}</span>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-full border px-3 py-1 text-xs font-bold transition ${
+        active
+          ? "border-primary bg-primary/15 text-foreground"
+          : "border-iron/30 text-dust hover:border-primary/30 hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -86,6 +136,21 @@ function AdminPage() {
   const [reviewStatus, setReviewStatus] = useState<"pending" | "approved" | "rejected" | "all">(
     "pending",
   );
+  const [tab, setTab] = useState<AdminTab>("overview");
+  const [stageFilter, setStageFilter] = useState<AdminJourneyStage | "all">("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [shown, setShown] = useState(PAGE);
+
+  // The open tab lives in the URL hash, so a refresh or a shared link opens the same view.
+  useEffect(() => {
+    const fromHash = window.location.hash.slice(1) as AdminTab;
+    if (TABS.some((t) => t.id === fromHash)) setTab(fromHash);
+  }, []);
+  function openTab(next: AdminTab) {
+    setTab(next);
+    window.history.replaceState(null, "", `#${next}`);
+  }
+  useEffect(() => setShown(PAGE), [stageFilter, sourceFilter, debouncedQ]);
 
   useEffect(() => {
     setMounted(true);
@@ -194,6 +259,25 @@ function AdminPage() {
   const me = adminMe.data;
   const ov = overview.data;
 
+  const allUsers = usersQuery.data?.users ?? [];
+  const sourceOf = (u: AdminUserRow) => u.source?.source ?? "unknown";
+  const stageCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const u of allUsers)
+      if (u.journey) counts[u.journey.stage] = (counts[u.journey.stage] ?? 0) + 1;
+    return counts;
+  }, [allUsers]);
+  const sourceCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const u of allUsers) counts.set(sourceOf(u), (counts.get(sourceOf(u)) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [allUsers]);
+  const filteredUsers = allUsers.filter(
+    (u) =>
+      (stageFilter === "all" || u.journey?.stage === stageFilter) &&
+      (sourceFilter === "all" || sourceOf(u) === sourceFilter),
+  );
+
   const busy =
     (session.isPending && !session.data) ||
     (session.data?.role === "admin" &&
@@ -257,11 +341,54 @@ function AdminPage() {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp}>
-            <AdminInsights />
-          </motion.div>
+          <motion.nav
+            variants={fadeUp}
+            aria-label="אזורי הפאנל"
+            className="sticky top-0 z-20 -mx-4 flex gap-1 overflow-x-auto border-b border-iron/30 bg-background/95 px-4 py-2 backdrop-blur-sm sm:mx-0 sm:px-0"
+          >
+            {TABS.map((t) => {
+              const badge =
+                t.id === "users"
+                  ? usersQuery.data?.total
+                  : t.id === "reviews"
+                    ? reviewsQuery.data?.pendingCount || undefined
+                    : undefined;
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => openTab(t.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-bold transition ${
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-dust hover:bg-iron/15 hover:text-foreground"
+                  }`}
+                >
+                  <t.icon className="h-4 w-4" aria-hidden />
+                  {t.label}
+                  {badge ? (
+                    <span
+                      className={`rounded-sm px-1.5 font-mono text-[11px] ${
+                        active ? "bg-primary-foreground/20" : "bg-iron/25 text-foreground"
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </motion.nav>
 
-          {overview.isError ? (
+          {tab === "overview" ? (
+            <motion.div variants={fadeUp}>
+              <AdminInsights />
+            </motion.div>
+          ) : null}
+
+          {tab !== "ai" ? null : overview.isError ? (
             <div className="border border-destructive/40 bg-card p-6 text-center text-destructive">
               {overview.error instanceof Error ? overview.error.message : "שגיאה"}
             </div>
@@ -341,161 +468,223 @@ function AdminPage() {
             </>
           ) : null}
 
-          <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
-            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="font-mono text-xs tracking-wide text-dust uppercase">ניהול משתמשים</p>
-              <div className="relative max-w-md flex-1">
-                <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="חיפוש לפי אימייל או שם…"
-                  className="w-full rounded-md border border-iron/30 bg-background py-2 pr-10 pl-3 text-sm text-foreground outline-none transition focus:border-primary/50"
-                />
-              </div>
-            </div>
-
-            {usersLoading ? (
-              <AdminUsersTableSkeleton />
-            ) : usersQuery.isError ? (
-              <p className="text-sm text-destructive">
-                {usersQuery.error instanceof Error ? usersQuery.error.message : "שגיאה"}
-              </p>
-            ) : (
-              <>
-                <p className="mb-3 text-xs text-dust">
-                  {usersQuery.data?.total ?? 0} משתמשים
-                  {debouncedQ ? ` · חיפוש: "${debouncedQ}"` : ""}
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[56rem] text-right text-sm">
-                    <thead>
-                      <tr className="border-b border-iron/20 text-xs text-dust">
-                        <th className="w-8 py-2" aria-label="פירוט" />
-                        <th className="py-2 pl-3 font-medium">אימייל</th>
-                        <th className="py-2 pl-3 font-medium">שלב</th>
-                        <th className="py-2 pl-3 font-medium">נרשם</th>
-                        <th className="py-2 pl-3 font-medium">שם</th>
-                        <th className="py-2 pl-3 font-medium">סטטוס</th>
-                        <th className="py-2 pl-3 font-medium">תפקיד</th>
-                        <th className="py-2 pl-3 font-medium">AI</th>
-                        <th className="py-2 pl-3 font-medium">טוקנים</th>
-                        <th className="py-2 pl-3 font-medium">עלות</th>
-                        <th className="py-2 font-medium">פעולות</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(usersQuery.data?.users ?? []).map((u) => (
-                        <UserRow
-                          key={u.id}
-                          user={u}
-                          currentAdminId={me?.userId}
-                          defaultTokenCap={usersQuery.data?.defaults?.tokenCap ?? null}
-                          onRole={(role) => roleMutation.mutate({ id: u.id, role })}
-                          onTokenCap={(tokenCap) => tokenCapMutation.mutate({ id: u.id, tokenCap })}
-                          onDelete={() => setDeleteTarget(u)}
-                          rolePending={roleMutation.isPending}
-                          tokenCapPending={tokenCapMutation.isPending}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
+          {tab === "users" ? (
+            <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+              <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-mono text-xs tracking-wide text-dust uppercase">ניהול משתמשים</p>
+                <div className="relative max-w-md flex-1">
+                  <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="חיפוש לפי אימייל או שם…"
+                    className="w-full rounded-md border border-iron/30 bg-background py-2 pr-10 pl-3 text-sm text-foreground outline-none transition focus:border-primary/50"
+                  />
                 </div>
-              </>
-            )}
-          </motion.div>
+              </div>
 
-          <motion.div
-            variants={fadeUp}
-            className="border border-iron/30 bg-card p-5 sm:p-6"
-            dir="rtl"
-          >
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-mono text-xs tracking-wide text-dust uppercase">
-                  ביקורות תפקידים
+              {usersLoading ? (
+                <AdminUsersTableSkeleton />
+              ) : usersQuery.isError ? (
+                <p className="text-sm text-destructive">
+                  {usersQuery.error instanceof Error ? usersQuery.error.message : "שגיאה"}
                 </p>
-                <h2 className="mt-1 flex items-center gap-2 text-base font-bold text-foreground">
-                  <MessageSquare className="h-4 w-4 text-primary" aria-hidden />
-                  תור לאישור
-                  {reviewsQuery.data?.pendingCount ? (
-                    <span className="rounded-sm bg-primary/15 px-2 py-0.5 font-mono text-xs text-primary">
-                      {reviewsQuery.data.pendingCount} ממתינות
-                    </span>
+              ) : (
+                <>
+                  <div className="mb-4 space-y-2">
+                    <FilterRow label="שלב">
+                      <FilterChip
+                        active={stageFilter === "all"}
+                        onClick={() => setStageFilter("all")}
+                      >
+                        הכל · {allUsers.length}
+                      </FilterChip>
+                      {(Object.keys(STAGE_LABEL) as AdminJourneyStage[]).map((stage) => (
+                        <FilterChip
+                          key={stage}
+                          active={stageFilter === stage}
+                          onClick={() => setStageFilter(stage)}
+                        >
+                          {STAGE_LABEL[stage]} · {stageCounts[stage] ?? 0}
+                        </FilterChip>
+                      ))}
+                    </FilterRow>
+                    <FilterRow label="מקור">
+                      <FilterChip
+                        active={sourceFilter === "all"}
+                        onClick={() => setSourceFilter("all")}
+                      >
+                        הכל
+                      </FilterChip>
+                      {sourceCounts.map(([source, count]) => (
+                        <FilterChip
+                          key={source}
+                          active={sourceFilter === source}
+                          onClick={() => setSourceFilter(source)}
+                        >
+                          {sourceLabel(source)} · {count}
+                        </FilterChip>
+                      ))}
+                    </FilterRow>
+                  </div>
+                  <p className="mb-3 text-xs text-dust">
+                    {filteredUsers.length} מתוך {usersQuery.data?.total ?? 0} משתמשים
+                    {debouncedQ ? ` · חיפוש: "${debouncedQ}"` : ""}
+                    {(usersQuery.data?.total ?? 0) > allUsers.length
+                      ? ` · מוצגים ${allUsers.length} האחרונים; חפשו כדי למצוא ותיקים יותר`
+                      : ""}
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[56rem] text-right text-sm">
+                      <thead>
+                        <tr className="border-b border-iron/20 text-xs text-dust">
+                          <th className="w-8 py-2" aria-label="פירוט" />
+                          <th className="py-2 pl-3 font-medium">אימייל</th>
+                          <th className="py-2 pl-3 font-medium">שלב</th>
+                          <th className="py-2 pl-3 font-medium">מקור</th>
+                          <th className="py-2 pl-3 font-medium">נרשם</th>
+                          <th className="py-2 pl-3 font-medium">שם</th>
+                          <th className="py-2 pl-3 font-medium">סטטוס</th>
+                          <th className="py-2 pl-3 font-medium">תפקיד</th>
+                          <th className="py-2 pl-3 font-medium">AI</th>
+                          <th className="py-2 pl-3 font-medium">טוקנים</th>
+                          <th className="py-2 pl-3 font-medium">עלות</th>
+                          <th className="py-2 font-medium">פעולות</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.slice(0, shown).map((u) => (
+                          <UserRow
+                            key={u.id}
+                            user={u}
+                            currentAdminId={me?.userId}
+                            defaultTokenCap={usersQuery.data?.defaults?.tokenCap ?? null}
+                            onRole={(role) => roleMutation.mutate({ id: u.id, role })}
+                            onTokenCap={(tokenCap) =>
+                              tokenCapMutation.mutate({ id: u.id, tokenCap })
+                            }
+                            onDelete={() => setDeleteTarget(u)}
+                            rolePending={roleMutation.isPending}
+                            tokenCapPending={tokenCapMutation.isPending}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {filteredUsers.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-dust">אין משתמשים במסנן הזה.</p>
                   ) : null}
-                </h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(["pending", "approved", "rejected", "all"] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setReviewStatus(s)}
-                    className={`rounded-sm border px-2.5 py-1 text-[11px] transition ${
-                      reviewStatus === s
-                        ? "border-primary/50 bg-primary/15 text-foreground"
-                        : "border-iron/30 text-dust hover:border-primary/30"
-                    }`}
-                  >
-                    {s === "pending"
-                      ? "ממתינות"
-                      : s === "approved"
-                        ? "מאושרות"
-                        : s === "rejected"
-                          ? "נדחו"
-                          : "הכל"}
-                  </button>
-                ))}
-              </div>
-            </div>
+                  {filteredUsers.length > shown ? (
+                    <button
+                      type="button"
+                      onClick={() => setShown((n) => n + PAGE)}
+                      className="mt-4 w-full rounded-md border border-iron/30 py-2.5 text-sm font-bold text-dust transition hover:border-primary/40 hover:text-foreground"
+                    >
+                      הצגת עוד {Math.min(PAGE, filteredUsers.length - shown)} (נשארו{" "}
+                      {filteredUsers.length - shown})
+                    </button>
+                  ) : null}
+                </>
+              )}
+            </motion.div>
+          ) : null}
 
-            {reviewsQuery.isLoading ? (
-              <p className="text-sm text-dust">טוען ביקורות…</p>
-            ) : (reviewsQuery.data?.reviews.length ?? 0) === 0 ? (
-              <p className="text-sm text-dust">אין ביקורות במסנן הזה.</p>
-            ) : (
-              <ul className="space-y-3">
-                {reviewsQuery.data?.reviews.map((r) => (
-                  <li key={r.id} className="border border-iron/20 bg-background/40 p-4 text-right">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-foreground">{r.roleTitle}</p>
-                        <p className="mt-0.5 text-[11px] text-dust">
-                          {r.displayName}
-                          {r.userEmail ? ` · ${r.userEmail}` : ""}
-                          {r.rating ? ` · ${r.rating}/5` : ""}
-                          {r.servedInRole ? " · שירת בתפקיד" : ""}
-                        </p>
-                      </div>
-                      <span className="font-mono text-[10px] text-dust">{r.status}</span>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-dust">{r.body}</p>
-                    {r.status === "pending" ? (
-                      <div className="mt-3 flex flex-wrap justify-end gap-2">
-                        <button
-                          type="button"
-                          disabled={moderateMutation.isPending}
-                          onClick={() => moderateMutation.mutate({ id: r.id, action: "reject" })}
-                          className="rounded-md border border-iron/40 px-3 py-1.5 text-xs text-dust transition hover:border-destructive/40 hover:text-destructive"
-                        >
-                          דחו
-                        </button>
-                        <button
-                          type="button"
-                          disabled={moderateMutation.isPending}
-                          onClick={() => moderateMutation.mutate({ id: r.id, action: "approve" })}
-                          className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition hover:brightness-110"
-                        >
-                          אשרו ופרסמו
-                        </button>
-                      </div>
+          {tab === "reviews" ? (
+            <motion.div
+              variants={fadeUp}
+              className="border border-iron/30 bg-card p-5 sm:p-6"
+              dir="rtl"
+            >
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-mono text-xs tracking-wide text-dust uppercase">
+                    ביקורות תפקידים
+                  </p>
+                  <h2 className="mt-1 flex items-center gap-2 text-base font-bold text-foreground">
+                    <MessageSquare className="h-4 w-4 text-primary" aria-hidden />
+                    תור לאישור
+                    {reviewsQuery.data?.pendingCount ? (
+                      <span className="rounded-sm bg-primary/15 px-2 py-0.5 font-mono text-xs text-primary">
+                        {reviewsQuery.data.pendingCount} ממתינות
+                      </span>
                     ) : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </motion.div>
+                  </h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(["pending", "approved", "rejected", "all"] as const).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setReviewStatus(s)}
+                      className={`rounded-sm border px-2.5 py-1 text-[11px] transition ${
+                        reviewStatus === s
+                          ? "border-primary/50 bg-primary/15 text-foreground"
+                          : "border-iron/30 text-dust hover:border-primary/30"
+                      }`}
+                    >
+                      {s === "pending"
+                        ? "ממתינות"
+                        : s === "approved"
+                          ? "מאושרות"
+                          : s === "rejected"
+                            ? "נדחו"
+                            : "הכל"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {reviewsQuery.isLoading ? (
+                <p className="text-sm text-dust">טוען ביקורות…</p>
+              ) : (reviewsQuery.data?.reviews.length ?? 0) === 0 ? (
+                <p className="text-sm text-dust">אין ביקורות במסנן הזה.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {reviewsQuery.data?.reviews.map((r) => (
+                    <li
+                      key={r.id}
+                      className="border border-iron/20 bg-background/40 p-4 text-right"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-foreground">{r.roleTitle}</p>
+                          <p className="mt-0.5 text-[11px] text-dust">
+                            {r.displayName}
+                            {r.userEmail ? ` · ${r.userEmail}` : ""}
+                            {r.rating ? ` · ${r.rating}/5` : ""}
+                            {r.servedInRole ? " · שירת בתפקיד" : ""}
+                          </p>
+                        </div>
+                        <span className="font-mono text-[10px] text-dust">{r.status}</span>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-dust">{r.body}</p>
+                      {r.status === "pending" ? (
+                        <div className="mt-3 flex flex-wrap justify-end gap-2">
+                          <button
+                            type="button"
+                            disabled={moderateMutation.isPending}
+                            onClick={() => moderateMutation.mutate({ id: r.id, action: "reject" })}
+                            className="rounded-md border border-iron/40 px-3 py-1.5 text-xs text-dust transition hover:border-destructive/40 hover:text-destructive"
+                          >
+                            דחו
+                          </button>
+                          <button
+                            type="button"
+                            disabled={moderateMutation.isPending}
+                            onClick={() => moderateMutation.mutate({ id: r.id, action: "approve" })}
+                            className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition hover:brightness-110"
+                          >
+                            אשרו ופרסמו
+                          </button>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </motion.div>
+          ) : null}
         </motion.div>
       )}
 
@@ -625,6 +814,12 @@ function UserRow({
         <td className="py-3 pl-3">
           {user.journey ? <StageBadge stage={user.journey.stage} /> : "-"}
         </td>
+        <td className="py-3 pl-3">
+          <SourceBadge
+            source={user.source?.source ?? "unknown"}
+            estimated={user.source?.estimated}
+          />
+        </td>
         <td className="py-3 pl-3 font-mono text-[11px] text-dust">{formatDate(user.createdAt)}</td>
         <td className="py-3 pl-3">{user.preferredName || "-"}</td>
         <td className="py-3 pl-3 text-dust">{statusHebrew(user.status)}</td>
@@ -712,7 +907,7 @@ function UserRow({
       </tr>
       {open ? (
         <tr className="border-b border-iron/20 bg-background/40">
-          <td colSpan={11} className="px-3">
+          <td colSpan={12} className="px-3">
             <AdminUserJourney userId={user.id} />
           </td>
         </tr>

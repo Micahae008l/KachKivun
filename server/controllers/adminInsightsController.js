@@ -5,6 +5,7 @@ import MatchGeneration from "../models/MatchGeneration.js";
 import RoleRecommendation from "../models/RoleRecommendation.js";
 import PaymentOrder from "../models/PaymentOrder.js";
 import ResultFeedback from "../models/ResultFeedback.js";
+import { sourcesForUsers } from "../utils/userSource.js";
 import { sendServerError } from "../utils/httpError.js";
 
 const TZ = "Asia/Jerusalem";
@@ -61,6 +62,7 @@ export async function getInsights(req, res) {
       runsPerUser,
       ratingStats,
       recentFeedback,
+      sourceUsers,
       ...distributions
     ] = await Promise.all([
       perDay(User, "createdAt", since, notAdmin),
@@ -112,6 +114,7 @@ export async function getInsights(req, res) {
         .populate("userId", "email")
         .select("rating reasons comment roleTitles updatedAt userId")
         .lean(),
+      User.find(notAdmin).select("_id attribution createdAt").lean(),
       answerCounts("rolesInterested", true),
       answerCounts("motivations", true),
       answerCounts("rolesAvoided", true),
@@ -189,6 +192,20 @@ export async function getInsights(req, res) {
         yomSource,
         gender,
       },
+      sources: await (async () => {
+        const map = await sourcesForUsers(sourceUsers);
+        const paidSet = new Set(paid.map(String));
+        const rows = new Map();
+        for (const u of sourceUsers) {
+          const { source, estimated } = map.get(String(u._id)) ?? { source: "unknown", estimated: true };
+          const row = rows.get(source) ?? { source, users: 0, paid: 0, estimated: 0 };
+          row.users += 1;
+          if (paidSet.has(String(u._id))) row.paid += 1;
+          if (estimated) row.estimated += 1;
+          rows.set(source, row);
+        }
+        return [...rows.values()].sort((a, b) => b.users - a.users);
+      })(),
       ratings: (() => {
         const distribution = [1, 2, 3, 4, 5].map(
           (r) => ratingStats.find((x) => x._id === r)?.count ?? 0,

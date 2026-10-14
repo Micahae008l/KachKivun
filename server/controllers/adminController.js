@@ -20,6 +20,7 @@ import {
   getTokenCapStatusForUserId,
   resolveTokenCap,
 } from "../utils/tokenCap.js";
+import { sourcesForUsers } from "../utils/userSource.js";
 
 function normalizeEmail(email) {
   return String(email || "")
@@ -118,7 +119,7 @@ export async function listUsers(req, res) {
     const q = String(req.query.q || "")
       .trim()
       .toLowerCase();
-    const limit = Number(req.query.limit) || 50;
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
     const skip = Number(req.query.skip) || 0;
 
     const filter = {};
@@ -135,13 +136,14 @@ export async function listUsers(req, res) {
         .skip(skip)
         .limit(limit)
         .select(
-          "email preferredName phone status role tokenCap emailVerifiedAt createdAt updatedAt",
+          "email preferredName phone status role tokenCap emailVerifiedAt createdAt updatedAt attribution",
         )
         .lean(),
       User.countDocuments(filter),
     ]);
 
     const userIds = users.map((u) => u._id);
+    const sources = await sourcesForUsers(users);
     const [statsList, prefsList, assessmentList, usageByUser, resultsByUser, ordersByUser, unlockedIds] =
       await Promise.all([
       MilitaryStats.find({ userId: { $in: userIds } }).lean(),
@@ -229,6 +231,7 @@ export async function listUsers(req, res) {
           lastCallAt: usage?.lastCallAt ?? null,
         },
         aiTokens: tokenStatus,
+        source: sources.get(id) ?? { source: "unknown", estimated: true },
         journey: journeyStage({
           assessed: assessmentMap.has(id),
           result: resultsMap.get(id),

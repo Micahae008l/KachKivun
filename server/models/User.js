@@ -47,6 +47,24 @@ const userSchema = new mongoose.Schema(
       default: null,
       min: 0,
     },
+    /** Where the user came from (first known visit): see utils/userSource.js. Admin analytics only. */
+    attribution: {
+      type: new mongoose.Schema(
+        {
+          source: { type: String, maxlength: 40 },
+          medium: { type: String, maxlength: 40, default: "" },
+          campaign: { type: String, maxlength: 80, default: "" },
+          referrer: { type: String, maxlength: 120, default: "" },
+          platform: { type: String, maxlength: 20, default: "" },
+          landingPath: { type: String, maxlength: 120, default: "" },
+          at: { type: Date },
+          /** Recorded on a visit after signup, so it may not be how they first arrived. */
+          afterSignup: { type: Boolean, default: false },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
   },
   { timestamps: true }
 );

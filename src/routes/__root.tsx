@@ -34,6 +34,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { IDF_BACKDROP_IMAGE_URLS, preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
+import { startAttribution } from "@/lib/attribution";
 
 const SITE_URL = "https://kachkivun.com";
 
@@ -120,6 +121,9 @@ function RootLayout() {
   useEffect(() => {
     warmApi();
   }, []);
+
+  // Where this visitor came from (TikTok, Instagram, UTM tags), sent once after sign-in.
+  useEffect(() => startAttribution(), []);
 
   useEffect(() => {
     function onError(event: ErrorEvent) {

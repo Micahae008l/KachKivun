@@ -3,6 +3,7 @@ import { applyUserPatch, applyStatsPatch, applyPreferencesPatch } from "../utils
 import { sendServerError } from "../utils/httpError.js";
 import { deleteUserData } from "../utils/deleteAccount.js";
 import { clearRefreshCookie } from "../utils/refreshTokens.js";
+import { buildAttribution } from "../utils/userSource.js";
 
 export async function updateProfile(req, res) {
   try {
@@ -59,5 +60,24 @@ export async function deleteAccount(req, res) {
     res.json({ message: "החשבון והנתונים האישיים נמחקו" });
   } catch (err) {
     return sendServerError(res, err, "[profile/delete-account]");
+  }
+}
+
+/** POST /api/profile/attribution: remember where this user came from, if not known yet. */
+export async function recordAttribution(req, res) {
+  try {
+    const user = await User.findById(req.userId).select("createdAt attribution.source").lean();
+    if (!user) return res.status(404).json({ error: "not found" });
+    if (user.attribution?.source) return res.json({ ok: true, kept: true });
+    // A first visit more than a few hours after signup can't tell us how they first arrived.
+    const afterSignup = Date.now() - new Date(user.createdAt).getTime() > 6 * 60 * 60 * 1000;
+    const attribution = buildAttribution(req.body || {}, req.get("user-agent") || "", { afterSignup });
+    await User.updateOne(
+      { _id: req.userId, "attribution.source": { $exists: false } },
+      { $set: { attribution } },
+    );
+    return res.json({ ok: true, source: attribution.source });
+  } catch (err) {
+    return sendServerError(res, err, "[profile/attribution]");
   }
 }
