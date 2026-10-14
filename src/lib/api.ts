@@ -831,6 +831,31 @@ export type RoleInsightDetail = RoleInsightListItem & {
   peopleIntensity: number | null;
   officialDirectoryUrl: string;
   officialSearchUrl: string;
+  // Newer API fields; optional so a page served against an older API still renders.
+  genderEligibility?: "all" | "male_only" | "female_only" | null;
+  intensityFromData?: boolean;
+  sourceUrl?: string | null;
+  page?: RolePageContent;
+};
+
+/** Role-page content built by the API from data fields only (server/utils/rolePage.js). */
+export type RolePageContent = {
+  profileFloor: number | null;
+  requirements: string[];
+  selection: string[];
+  training: string[];
+  serviceLengthLabel: string;
+  locations: string[];
+  dayToDay: string;
+  faq: { q: string; a: string }[];
+  metaDescription: string;
+  related: {
+    slug: string;
+    roleTitle: string;
+    combat: boolean;
+    daparFloor?: number | null;
+    profileFloor?: number | null;
+  }[];
 };
 
 export function listRoles(params?: { q?: string; category?: string; combat?: string }) {

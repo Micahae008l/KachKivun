@@ -25,6 +25,11 @@ function loadEnrichmentOverrides() {
   return cachedOverrides;
 }
 
+/** The raw reviewed override for one role (no derived defaults), or null. */
+export function getRoleEnrichmentOverride(roleTitle) {
+  return loadEnrichmentOverrides()[roleTitle] || null;
+}
+
 /**
  * Schema-v3 loader shim. v3 adds structured per-role fields (floors, day-to-day,
  * intensities, keyDimensions, enrichment status). This module normalizes ANY role
