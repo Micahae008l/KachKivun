@@ -67,7 +67,7 @@ const FIRST_TAG_FIELD = {
 };
 
 /** Main fields: in each part of the category the earliest field word wins, plus the first tag. */
-function mainFields(c) {
+export function mainFields(c) {
   const fields = new Set();
   for (const part of String(c.category || "").split("/")) {
     let best = null;
