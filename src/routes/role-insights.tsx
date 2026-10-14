@@ -1,11 +1,12 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Search, Shield, Sparkles } from "lucide-react";
+import { Search, Shield } from "lucide-react";
 import { listRoles, roleInsightSlug } from "@/lib/api";
 import { fetchRoleCatalog } from "@/lib/roles-public";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
+import { QuizCta } from "@/components/QuizCta";
 import { getIdfPhoto } from "@/lib/idf-images";
 
 type Search = {
@@ -18,7 +19,8 @@ export const Route = createFileRoute("/role-insights")({
   validateSearch: (raw: Record<string, unknown>): Search => ({
     role: typeof raw.role === "string" && raw.role.trim() ? raw.role.trim() : undefined,
     q: typeof raw.q === "string" && raw.q.trim() ? raw.q.trim() : undefined,
-    category: typeof raw.category === "string" && raw.category.trim() ? raw.category.trim() : undefined,
+    category:
+      typeof raw.category === "string" && raw.category.trim() ? raw.category.trim() : undefined,
   }),
   // Old shared links opened a role as ?role=; each role now has its own page.
   beforeLoad: ({ search }) => {
@@ -69,7 +71,7 @@ function RoleInsightsPage() {
   const categories = listQuery.data?.categories ?? [];
   const roles = listQuery.data?.roles ?? [];
 
-  const categoryChips = useMemo(() => categories.slice(0, 24), [categories]);
+  const categoryChips = categories.slice(0, 24);
 
   function setCategory(category?: string) {
     void navigate({
@@ -102,8 +104,8 @@ function RoleInsightsPage() {
             תפקידים בצה״ל
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-dust sm:text-base">
-            כל {listQuery.data?.total ?? "300+"} התפקידים בצה״ל: מה עושים ביומיום, דפ״ר ופרופיל מינימליים,
-            משך שירות, וקישור לאתר מתגייסים הרשמי.
+            כל {listQuery.data?.total ?? "300+"} התפקידים בצה״ל: מה עושים ביומיום, דפ״ר ופרופיל
+            מינימליים, משך שירות, וקישור לאתר מתגייסים הרשמי.
           </p>
           <p className="text-sm text-dust">
             מחפשות לפי תחום?{" "}
@@ -125,8 +127,10 @@ function RoleInsightsPage() {
         </div>
       </motion.header>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
-        <label className="relative block flex-1">
+      <QuizCta compact title="לא בטוחים מאיפה להתחיל?" />
+
+      <div dir="rtl">
+        <label className="relative block">
           <span className="sr-only">חיפוש תפקיד</span>
           <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
           <input
@@ -136,13 +140,6 @@ function RoleInsightsPage() {
             className="input-field w-full pr-10"
           />
         </label>
-        <Link
-          to="/ai-counselor"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:brightness-110"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden />
-          התאמת תפקידים
-        </Link>
       </div>
 
       <div className="flex flex-wrap justify-start gap-2" dir="rtl">
@@ -227,6 +224,10 @@ function RoleInsightsPage() {
         <p className="py-10 text-center text-sm text-dust">לא נמצאו תפקידים לחיפוש הזה.</p>
       ) : null}
 
+      <QuizCta
+        title={`${listQuery.data?.total ?? "300+"} תפקידים זה הרבה לעבור לבד`}
+        body="השאלון האישי עושה את הסינון בשבילכם: מצליב את הדפ״ר, הפרופיל הרפואי ו־11 ציוני המא״ה מול כל הקטלוג, ומחזיר את 5 התפקידים שהכי מתאימים לכם, עם הסבר וסיכויי קבלה."
+      />
     </div>
   );
 }

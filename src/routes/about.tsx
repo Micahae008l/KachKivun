@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowUpLeft,
   ChevronRight,
   Compass,
   Linkedin,
@@ -14,6 +13,7 @@ import {
   Target,
 } from "lucide-react";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
+import { QuizCta } from "@/components/QuizCta";
 import { getIdfPhoto, IDF_PHOTO_CATALOG } from "@/lib/idf-images";
 import { SITE_NAME_EN, SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 import { MATCH_TOOL_NAME } from "@/lib/voice";
@@ -81,8 +81,8 @@ function AboutPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-[1.75] text-dust">
               {SITE_NAME_HE} היא פלטפורמה ישראלית שמאגדת פרופיל, מא״ה והתאמת תפקידים במקום אחד, בלי
-              רעש ובלי מנוי. ההערכה ושתי התאמות בחינם; שלוש ההתאמות המובילות זמינות ב־₪24.99 סופיים
-              כולל מע״מ ככל שחל, פעם אחת.
+              רעש ובלי מנוי. ההערכה ושתי התאמות (מקומות 5 ו־4) בחינם. שלוש ההתאמות החזקות (3, 2 ו־1)
+              נפתחות בתשלום חד־פעמי אחד.
             </p>
           </motion.div>
 
@@ -97,7 +97,7 @@ function AboutPage() {
           >
             <Stat value="+300" label="תפקידים ומסלולים במאגר" />
             <Stat value="11" label="ממדי מא״ה" />
-            <Stat value="3 דק׳" label="זמן הרשמה" />
+            <Stat value="כ־8 דק׳" label="זמן השאלון" />
           </motion.div>
         </div>
       </section>
@@ -113,9 +113,7 @@ function AboutPage() {
               viewport={{ once: true, margin: "-80px" }}
               className="text-right"
             >
-              <p className="mb-3 font-mono text-xs tracking-wide text-olive uppercase">
-                מי אנחנו
-              </p>
+              <p className="mb-3 font-mono text-xs tracking-wide text-olive uppercase">מי אנחנו</p>
               <h2
                 id="mission-heading"
                 className="text-3xl font-bold leading-tight text-foreground sm:text-4xl"
@@ -292,9 +290,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-10 text-right"
           >
-            <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">
-              יצירת קשר
-            </p>
+            <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">יצירת קשר</p>
             <h2 id="contact-heading" className="text-3xl font-bold text-foreground sm:text-4xl">
               דברו איתנו
             </h2>
@@ -339,34 +335,13 @@ function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease }}
-          className="mx-auto max-w-3xl px-4 text-center sm:px-6"
+          className="mx-auto max-w-3xl px-4 sm:px-6"
         >
-          <h2 className="text-3xl font-bold sm:text-4xl">מוכנים למצוא את הכיוון שלכם?</h2>
-          <p className="mx-auto mt-4 max-w-lg text-base text-dust">
-            הערכה אדפטיבית ושתי התאמות אישיות בחינם. מקומות 3, 2 ו־1 ב־₪24.99 סופיים כולל מע״מ ככל שחל,
-            בתשלום חד־פעמי וללא מנוי.
+          <QuizCta title="מוכנים למצוא את הכיוון שלכם?" />
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-dust/70">
+            <Lock className="h-3 w-3" aria-hidden />
+            ללא סיסמה, רק אימייל וקוד חד-פעמי
           </p>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link
-                to="/post-signup"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-7 py-3 text-sm font-bold text-primary-foreground transition hover:brightness-110 active:scale-[0.97]"
-              >
-                התחילו את ההערכה בחינם
-              </Link>
-              <Link
-                to="/role-insights"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-dust transition hover:text-foreground"
-              >
-                מה זה בכלל
-                <ArrowUpLeft className="h-3.5 w-3.5" aria-hidden />
-              </Link>
-            </div>
-            <p className="flex items-center gap-1.5 text-xs text-dust/70">
-              <Lock className="h-3 w-3" aria-hidden />
-              ללא סיסמה, רק אימייל וקוד חד-פעמי
-            </p>
-          </div>
         </motion.div>
       </section>
 

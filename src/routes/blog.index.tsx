@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
+import { QuizCta } from "@/components/QuizCta";
 import { BLOG_POSTS, blogUrl, formatPostDate } from "@/lib/blog";
 
 const TITLE = "מדריכים לקראת הגיוס: תפקידים, צו ראשון, מא״ה ושאלון העדפות | קח כיוון";
@@ -75,6 +76,8 @@ function BlogIndexPage() {
           </p>
         </header>
 
+        <QuizCta compact title="רוצים תשובה אישית במקום לקרוא הכל?" />
+
         <Link
           to="/blog/$slug"
           params={{ slug: lead.slug }}
@@ -93,25 +96,6 @@ function BlogIndexPage() {
             />
           </p>
         </Link>
-
-        <section aria-labelledby="tools-heading">
-          <h2 id="tools-heading" className="mb-4 scroll-mt-20 text-xl font-black text-foreground">
-            כלים חינם
-          </h2>
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {TOOLS.map((tool) => (
-              <li key={tool.to}>
-                <Link
-                  to={tool.to}
-                  className="flex h-full flex-col border border-primary/40 bg-primary/5 p-5 transition hover:border-primary"
-                >
-                  <h3 className="text-lg font-black leading-snug text-foreground">{tool.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-dust">{tool.description}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
 
         {TAG_ORDER.map((tag) => {
           const posts = rest.filter((p) => p.tag === tag);
@@ -144,6 +128,27 @@ function BlogIndexPage() {
             </section>
           );
         })}
+
+        <section aria-labelledby="tools-heading">
+          <h2 id="tools-heading" className="mb-4 scroll-mt-20 text-xl font-black text-foreground">
+            כלים חינם
+          </h2>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {TOOLS.map((tool) => (
+              <li key={tool.to}>
+                <Link
+                  to={tool.to}
+                  className="flex h-full flex-col border border-iron/30 bg-card p-5 transition hover:border-primary/50"
+                >
+                  <h3 className="text-lg font-black leading-snug text-foreground">{tool.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-dust">{tool.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <QuizCta title="לאילו מ־300 התפקידים אתם מתאימים?" />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ChevronLeft, ExternalLink, Shield, Sparkles } from "lucide-react";
+import { ChevronLeft, ExternalLink, Shield } from "lucide-react";
 import { IntensityBar } from "@/components/RoleInsightSheet";
+import { QuizCta } from "@/components/QuizCta";
 import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
 import { getBlogPost } from "@/lib/blog";
 import { fetchRoleCatalog, fetchRoleDetail, roleUrl, SITE_URL } from "@/lib/roles-public";
@@ -81,6 +82,10 @@ function RolePage() {
     ? ["יום-סיירות", "פרופיל-צבאי", "טירונות", "לוחמות-בצהל"]
     : ["תפקידים-לפי-דפר", "תפקידים-לפי-פרופיל", "שאלון-העדפות", "יום-המאה"];
   const guides = guideSlugs.flatMap((slug) => getBlogPost(slug) ?? []);
+  const floors = [
+    role.daparFloor != null ? `דפ״ר ${role.daparFloor}` : "",
+    role.medicalFloor != null ? `פרופיל ${role.medicalFloor}` : "",
+  ].filter(Boolean);
 
   return (
     <article
@@ -134,6 +139,8 @@ function RolePage() {
         <IntensityBar label="עבודה עם אנשים" value={role.peopleIntensity} />
       </div>
 
+      <QuizCta compact title={`עומדים בסף? זה עוד לא אומר ש${role.roleTitle} מתאים לכם.`} />
+
       {role.dayToDay ? (
         <section>
           <h2 className="text-lg font-black text-foreground">מה עושים ביומיום</h2>
@@ -178,32 +185,20 @@ function RolePage() {
         </section>
       ) : null}
 
-      <aside className="border border-primary/40 bg-primary/10 p-5 sm:p-6">
-        <h2 className="text-lg font-black text-foreground">{role.roleTitle} מתאים לכם?</h2>
-        <p className="mt-2 text-sm leading-6 text-dust">
-          שאלון אישי אחד מצליב את הדפ״ר, הפרופיל, ציוני המא״ה ומה שחשוב לכם מול יותר מ־300 תפקידים,
-          ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. מתחילים בחינם.
-        </p>
-        <Link
-          to="/post-signup"
-          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden />
-          בדקו התאמה בחינם
-        </Link>
-      </aside>
+      <QuizCta
+        title={`${role.roleTitle} מתאים לכם?`}
+        body={`${floors.length ? `${floors.join(" ו")} ${floors.length > 1 ? "הם" : "הוא"} רק תנאי סף. ` : ""}השאלון האישי מצליב את הדפ״ר, הפרופיל הרפואי ו־11 ציוני המא״ה מול יותר מ־300 תפקידים, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. כך תדעו אם ${role.roleTitle} באמת ביניהן.`}
+      />
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <a
-          href={role.officialSearchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-iron/40 px-4 text-sm text-dust transition hover:border-primary/40 hover:text-foreground"
-        >
-          <ExternalLink className="h-4 w-4" aria-hidden />
-          התפקיד באתר מתגייסים
-        </a>
-      </div>
+      <a
+        href={role.officialSearchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex min-h-11 items-center gap-2 text-sm text-dust underline decoration-iron/50 underline-offset-4 transition hover:text-foreground"
+      >
+        <ExternalLink className="h-4 w-4" aria-hidden />
+        התפקיד באתר מתגייסים
+      </a>
 
       <RoleReviewsPanel roleSlug={role.slug} roleTitle={role.roleTitle} />
 

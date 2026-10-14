@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, RefreshCw, Share2, Sparkles, X } from "lucide-react";
+import { Check, RefreshCw, Share2, X } from "lucide-react";
+import { QuizCta } from "@/components/QuizCta";
 
 const URL = "https://kachkivun.com/attention-test";
 const TITLE = "מבחן קשב לצו ראשון: תרגול חינם של העיגול הירוק | קח כיוון";
@@ -456,7 +457,7 @@ function AttentionTestPage() {
               </div>
               <div className="border border-iron/25 bg-background/40 p-3">
                 <dd className="font-mono text-2xl font-black text-foreground" dir="ltr">
-                  {result.avgMs != null ? result.avgMs : "—"}
+                  {result.avgMs != null ? result.avgMs : "–"}
                   {result.avgMs != null ? <span className="text-sm text-dust">ms</span> : null}
                 </dd>
                 <dt className="mt-1 text-[11px] leading-4 text-dust">זמן תגובה ממוצע</dt>
@@ -466,7 +467,7 @@ function AttentionTestPage() {
               <button
                 type="button"
                 onClick={() => void share()}
-                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 active:scale-[0.97] sm:flex-none"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-iron/40 px-5 text-sm font-bold text-foreground transition hover:border-primary/50 active:scale-[0.97] sm:flex-none"
               >
                 <Share2 className="h-4 w-4" aria-hidden />
                 אתגרו חברים
@@ -474,7 +475,7 @@ function AttentionTestPage() {
               <button
                 type="button"
                 onClick={start}
-                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md border border-primary/60 px-5 text-sm font-bold text-primary transition hover:bg-primary/10 active:scale-[0.97] sm:flex-none"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-iron/40 px-5 text-sm font-bold text-dust transition hover:border-primary/50 hover:text-foreground active:scale-[0.97] sm:flex-none"
               >
                 <RefreshCw className="h-4 w-4" aria-hidden />
                 עוד סיבוב
@@ -485,20 +486,7 @@ function AttentionTestPage() {
       </section>
 
       {phase === "done" ? (
-        <aside className="mt-6 border border-primary/40 bg-primary/10 p-5 sm:p-6">
-          <h2 className="text-lg font-black text-foreground">קשב הוא רק נתון אחד</h2>
-          <p className="mt-2 text-sm leading-6 text-dust">
-            שאלון אישי אחד מצליב את הדפ״ר, הפרופיל, ציוני המא״ה ומה שחשוב לכם מול יותר מ־300
-            תפקידים, ומחזיר 5 התאמות עם הסבר. מתחילים בחינם.
-          </p>
-          <Link
-            to="/post-signup"
-            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110"
-          >
-            <Sparkles className="h-4 w-4" aria-hidden />
-            בדקו התאמה בחינם
-          </Link>
-        </aside>
+        <QuizCta className="mt-6" title="ציון קשב לבד לא אומר באיזה תפקיד תשרתו" />
       ) : null}
 
       <section className="mt-10 space-y-4 text-base leading-[1.85] text-foreground/85">
@@ -535,6 +523,8 @@ function AttentionTestPage() {
           .
         </p>
       </section>
+
+      <QuizCta compact className="mt-10" title="מתכוננים לצו הראשון?" />
     </div>
   );
 }

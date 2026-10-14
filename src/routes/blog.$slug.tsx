@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Sources } from "@/components/blog/Prose";
+import { QuizCta } from "@/components/QuizCta";
 import { POST_CONTENT } from "@/content/blog";
 import { BLOG_POSTS, blogUrl, formatPostDate, getBlogPost } from "@/lib/blog";
 
@@ -111,24 +112,13 @@ function BlogPostPage() {
         </p>
       </header>
 
+      <QuizCta compact className="mt-6" title="רוצים את השורה התחתונה בשבילכם?" />
+
       <div className="mt-8 space-y-5">
         <Body />
       </div>
 
-      <aside className="mt-12 border border-primary/40 bg-primary/10 p-5 sm:p-6">
-        <h2 className="text-lg font-black text-foreground">לאילו תפקידים אתם מתאימים?</h2>
-        <p className="mt-2 text-sm leading-6 text-dust">
-          שאלון אישי אחד מצליב את הדפ״ר, הפרופיל, ציוני המא״ה ומה שחשוב לכם מול יותר מ־300 תפקידים,
-          ומחזיר 5 התאמות עם הסבר. מתחילים בחינם.
-        </p>
-        <Link
-          to="/post-signup"
-          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden />
-          בדקו התאמה בחינם
-        </Link>
-      </aside>
+      <QuizCta className="mt-12" title="עכשיו השאלה האמיתית: לאילו תפקידים אתם מתאימים?" />
 
       <section className="mt-12 space-y-4">
         <h2 className="text-2xl font-black text-foreground">שאלות נפוצות</h2>

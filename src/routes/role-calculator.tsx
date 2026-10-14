@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowUp, ChevronLeft, Sparkles } from "lucide-react";
+import { ArrowUp, ChevronLeft } from "lucide-react";
 import catalog from "@/content/blog/role-calculator.json";
 import { roleInsightSlug } from "@/lib/api";
+import { QuizCta } from "@/components/QuizCta";
 
 const URL = "https://kachkivun.com/role-calculator";
 const TITLE = "מחשבון תפקידים: מה פתוח לי עם הדפ״ר והפרופיל שלי | קח כיוון";
@@ -258,6 +259,12 @@ function RoleCalculatorPage() {
         </section>
       </div>
 
+      <QuizCta
+        className="mt-6"
+        title={`רוצים לדעת אילו מ־${open.length} התפקידים האלה מתאימים לכם בדיוק?`}
+        body="המחשבון בודק רק ספים. השאלון האישי מוסיף את 11 ציוני המא״ה ומה שחשוב לכם, ומחזיר את 5 התפקידים שהכי מתאימים לכם מתוך יותר מ־300, עם הסבר וסיכויי קבלה."
+      />
+
       <h2 className="mt-10 mb-3 text-xl font-black text-foreground">התפקידים, לפי תחום</h2>
       <div className="space-y-2">
         {groups.slice(0, TOP_FIELDS).map(([field, roles], i) => (
@@ -284,22 +291,7 @@ function RoleCalculatorPage() {
         מסגרת ירוקה: תפקיד עם סף מאומת שאתם עומדים בו. מסגרת אפורה: לא פורסם סף.
       </p>
 
-      <aside className="mt-10 border border-primary/40 bg-primary/10 p-5 sm:p-6">
-        <h2 className="text-lg font-black text-foreground">
-          פתוח לכם זה לא אותו דבר כמו מתאים לכם
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-dust">
-          המחשבון בודק רק ספים. השאלון האישי מוסיף את ציוני המא״ה, תחומי העניין ומה שחשוב לכם,
-          ומחזיר את 5 התפקידים שהכי מתאימים מתוך יותר מ־300. מתחילים בחינם.
-        </p>
-        <Link
-          to="/post-signup"
-          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden />
-          בדקו התאמה בחינם
-        </Link>
-      </aside>
+      <QuizCta compact className="mt-10" title="פתוח לכם זה לא אותו דבר כמו מתאים לכם." />
 
       <p className="mt-6 text-xs leading-5 text-dust">
         הספים אומתו מול דפי התפקיד באתר מתגייסים. תפקיד שלא פורסם לו סף מופיע כפתוח, אבל ייתכן שיש
