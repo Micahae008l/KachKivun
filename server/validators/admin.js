@@ -6,7 +6,7 @@ export function validateAdminUsersQuery(req) {
   const qResult = parseSearchQuery(req.query?.q);
   if (!qResult.ok) return qResult;
 
-  const page = parsePagination(req.query, { defaultLimit: 50, maxLimit: 100 });
+  const page = parsePagination(req.query, { defaultLimit: 50, maxLimit: 500 });
   if (!page.ok) return page;
 
   req.query = {
