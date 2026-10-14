@@ -36,6 +36,52 @@ function catalogRole(title) {
 
 const has = (list, value) => Array.isArray(list) && list.includes(value);
 
+// The catalog's interestAreas come from every tag (a paramedic has "fitness", so it is also
+// "combat"). For a reason shown to the user only the role's main field counts.
+const FIELD_WORDS = [
+  ["cyber", /סייבר/],
+  ["medical", /רפוא/],
+  ["intelligence", /מודיעין/],
+  ["air_force", /אוויר/],
+  ["navy", /חיל הים|(^|\s)ימי/],
+  ["instruction_education", /הדרכה|חינוך|הוראה/],
+  ["logistics", /לוגיסטיקה|תובלה/],
+  ["technology_engineering", /טכנולוג|הנדסה|מחשב|תקשוב|תוכנה|אלקטרוניקה|דאטה/],
+  ["combat", /לחימה|חי״ר|שריון|קומנדו|סיירת/],
+];
+const FIRST_TAG_FIELD = {
+  cyber: "cyber",
+  medicine: "medical",
+  emergency: "medical",
+  intelligence: "intelligence",
+  aviation: "air_force",
+  drones: "air_force",
+  sea: "navy",
+  teaching: "instruction_education",
+  instruction: "instruction_education",
+  logistics: "logistics",
+  coding: "technology_engineering",
+  software: "technology_engineering",
+  electronics: "technology_engineering",
+  combat: "combat",
+};
+
+/** Main fields: in each part of the category the earliest field word wins, plus the first tag. */
+function mainFields(c) {
+  const fields = new Set();
+  for (const part of String(c.category || "").split("/")) {
+    let best = null;
+    for (const [field, re] of FIELD_WORDS) {
+      const at = part.search(re);
+      if (at >= 0 && (best === null || at < best[1])) best = [field, at];
+    }
+    if (best) fields.add(best[0]);
+  }
+  const first = FIRST_TAG_FIELD[c.preferenceTags?.[0]];
+  if (first) fields.add(first);
+  return fields;
+}
+
 /**
  * Up to two personal reasons a role fits this user, each true for both sides: the user said it
  * (interest, tech background, fitness, wanting to lead, motivation) and the role has it in the
@@ -51,7 +97,8 @@ export function fitReasonsFor(role, snapshot) {
     if (reason && !out.includes(reason)) out.push(reason);
   };
 
-  const interest = (s.rolesInterested || []).find((i) => has(c.interestAreas, i) && INTEREST_HE[i]);
+  const fields = mainFields(c);
+  const interest = (s.rolesInterested || []).find((i) => fields.has(i) && INTEREST_HE[i]);
   if (interest) add(`העניין שלכם ב${INTEREST_HE[interest]}`);
 
   const area = (s.technicalDetails?.areas || []).find(

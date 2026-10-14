@@ -153,12 +153,17 @@ test("fit reasons come from the user's own answers matched to the role, never th
       physicalActivityLevel: "High",
       yomSource: "official",
       yom: {},
-      assessmentSignals: { rolesInterested: ["combat"], motivations: [], technicalDetails: {} },
+      assessmentSignals: {
+        rolesInterested: ["combat", "medical"],
+        motivations: [],
+        technicalDetails: {},
+      },
     },
     roles: [{ rank: 1, roleTitle: "פרמדיק/ית", tags: ["פרמדיק"], matchPercentage: 95 }],
   };
   const role = serializeRecommendation(doc, lockedAccess).roles[0];
-  assert.deepEqual(role.because, ["העניין שלכם בלחימה", "הכושר הגבוה שלכם"]);
+  // A paramedic's main field is medicine, so an interest in combat alone is not offered as a reason.
+  assert.deepEqual(role.because, ["העניין שלכם ברפואה", "הכושר הגבוה שלכם"]);
   assert.equal(JSON.stringify(role).includes("פרמדיק"), false);
 });
 
