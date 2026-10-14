@@ -37,6 +37,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
 import { startAttribution } from "@/lib/attribution";
 
+// Weights the site uses: 400, 500, 600, 700, 900 (800 was loaded but never used).
+const FONT_CSS =
+  "https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap";
+/** Adds the Google Fonts stylesheet without blocking render; text shows in a system font first. */
+const FONT_LOADER_SCRIPT = `(function(){var l=document.createElement("link");l.rel="stylesheet";l.href=${JSON.stringify(FONT_CSS)};document.head.appendChild(l)})()`;
+
 const SITE_URL = "https://kachkivun.com";
 
 export const Route = createRootRoute({
@@ -77,11 +83,10 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: appCss },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap",
-      },
-      ...IDF_BACKDROP_IMAGE_URLS.slice(0, 2).map((href) => ({
+      // Fetched early but applied by FONT_LOADER_SCRIPT, so it never blocks the first paint.
+      { rel: "preload", as: "style", href: FONT_CSS },
+      // Only the first backdrop: it is the one on screen first (often the LCP image).
+      ...IDF_BACKDROP_IMAGE_URLS.slice(0, 1).map((href) => ({
         rel: "preload" as const,
         href,
         as: "image" as const,
@@ -96,6 +101,10 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: FONT_LOADER_SCRIPT }} />
+        <noscript>
+          <link rel="stylesheet" href={FONT_CSS} />
+        </noscript>
       </head>
       <body className="min-h-dvh font-sans antialiased text-foreground">
         {children}
@@ -198,8 +207,14 @@ function RootLayoutInner() {
     setAuthed(!!getToken());
   }, [pathname, authReady]);
 
+  // After the page has loaded, so the next slideshow photos never compete with the first one.
   useEffect(() => {
-    preloadIdfBackdropImages();
+    if (document.readyState === "complete") {
+      preloadIdfBackdropImages();
+      return;
+    }
+    window.addEventListener("load", preloadIdfBackdropImages, { once: true });
+    return () => window.removeEventListener("load", preloadIdfBackdropImages);
   }, []);
 
   useEffect(() => {
