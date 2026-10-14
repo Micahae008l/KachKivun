@@ -23,7 +23,7 @@ import { formatPaymentPrice, salePercentOff } from "@/lib/payment-offer";
 import { authedEntryHref } from "@/lib/profile-resume";
 import { SITE_NAME_HE } from "@/lib/brand";
 
-const HOME_TITLE = "קח כיוון | לאיזה תפקיד בצה״ל אתם מתאימים?";
+const HOME_TITLE = "לאיזה תפקיד בצה״ל אתם מתאימים? שאלון התאמה לפי דפ״ר ופרופיל | קח כיוון";
 const HOME_DESCRIPTION =
   "שאלון אישי אחד מצליב דפ״ר, פרופיל רפואי וציוני מא״ה מול יותר מ־300 תפקידים בצה״ל, ומחזיר 5 התאמות עם הסבר וסיכויי קבלה. 2 התאמות בחינם, ושלוש החזקות ביותר בתשלום חד־פעמי.";
 

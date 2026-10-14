@@ -1,12 +1,9 @@
 User-agent: *
 Allow: /
+# Private pages like /dashboard, /checkout and /post-signup are not blocked here on purpose:
+# they carry <meta name="robots" content="noindex">, and a crawler can only see that tag (and drop
+# the page from search) if it is allowed to fetch the page.
 Disallow: /admin
-Disallow: /dashboard
-Disallow: /checkout
-Disallow: /payment/
 Disallow: /report
-Disallow: /onboarding
-Disallow: /post-signup
-Disallow: /ai-secretary
 
 Sitemap: https://kachkivun.com/sitemap.xml
