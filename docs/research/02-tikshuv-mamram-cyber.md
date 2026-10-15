@@ -25,7 +25,7 @@ Legend: "אשכול" = must pass מיון אשכול מקצועות המחשב; 
 |---|---|---|---|---|---|---|
 | תוכניתן/ית | בסמ"ח (חט' בינה) | אשכול; דפ"ר 70+; CP men 80; M+F; 32m=; clearance | ~22 weeks קד"צ at בסמ"ח (Fullstack / Cloud) | 32m + קבע 2.5 years (wiki: women also +8 months under תקנה 16א) | Dev/infra teams in all arms incl. 8200, 81, 9900, IAF אופק | mitgaisim.idf.il/roles/תוכניתןית/ ; he.wikipedia קורס_תכנות_(צה"ל) (18 Jun 2026) |
 | מגן סייבר | אגף התקשוב (trained בסמ"ח; serves in defense teams across arms incl. מצו"ב) | אשכול; דפ"ר 70+; CP men 80 (page inconsistent); 32m=; מא"ה עיבוד מידע 4, קשב 3, ניהול 2 | ~19 weeks קד"צ: forensics, red team, networks, tool dev | 32m + קבע 2 years | Monitoring/response teams in all arms | mitgaisim.idf.il/roles/מגן-סייבר/ |
-| מיישם/ת הגנה בסייבר | בה"ד 7 | אשכול; דפ"ר 60+; not for combat-designated; 32m= | ~12 weeks at בה"ד 7 | 32m; no קבע stated | SOC-type monitoring teams, first-line response | mitgaisim.idf.il/roles/מיישםת-הגנה-בסייבר/ |
+| מיישם/ת הגנה בסייבר | בה"ד 7 | אשכול; דפ"ר 60+; 32m=; clearance before enlistment (re-read 15 Oct 2026: the page has no combat-profile restriction) | ~12 weeks at בה"ד 7 | 32m; no קבע stated | SOC-type monitoring teams, first-line response | mitgaisim.idf.il/roles/מיישםת-הגנה-בסייבר/ |
 | לה"ב מצו"ב (חוקר ומפתח יכולות הגנה בסייבר) | מצו"ב | אשכול or מיון ייעודי; דפ"ר 70+; CP men 80; 32m= | ~15 weeks קד"צ at "אולגה" (Hadera); tracks פיתוח, מחקר, ולידציה, firmware | 32m + קבע ≥2.5 years (some 3) | צריפין + classified sites; daily commute; study half-day/week | mitgaisim.idf.il/roles/להב-מצובחוקר-ומפתח-יכולות-הגנה-בסייבר/ |
 | מט"ס (מפתח טכנולוגיות סייבר) | מצו"ב | אשכול or מיון ייעודי; דפ"ר 70+ (also "60" on page) | ~15 weeks קד"צ | "no additional commitments currently, expected to move to 16א" | DevOps/DevSecOps/Platform at צריפין | mitgaisim.idf.il/roles/מטס-מפתח-טכנולוגיות-סייבר-ביחידת-מצוב/ |
 | DevOps (IT / SRE) | בסמ"ח | אשכול; דפ"ר 70+; CP men 80; 32m= | ~18 weeks קד"צ | 32m + קבע 1 year | Cloud/infra centres, software houses | mitgaisim.idf.il/roles/דבאופסdevops/ |
@@ -71,7 +71,7 @@ Day-to-day (official): programmer = morning start, team planning, dev tasks, lot
 ## 4. Eligibility matrix
 
 - **Women:** every תקשוב tech role is tagged נשים וגברים (exceptions: חיילת מקצועות המחשוב women only; מפתחת לומדה contradictory). Women in קד"צ roles sign 32 months.
-- **Profile 72+:** no תקשוב role requires 72+. The opposite: combat-profile men face a higher bar (דפ"ר 80 + 10 יח"ל) for אשכול roles, and several roles are explicitly for women and men with פרופיל עורפי or "not designated for combat" (בודק תוכנה, דאטא אנליסט, מנהל DC, שולט ספקטרום, מיישם הגנה, מגן צופן, מגן טופז, מפעיל דיגיטל מבצעי). Minimum profiles: 45 for בה"ד 7 roles, 64 for מפעיל דיגיטל מבצעי, 25 for גאמ"א/סיגיט/BI.
+- **Profile 72+:** no תקשוב role requires 72+. The opposite: combat-profile men face a higher bar (דפ"ר 80 + 10 יח"ל) for אשכול roles, and several roles are explicitly for women and men with פרופיל עורפי or "not designated for combat" (בודק תוכנה, דאטא אנליסט, מנהל DC, שולט ספקטרום, מגן צופן, מגן טופז, מפעיל דיגיטל מבצעי). Minimum profiles: 45 for בה"ד 7 roles, 64 for מפעיל דיגיטל מבצעי, 25 for גאמ"א/סיגיט/BI.
 - **חרדים:** שח"ר "מגן תקשוב" (תוכניתן, בודק תוכנה) exists; the dedicated שח"ר programming course merged into the regular course in 2023. בינה בירוק is אמ"ן.
 - **"ייעודי":** קצונה ייעודית מבצעית (officer-from-enlistment); פס"י; "מיון ייעודי" = unit-specific second screening.
 
