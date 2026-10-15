@@ -131,17 +131,19 @@
     "מגן/ת סייבר": {
       "daparFloor": 70,
       "medicalFloor": 21,
-      "serviceLengthMonths": 24,
-      "serviceLengthLabel": "שירות חובה מלא; קורס כ-19 שבועות בבסמ\"ח",
+      "serviceLengthLabel": "32 חודשים (גם לנשים) + שנתיים קבע",
       "locations": [
         "בסמ\"ח (הכשרה)",
         "יחידות הגנת הסייבר"
       ],
       "dayToDay": "מאתרים, מנתחים ומטפלים באיומי סייבר בזמן אמת, ומבצעים חקירת עומק ופורנזיקה דיגיטלית לזיהוי מקור התקיפה והיקפה.",
       "requirements": [
-        "דפ\"ר 70 ומעלה",
-        "סיווג ביטחוני",
-        "לא נדרש ידע מוקדם, רק חשיבה לוגית"
+        "דפ\"ר 70 ומעלה (גברים בעלי פרופיל קרבי: דפ\"ר 80 ו-10 יח\"ל מחשבים או תואר טכנולוגי)",
+        "מיוני אשכול מקצועות המחשב",
+        "לא נדרש ידע מוקדם, רק חשיבה לוגית",
+        "סיווג ביטחוני לפני הגיוס",
+        "חתימת קבע לשנתיים",
+        "קורס כ-19 שבועות בבסמ\"ח"
       ],
       "physicalDemand": 1,
       "techIntensity": 5,
@@ -157,7 +159,7 @@
       "enrichment": {
         "status": "reviewed",
         "confidence": "high",
-        "enrichedAt": "2026-07-18",
+        "enrichedAt": "2026-10-15",
         "source": "mitgaisim.idf.il/roles/מגן-סייבר"
       }
     },
@@ -810,19 +812,18 @@
       "requirements": [
         "מיוני אשכול מקצועות המחשב",
         "דפ\"ר 60 ומעלה",
-        "לא לבעלי ייעוד קרבי",
+        "סיווג ביטחוני לפני הגיוס",
         "כ-12 שבועות בבה\"ד 7"
       ],
       "enrichment": {
         "status": "reviewed",
         "confidence": "high",
-        "enrichedAt": "2026-10-08",
+        "enrichedAt": "2026-10-15",
         "source": "mitgaisim.idf.il/roles/מיישםת-הגנה-בסייבר/"
       },
       "daparFloor": 60,
       "serviceLengthLabel": "32 חודשים (גם לנשים)",
-      "medicalFloor": 21,
-      "maleMedicalMax": 64
+      "medicalFloor": 21
     },
     "בודק/ת תוכנה": {
       "genderEligibility": "all",
