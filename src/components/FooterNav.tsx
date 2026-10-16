@@ -125,7 +125,7 @@ export function SiteFooter({ authed }: { authed: boolean }) {
           </FooterGroup>
         </div>
 
-        <p className="mt-10 border-t border-iron/20 pt-6 text-xs text-dust/60">
+        <p className="mt-10 border-t border-iron/20 pt-6 text-xs text-dust">
           &copy; {new Date().getFullYear()} {SITE_NAME_HE}
         </p>
       </div>

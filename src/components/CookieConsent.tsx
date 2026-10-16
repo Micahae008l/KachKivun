@@ -15,13 +15,16 @@ const FLOW_PREFIXES = ["/post-signup", "/checkout", "/payment/return"];
 /** Cookie notice for GA4 and Clarity; nothing loads until the visitor accepts. */
 export function CookieConsent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [undecided, setUndecided] = useState(false);
+  // In the server HTML so it paints with the page (a late-mounting notice became the LCP element).
+  // CONSENT_BOOT_SCRIPT hides it before paint for visitors who already chose.
+  const [undecided, setUndecided] = useState(thirdPartyAnalyticsConfigured);
 
   useEffect(() => {
     if (!thirdPartyAnalyticsConfigured) return;
     const consent = readAnalyticsConsent();
-    if (consent === null) setUndecided(true);
-    else if (consent === "granted") startThirdPartyAnalytics();
+    if (consent === null) return;
+    setUndecided(false);
+    if (consent === "granted") startThirdPartyAnalytics();
   }, []);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-label="הסכמה לקוקיז"
-      className="fixed inset-x-3 bottom-3 z-[80] border border-iron/40 bg-background/95 p-4 text-right shadow-[0_8px_32px_oklch(0_0_0/0.6)] backdrop-blur-md sm:inset-x-auto sm:right-4 sm:max-w-md"
+      className="cookie-consent fixed inset-x-3 bottom-3 z-[80] border border-iron/40 bg-background/95 p-4 text-right shadow-[0_8px_32px_oklch(0_0_0/0.6)] backdrop-blur-md sm:inset-x-auto sm:right-4 sm:max-w-md"
       dir="rtl"
     >
       <p className="text-sm leading-6 text-foreground">

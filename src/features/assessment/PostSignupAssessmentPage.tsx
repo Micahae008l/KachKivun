@@ -27,12 +27,10 @@ import { FormField } from "@/components/FormField";
 import { OtpInput } from "@/components/OtpInput";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { KachKivunLogo } from "@/components/KachKivunLogo";
-import {
-  PostSignupBootstrapSkeleton,
-  PostSignupFormSkeleton,
-} from "@/components/skeletons/PageSkeletons";
+import { PostSignupBootstrapSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   ApiError,
+  bootstrapAuth,
   completeAssessment,
   getLatestAssessment,
   requestOtp,
@@ -45,7 +43,7 @@ import { authErrorField, getErrorMessage } from "@/lib/api-errors";
 import { progressBarProps } from "@/lib/a11y";
 import { trackEvent } from "@/lib/analytics";
 import { isQuizFunnelStep, markFunnelStep } from "@/lib/funnel";
-import { getToken, setAuthSession } from "@/lib/auth";
+import { getToken, hasSessionHint, setAuthSession } from "@/lib/auth";
 import { consumeAuthReturnTarget } from "@/lib/auth-return";
 import { SITE_NAME_HE } from "@/lib/brand";
 import { idfPhotoAt } from "@/lib/idf-images";
@@ -284,10 +282,13 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
     let cancelled = false;
 
     async function bootstrap() {
+      // A visitor with no session hint (the usual first visit) bootstraps synchronously, in the
+      // same render as mount, so the server-rendered first question stays on screen untouched.
+      if (!getToken() && hasSessionHint()) await bootstrapAuth();
+      if (cancelled) return;
       const localDraft = loadAssessmentDraft();
       const token = getToken();
       const wantsLogin = window.location.hash === "#login";
@@ -381,7 +382,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
     return () => {
       cancelled = true;
     };
-  }, [legacyMode, mounted, navigate, queryClient]);
+  }, [legacyMode, navigate, queryClient]);
 
   useEffect(() => () => window.clearTimeout(autoAdvanceTimer.current), []);
   useEffect(() => {
@@ -788,15 +789,9 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
     autoAdvanceTimer.current = window.setTimeout(() => advanceRef.current(), 320);
   }
 
-  if (!mounted) {
-    return (
-      <div dir="rtl" className="flex min-h-dvh items-center justify-center bg-background px-6">
-        <PostSignupFormSkeleton />
-      </div>
-    );
-  }
-
-  if (!bootstrapped) return <PostSignupBootstrapSkeleton />;
+  // Server HTML and hydration render the first question with default answers (it paints before
+  // any JS). Only a client still loading a session or a saved profile shows the skeleton.
+  if (mounted && !bootstrapped) return <PostSignupBootstrapSkeleton />;
 
   const isAuthStep = currentStep === "email" || currentStep === "otp";
   const showLoginShortcut = !authenticated && !loginIntent && !isAuthStep && !authedRef.current;
@@ -839,7 +834,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
         </div>
 
         <motion.section
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+          // No entrance before mount: the server-rendered question must paint visible, not at opacity 0.
+          initial={reduceMotion || !mounted ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
           className="w-full max-w-3xl border border-iron/30 bg-background/90 shadow-[0_4px_40px_-12px_oklch(0_0_0/0.6)] backdrop-blur-sm"
@@ -884,7 +880,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             <motion.div
               key={currentStep}
               initial={
-                reduceMotion
+                reduceMotion || !mounted
                   ? false
                   : {
                       opacity: 0,

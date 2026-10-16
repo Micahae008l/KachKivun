@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { PostSignupBootstrapSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PostSignupAssessmentPage } from "@/features/assessment/PostSignupAssessmentPage";
 import { getPaymentOffer } from "@/lib/api";
 
@@ -17,11 +16,11 @@ function PostSignupRoutePage() {
     retry: 1,
   });
 
-  if (offerQuery.isPending) return <PostSignupBootstrapSkeleton />;
-
+  // No wait for the offer: the quiz (V2, the server default) renders in the server HTML, and only
+  // an explicit personalizedFunnelV2: false switches to the legacy email-first flow.
   return (
     <PostSignupAssessmentPage
-      mode={offerQuery.data?.personalizedFunnelV2 ? "adaptive" : "legacy"}
+      mode={offerQuery.data?.personalizedFunnelV2 === false ? "legacy" : "adaptive"}
       offer={offerQuery.data ?? null}
     />
   );

@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 
 import {
   ChevronDown,
@@ -16,6 +15,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
+import { Reveal } from "@/components/Reveal";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
 import { getDashboardStats, getPaymentOffer } from "@/lib/api";
@@ -102,9 +102,8 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const ease = [0.16, 1, 0.3, 1] as const;
 const CTA_CLASS =
-  "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-7 py-3 text-base font-bold text-primary-foreground transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.97] sm:w-auto";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-[15px] font-bold text-primary-foreground transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.97] sm:min-h-12 sm:px-7 sm:py-3 sm:text-base";
 
 /** The one primary action on the page; signed-in visitors go where their profile left off. */
 function HomePrimaryCta({ className = CTA_CLASS }: { className?: string }) {
@@ -199,7 +198,7 @@ function HomePage() {
               5 התאמות עם הסבר וסיכויי קבלה.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:items-start">
+            <div className="mt-8 flex flex-col items-start gap-3">
               <HomePrimaryCta />
               <p className="flex items-start gap-1.5 text-xs leading-5 text-dust">
                 <Lock className="mt-1 h-3 w-3 shrink-0" aria-hidden />
@@ -420,11 +419,7 @@ function HomePage() {
 
       {/* ── 6. Closing CTA ── */}
       <section className="py-14 sm:py-24">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, ease }}
+        <Reveal
           className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12"
         >
           <div className="order-2 hidden overflow-hidden rounded-sm border border-iron/30 sm:block lg:order-1">
@@ -445,7 +440,7 @@ function HomePage() {
               <HomePrimaryCta />
             </div>
           </div>
-        </motion.div>
+        </Reveal>
       </section>
 
       <div className="section-divider" />
@@ -538,18 +533,12 @@ function SampleField({ label, children }: { label: string; children: React.React
 
 function SectionHead({ eyebrow, id, title }: { eyebrow: string; id: string; title: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.4, ease }}
-      className="max-w-xl text-right"
-    >
+    <Reveal margin="-60px" className="max-w-xl text-right">
       <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">{eyebrow}</p>
       <h2 id={id} className="text-3xl font-bold leading-tight sm:text-4xl">
         {title}
       </h2>
-    </motion.div>
+    </Reveal>
   );
 }
 

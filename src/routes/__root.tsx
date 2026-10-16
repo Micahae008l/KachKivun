@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { markFunnelStep } from "@/lib/funnel";
 import {
   createRootRoute,
@@ -14,9 +14,8 @@ import { QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-q
 import { warmApi, bootstrapAuth, logoutRequest } from "@/lib/api";
 import { getToken, isStoredAdmin, setStoredRole, subscribeAuth } from "@/lib/auth";
 import { prefetchAuthedData, sessionQueryOptions } from "@/lib/queries";
-import { Toaster } from "sonner";
-import { motion, AnimatePresence, MotionConfig } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { MotionConfig } from "framer-motion";
+import { ChevronLeft, ClipboardList, Menu, X } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { FREE_TOOLS, FREE_TOOLS_LABEL, NavToolsMenu } from "@/components/NavToolsMenu";
 import { SiteFooter } from "@/components/FooterNav";
@@ -33,10 +32,11 @@ import {
 } from "@/lib/a11y-prefs";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { CookieConsent } from "@/components/CookieConsent";
-import { IDF_BACKDROP_PHOTOS, IDF_PHOTO_SIZES, preloadIdfBackdropImages } from "@/lib/idf-images";
+import { preloadIdfBackdropImages } from "@/lib/idf-images";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { trackError } from "@/lib/analytics";
 import { startAttribution } from "@/lib/attribution";
+import { CONSENT_BOOT_SCRIPT } from "@/lib/third-party-analytics";
 
 // Weights the site uses: 400, 500, 600, 700, 900 (800 was loaded but never used).
 const FONT_CSS =
@@ -45,6 +45,9 @@ const FONT_CSS =
 const FONT_LOADER_SCRIPT = `(function(){var l=document.createElement("link");l.rel="stylesheet";l.href=${JSON.stringify(FONT_CSS)};document.head.appendChild(l)})()`;
 
 const SITE_URL = "https://kachkivun.com";
+
+// Loaded after hydration: no toast can fire before then, and it keeps sonner out of the entry bundle.
+const Toaster = lazy(() => import("sonner").then((m) => ({ default: m.Toaster })));
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,
@@ -81,16 +84,8 @@ export const Route = createRootRoute({
       { rel: "stylesheet", href: appCss },
       // Fetched early but applied by FONT_LOADER_SCRIPT, so it never blocks the first paint.
       { rel: "preload", as: "style", href: FONT_CSS },
-      // Only the first backdrop: it is the one on screen first (often the LCP image).
-      // Same srcset/sizes as the <img>, so the browser preloads the exact file it will use.
-      {
-        rel: "preload",
-        as: "image",
-        href: IDF_BACKDROP_PHOTOS[0].src,
-        imageSrcSet: IDF_BACKDROP_PHOTOS[0].srcSet,
-        imageSizes: IDF_PHOTO_SIZES,
-        fetchPriority: "high",
-      },
+      // No hero image preload here: it went out on every page (quiz, roles) at high priority.
+      // React already emits one in the homepage head for the hero <img fetchPriority="high">.
     ],
   }),
 });
@@ -101,6 +96,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: FONT_LOADER_SCRIPT }} />
         <noscript>
           <link rel="stylesheet" href={FONT_CSS} />
@@ -116,8 +112,10 @@ function RootDocument({ children }: { children: ReactNode }) {
 
 function RootLayout() {
   const [manualReduceMotion, setManualReduceMotion] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setManualReduceMotion(readA11yPrefs().reduceMotion);
     function onPrefsChange(event: Event) {
       setManualReduceMotion((event as CustomEvent<A11yPrefs>).detail.reduceMotion);
@@ -156,7 +154,11 @@ function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <RootLayoutInner />
-          <Toaster richColors position="top-center" />
+          {mounted && (
+            <Suspense fallback={null}>
+              <Toaster richColors position="top-center" />
+            </Suspense>
+          )}
         </QueryClientProvider>
       </ErrorBoundary>
     </MotionConfig>
@@ -238,7 +240,8 @@ function RootLayoutInner() {
   }
 
   // Marketing and legal pages never depend on the session; only gated pages wait for the refresh.
-  if (!authReady && !PUBLIC_PATHS.has(pathname) && !/^\/(roles|blog)\//.test(pathname)) {
+  // The quiz (bare shell) waits for it itself, so its first question is in the server HTML.
+  if (!authReady && !isBareShell && !PUBLIC_PATHS.has(pathname) && !/^\/(roles|blog)\//.test(pathname)) {
     return (
       <>
         <main
@@ -285,8 +288,8 @@ const NAV_SECONDARY = [
 /** The one primary action: guests start the questionnaire, signed-in users see their results. */
 function primaryCta(authed: boolean) {
   return authed
-    ? { to: "/ai-counselor", label: "התוצאות שלי", short: "התוצאות שלי" }
-    : { to: "/post-signup", label: "התחילו את השאלון", short: "לשאלון" };
+    ? { to: "/ai-counselor", label: "התוצאות שלי" }
+    : { to: "/post-signup", label: "התחילו את השאלון" };
 }
 
 const PRIMARY_BTN =
@@ -329,12 +332,8 @@ function SiteHeader({
   }, []);
 
   return (
-    <motion.header
+    <header
       aria-label={ARIA.siteHeader}
-      // initial={false}: an SSR opacity:0 kept the header (and its CTA) hidden until hydration.
-      initial={false}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={`sticky top-0 z-50 transition-all duration-200 ${
         scrolled || mobileOpen
           ? "border-b border-iron/30 bg-background/95 backdrop-blur-sm shadow-[0_1px_8px_oklch(0_0_0/0.4)]"
@@ -373,15 +372,8 @@ function SiteHeader({
           </Link>
         </div>
 
-        {/* Mobile: the primary action stays visible next to the menu button */}
+        {/* Mobile: just the menu button; the menu opens with the primary action as its first item. */}
         <div className="flex min-w-0 items-center gap-1 lg:hidden">
-          {/* Hidden while the menu is open: the menu repeats it as its first item. */}
-          {!mobileOpen && (
-            <Link to={cta.to} className={`${PRIMARY_BTN} h-10 px-4 text-sm whitespace-nowrap`}>
-              <span className="min-[360px]:hidden">{cta.short}</span>
-              <span className="hidden min-[360px]:inline">{cta.label}</span>
-            </Link>
-          )}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
@@ -400,25 +392,25 @@ function SiteHeader({
       </div>
 
       {/* Mobile dropdown: primary on top, then the grouped secondary items */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden"
+      {mobileOpen && (
+          <div
+            className="animate-fade-in max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden"
           >
             <nav
               id={MOBILE_NAV_ID}
               className="mx-auto flex max-w-7xl flex-col px-4 pt-4 pb-5"
               aria-label={ARIA.navMobile}
             >
-              <Link to={cta.to} className={`${PRIMARY_BTN} min-h-12 text-base`}>
-                {cta.label}
+              <Link
+                to={cta.to}
+                className="flex min-h-12 items-center gap-3 border-b border-iron/15 px-2 py-2 text-base font-bold text-primary transition-colors hover:text-primary/80"
+              >
+                <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="flex-1">{cta.label}</span>
+                <ChevronLeft className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
               </Link>
               {!authed && (
-                <p className="mt-2 text-center text-xs text-dust">
+                <p className="mt-2 px-2 text-xs text-dust">
                   בסוף השאלון: 5 תפקידים שמתאימים לכם, 2 מהם בחינם
                 </p>
               )}
@@ -465,10 +457,9 @@ function SiteHeader({
                 </p>
               )}
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+          </div>
+      )}
+    </header>
   );
 }
 
@@ -515,11 +506,7 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
         <>
           {children}
           {isActive && (
-            <motion.span
-              layoutId="nav-indicator"
-              className="absolute inset-x-3 bottom-0 h-[2px] bg-primary"
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
+            <span className="absolute inset-x-3 bottom-0 h-[2px] bg-primary" />
           )}
         </>
       )}

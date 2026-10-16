@@ -1,7 +1,14 @@
 [
   {
+    "title": "אנליסט בטחוני",
+    "category": "סיווג ומהימנות",
+    "combat": false,
+    "dapar": 60,
+    "profile": 21
+  },
+  {
     "title": "אנליסט/ית ביטחוני/ת",
-    "category": "מודיעין / מחקר",
+    "category": "סיווג ומהימנות",
     "combat": false,
     "dapar": 60,
     "profile": 21
@@ -63,6 +70,20 @@
     "profile": 21
   },
   {
+    "title": "חייל/ת מוסד",
+    "category": "שב\"כ ומוסד",
+    "combat": false,
+    "dapar": null,
+    "profile": 21
+  },
+  {
+    "title": "חייל/ת שב\"כ",
+    "category": "שב\"כ ומוסד",
+    "combat": false,
+    "dapar": 40,
+    "profile": 21
+  },
+  {
     "title": "טייס",
     "category": "קצונה / אקסטרים",
     "combat": true,
@@ -92,7 +113,7 @@
   },
   {
     "title": "לוחם 669",
-    "category": "לחימה עילית / חילוץ",
+    "category": "לחימה עילית / חילוץ / חיל האוויר",
     "combat": true,
     "dapar": 50,
     "profile": 97
@@ -129,14 +150,14 @@
     "title": "לוחם בגבעתי",
     "category": "לחימה",
     "combat": true,
-    "dapar": 40,
+    "dapar": null,
     "profile": 82
   },
   {
     "title": "לוחם בגולני",
     "category": "לחימה",
     "combat": true,
-    "dapar": 40,
+    "dapar": null,
     "profile": 82
   },
   {
@@ -149,6 +170,13 @@
   {
     "title": "לוחם בנח״ל",
     "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 82
+  },
+  {
+    "title": "לוחם בסיירת חטיבתית",
+    "category": "לחימה / סיירות",
     "combat": true,
     "dapar": null,
     "profile": 82
@@ -196,6 +224,20 @@
     "profile": 82
   },
   {
+    "title": "לוחם חוד בחיל האיסוף הקרבי",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": null,
+    "profile": 72
+  },
+  {
+    "title": "לוחם חוד בחיל ההנדסה הקרבית",
+    "category": "לחימה",
+    "combat": true,
+    "dapar": 40,
+    "profile": 82
+  },
+  {
     "title": "לוחם חי״ר גבולות",
     "category": "לחימה / בט״ש",
     "combat": true,
@@ -220,7 +262,7 @@
     "title": "לוחם לוחמה אלקטרונית",
     "category": "אוויר / לוחמה אלקטרונית",
     "combat": true,
-    "dapar": 50,
+    "dapar": null,
     "profile": 72
   },
   {
@@ -288,7 +330,7 @@
   },
   {
     "title": "לוחם שלדג",
-    "category": "לחימה עילית",
+    "category": "לחימה עילית / חיל האוויר",
     "combat": true,
     "dapar": 50,
     "profile": 82

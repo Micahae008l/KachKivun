@@ -25,6 +25,9 @@ declare global {
 
 let started = false;
 
+/** Runs before first paint: hides the server-rendered cookie notice when the visitor already chose. */
+export const CONSENT_BOOT_SCRIPT = `(function(){try{var v=localStorage.getItem("${CONSENT_KEY}");if(v==="granted"||v==="denied")document.documentElement.classList.add("kk-consent-set")}catch(e){}})();`;
+
 export function readAnalyticsConsent(): AnalyticsConsent | null {
   try {
     const value = localStorage.getItem(CONSENT_KEY);

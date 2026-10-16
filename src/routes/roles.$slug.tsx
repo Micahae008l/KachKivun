@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronLeft, ExternalLink, Shield } from "lucide-react";
 import { UL } from "@/components/blog/Prose";
-import { IntensityBar } from "@/components/RoleInsightSheet";
+import { IntensityBar } from "@/components/IntensityBar";
 import { QuizCta } from "@/components/QuizCta";
 import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
 import type { RoleInsightDetail, RolePageContent } from "@/lib/api";

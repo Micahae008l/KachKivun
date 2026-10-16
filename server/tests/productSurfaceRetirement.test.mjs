@@ -44,7 +44,8 @@ test("adaptive assessment keeps OTP last and versioned draft migration", () => {
   assert.match(draft, /preferredName: source\.username/);
   assert.match(draft, /answers\.yomHameahSource = ""/);
   assert.match(postSignup, /PostSignupAssessmentPage/);
-  assert.match(postSignup, /personalizedFunnelV2 \? "adaptive" : "legacy"/);
+  // Only an explicit false picks the legacy flow, so the quiz renders before the offer loads.
+  assert.match(postSignup, /personalizedFunnelV2 === false \? "legacy" : "adaptive"/);
 });
 
 test("production rollout keeps charging off until explicit launch gates", () => {

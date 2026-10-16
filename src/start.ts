@@ -3,11 +3,12 @@ import { createMiddleware, createStart } from "@tanstack/react-start";
 // Every external origin the site talks to; keep in sync with what pages load.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms",
+  // static.cloudflareinsights.com: Cloudflare Web Analytics, injected by Cloudflare on the live site.
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.google-analytics.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
-  "connect-src 'self' https://api.kachkivun.com https://plausible.io https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
+  "connect-src 'self' https://api.kachkivun.com https://plausible.io https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com https://cloudflareinsights.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "object-src 'none'",

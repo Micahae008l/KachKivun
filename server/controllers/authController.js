@@ -201,11 +201,9 @@ export async function handleRefreshTokenReuse(tokenHash, req, now = Date.now()) 
 export async function refreshSession(req, res) {
   try {
     const rawToken = readCookie(req, REFRESH_TOKEN_COOKIE);
-    if (!rawToken) {
-      return res
-        .status(401)
-        .json({ error: "Refresh token required", code: "REFRESH_TOKEN_REQUIRED" });
-    }
+    // No cookie is a visitor without a session, not a failure: 204 keeps a red 401 out of every
+    // anonymous page load (the client treats a missing token as signed out).
+    if (!rawToken) return res.status(204).end();
 
     const tokenHash = hashRefreshToken(rawToken);
     // Claim the token atomically so two simultaneous refreshes cannot both rotate it.

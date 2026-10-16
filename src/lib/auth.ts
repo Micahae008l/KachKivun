@@ -5,6 +5,9 @@ const LEGACY_ROLE_KEY = "kachkivun_role";
 
 export type AuthRole = "user" | "admin";
 
+/** Not a credential: only says a refresh is worth awaiting, so anonymous visitors never wait on it. */
+const SESSION_HINT_KEY = "kk-has-session";
+
 let accessToken: string | null = null;
 let storedRole: AuthRole | null = null;
 let authVersion = 0;
@@ -29,6 +32,25 @@ function scrubLegacyStorage() {
 
 scrubLegacyStorage();
 
+function setSessionHint(on: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    if (on) localStorage.setItem(SESSION_HINT_KEY, "1");
+    else localStorage.removeItem(SESSION_HINT_KEY);
+  } catch {
+    /* private mode */
+  }
+}
+
+/** True when this browser had a session last time (the refresh cookie itself is unreadable). */
+export function hasSessionHint(): boolean {
+  try {
+    return localStorage.getItem(SESSION_HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export function subscribeAuth(onStoreChange: () => void): () => void {
   listeners.add(onStoreChange);
   return () => {
@@ -50,6 +72,7 @@ export function getStoredRole(): AuthRole | null {
 
 export function setToken(token: string) {
   accessToken = token;
+  setSessionHint(true);
   scrubLegacyStorage();
   notify();
 }
@@ -63,6 +86,7 @@ export function setStoredRole(role: AuthRole | undefined) {
 /** Save JWT and optional role after OTP verify / refresh. */
 export function setAuthSession(token: string, role?: AuthRole) {
   accessToken = token;
+  setSessionHint(true);
   storedRole = role === "admin" || role === "user" ? role : null;
   scrubLegacyStorage();
   notify();
@@ -71,6 +95,7 @@ export function setAuthSession(token: string, role?: AuthRole) {
 export function clearToken() {
   accessToken = null;
   storedRole = null;
+  setSessionHint(false);
   scrubLegacyStorage();
   try {
     if (typeof window !== "undefined") {

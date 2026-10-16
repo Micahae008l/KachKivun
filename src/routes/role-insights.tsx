@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Search, Shield } from "lucide-react";
+import { ChevronDown, ChevronLeft, Search, Shield } from "lucide-react";
 import { listRoles, roleInsightSlug } from "@/lib/api";
 import { fetchRoleCatalog } from "@/lib/roles-public";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
@@ -52,6 +52,29 @@ export const Route = createFileRoute("/role-insights")({
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+/**
+ * The catalog has ~190 fine-grained categories ("דוברות ותקשורת / וידאו"); the filter offers a dozen
+ * fields instead. First match wins, so the order matters (סייבר before מודיעין, רפואה before הדרכה).
+ */
+const ROLE_FIELDS = [
+  { key: "combat", label: "לחימה", re: /לחימה|קומנדו|סיירות/ },
+  { key: "cyber", label: "סייבר ומחשבים", re: /סייבר|מקצועות המחשב|תוכנה|דאטה|אבטחת מידע|ביטחון מידע|תקשוב/ },
+  { key: "intel", label: "מודיעין", re: /מודיעין|שב"כ|מוסד|סיווג/ },
+  { key: "air", label: "חיל האוויר", re: /אוויר|כטמ/ },
+  { key: "navy", label: "חיל הים", re: /חיל הים|ימי/ },
+  { key: "medical", label: "רפואה", re: /רפוא|שיניים/ },
+  { key: "tech", label: "טכנולוגיה והנדסה", re: /טכנולוג|הנדס|מערך טכני|אלקטרוניק|בינוי|תשתיות/ },
+  { key: "academic", label: "עתודה ומסלולי מצוינות", re: /עתודה|עילית|מצטיינים|הנדסאים/ },
+  { key: "instruction", label: "הדרכה, חינוך ופיקוד", re: /הדרכה|חינוך|פיקוד|כושר/ },
+  { key: "media", label: "תקשורת, דוברות ואמנות", re: /דוברות|תקשורת|אמנות|מוזיקה/ },
+  { key: "logistics", label: "לוגיסטיקה, מנהלה ושירות", re: /לוגיסטיקה|תובלה|מנהלה|מטה|כספים|משאבי אנוש|שירות|גיוס|רבנות|משפטים|משטרה|אבחון|פסיכולוג|מבצעים|חירום|תיאום/ },
+] as const;
+
+function roleField(r: { category: string; combat?: boolean }): string {
+  if (r.combat) return "combat";
+  return ROLE_FIELDS.find((f) => f.re.test(r.category))?.key ?? "logistics";
+}
+
 function RoleInsightsPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
@@ -61,17 +84,15 @@ function RoleInsightsPage() {
   const deferredQ = useDeferredValue(query.trim());
 
   const listQuery = useQuery({
-    queryKey: ["roles-catalog", deferredQ, search.category],
-    queryFn: () => listRoles({ q: deferredQ || undefined, category: search.category }),
+    queryKey: ["roles-catalog", deferredQ],
+    queryFn: () => listRoles({ q: deferredQ || undefined }),
     // The unfiltered list is rendered on the server, so search engines see every role.
-    initialData: !deferredQ && !search.category ? (fullCatalog ?? undefined) : undefined,
+    initialData: !deferredQ ? (fullCatalog ?? undefined) : undefined,
     staleTime: 5 * 60_000,
   });
 
-  const categories = listQuery.data?.categories ?? [];
-  const roles = listQuery.data?.roles ?? [];
-
-  const categoryChips = categories.slice(0, 24);
+  const field = ROLE_FIELDS.find((f) => f.key === search.category);
+  const roles = (listQuery.data?.roles ?? []).filter((r) => !field || roleField(r) === field.key);
 
   function setCategory(category?: string) {
     void navigate({
@@ -129,8 +150,9 @@ function RoleInsightsPage() {
 
       <QuizCta compact title="לא בטוחים מאיפה להתחיל?" />
 
-      <div dir="rtl">
-        <label className="relative block">
+      {/* Search and one field filter; a wall of category chips read as clutter. */}
+      <div className="flex flex-col gap-2 sm:flex-row" dir="rtl">
+        <label className="relative block flex-1">
           <span className="sr-only">חיפוש תפקיד</span>
           <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
           <input
@@ -140,34 +162,22 @@ function RoleInsightsPage() {
             className="input-field w-full pr-10"
           />
         </label>
-      </div>
-
-      <div className="flex flex-wrap justify-start gap-2" dir="rtl">
-        <button
-          type="button"
-          onClick={() => setCategory(undefined)}
-          className={`rounded-sm border px-3 py-1.5 text-xs transition ${
-            !search.category
-              ? "border-primary/50 bg-primary/15 text-foreground"
-              : "border-iron/30 text-dust hover:border-primary/30"
-          }`}
-        >
-          הכל
-        </button>
-        {categoryChips.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setCategory(c === search.category ? undefined : c)}
-            className={`rounded-sm border px-3 py-1.5 text-xs transition ${
-              search.category === c
-                ? "border-primary/50 bg-primary/15 text-foreground"
-                : "border-iron/30 text-dust hover:border-primary/30"
-            }`}
+        <label className="relative block sm:w-60">
+          <span className="sr-only">סינון לפי תחום</span>
+          <select
+            value={search.category ?? ""}
+            onChange={(e) => setCategory(e.target.value || undefined)}
+            className="input-field w-full cursor-pointer appearance-none pl-9"
           >
-            {c}
-          </button>
-        ))}
+            <option value="">כל התחומים</option>
+            {ROLE_FIELDS.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dust" />
+        </label>
       </div>
 
       <p className="text-right text-xs text-dust" dir="rtl">
@@ -175,7 +185,7 @@ function RoleInsightsPage() {
           ? "טוען…"
           : listQuery.isError
             ? "לא הצלחנו לטעון את הקטלוג"
-            : `מציגים ${listQuery.data?.count ?? 0} מתוך ${listQuery.data?.total ?? 0} תפקידים`}
+            : `מציגים ${roles.length} מתוך ${listQuery.data?.total ?? 0} תפקידים`}
       </p>
 
       {listQuery.isError ? (
@@ -192,29 +202,33 @@ function RoleInsightsPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2" dir="rtl">
+      {/* Phones: a compact list (name, field, combat) you can scan; the summary shows from sm up. */}
+      <div className="grid border-t border-iron/20 sm:grid-cols-2 sm:gap-3 sm:border-t-0" dir="rtl">
         {roles.map((r) => (
           <Link
             key={r.slug}
             to="/roles/$slug"
             params={{ slug: r.slug }}
-            className="block border border-iron/30 bg-card p-4 text-right transition hover:border-primary/40"
+            className="flex items-center gap-3 border-b border-iron/20 px-1 py-3 text-right transition hover:border-primary/40 sm:block sm:border sm:border-iron/30 sm:bg-card sm:p-4"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <h2 className="font-bold text-foreground">{r.roleTitle}</h2>
-                <p className="mt-1 font-mono text-[10px] tracking-wide text-dust">{r.category}</p>
+                <h2 className="text-[15px] font-bold leading-snug text-foreground sm:text-base">{r.roleTitle}</h2>
+                <p className="mt-0.5 truncate text-xs text-dust sm:mt-1 sm:font-mono sm:text-[10px] sm:tracking-wide">
+                  {r.category}
+                </p>
               </div>
               {r.combat ? (
-                <span className="inline-flex items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
                   <Shield className="h-3 w-3" aria-hidden />
                   קרבי
                 </span>
               ) : null}
             </div>
-            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-dust">{r.summary}</p>
+            <ChevronLeft className="h-4 w-4 shrink-0 text-dust/60 sm:hidden" aria-hidden />
+            <p className="mt-2 hidden line-clamp-2 text-xs leading-relaxed text-dust sm:block">{r.summary}</p>
             {r.signals.length ? (
-              <p className="mt-2 text-[11px] text-dust/80">{r.signals.slice(0, 3).join(" · ")}</p>
+              <p className="mt-2 hidden text-[11px] text-dust/80 sm:block">{r.signals.slice(0, 3).join(" · ")}</p>
             ) : null}
           </Link>
         ))}
