@@ -1,5 +1,7 @@
 import { AI_COUNSELOR_TOP_TWO_PRODUCT_KEY } from "./recommendationAccess.js";
 import { fitReasonsFor } from "./fitReasons.js";
+import { requirementsForGender, textForGender } from "./genderText.js";
+import { GENERIC_TITLE_WORDS } from "./roleScoring.js";
 
 const text = (value) => (typeof value === "string" ? value : "");
 const numberOrNull = (value) => {
@@ -52,7 +54,8 @@ function rankedRoles(doc) {
     .slice(0, 5);
 }
 
-function serializeFullRole(role, rank) {
+/** `gender` trims the other gender's catalog clauses, which results saved before the gender filter still carry. */
+function serializeFullRole(role, rank, gender) {
   return {
     kind: "role",
     locked: false,
@@ -67,9 +70,9 @@ function serializeFullRole(role, rank) {
     category: text(role.category),
     combat: Boolean(role.combat),
     dayToDay: text(role.dayToDay),
-    requirements: strings(role.requirements),
+    requirements: strings(requirementsForGender(role.requirements, gender)),
     locations: strings(role.locations),
-    serviceLengthLabel: text(role.serviceLengthLabel),
+    serviceLengthLabel: text(textForGender(role.serviceLengthLabel, gender)),
     admissionChance: ["high", "medium", "low", "unknown"].includes(role.admissionChance?.level)
       ? {
           level: role.admissionChance.level,
@@ -114,7 +117,7 @@ export function serializeRecommendationRoles(doc, access) {
   return rankedRoles(doc).map(({ role, rank }) =>
     !resolvedAccess.topTwoUnlocked && rank <= LOCKED_TOP_RANKS
       ? serializeLockedRole(role, rank, doc?.profileSnapshot)
-      : serializeFullRole(role, rank),
+      : serializeFullRole(role, rank, doc?.profileSnapshot?.gender),
   );
 }
 
@@ -129,28 +132,58 @@ function comparable(value) {
     .toLowerCase();
 }
 
+const words = (value) => value.split(/[^\u0590-\u05FFa-z0-9"']+/).filter(Boolean);
+// Up to two Hebrew prefix letters come and go: "הערבית" / "ערבית", "ובהנדסה" / "הנדסה".
+function stems(word) {
+  const out = [word];
+  for (let stem = word; out.length < 3 && stem.length >= 4 && /^[הובלשכמ]/.test(stem); ) {
+    stem = stem.slice(1);
+    out.push(stem);
+  }
+  return out;
+}
+
 /**
  * The AI's answer to the personal note often names the roles that fit. While places 1-3 are
  * locked, an answer that names one of them is withheld; it opens together with them.
  */
-export function answerNamesLockedRole(answer, lockedTitles) {
+export function answerNamesLockedRole(answer, lockedTitles, openTitles = []) {
   const haystack = comparable(answer);
+  const present = new Set(words(haystack).flatMap(stems));
+  // Words a free (#4-#5) title also has name nothing locked: "עתודה" in "עתודה לרוקחות".
+  const shared = new Set([...GENERIC_TITLE_WORDS, ...openTitles.flatMap((title) => words(comparable(title)))]);
   return lockedTitles.some((title) => {
     const needle = comparable(title);
-    return needle.length >= 3 && haystack.includes(needle);
+    if (needle.length >= 3 && haystack.includes(needle)) return true;
+    // The model also shortens titles ("עוקץ" for "לוחם עוקץ"): look for the distinctive words.
+    const distinctive = words(needle).filter(
+      (word) => word.length >= 3 && !stems(word).some((stem) => shared.has(stem)),
+    );
+    if (!distinctive.length) return false;
+    const found = distinctive.filter((word) => stems(word).some((stem) => present.has(stem))).length;
+    // Long titles get shortened too ("בכיר לדוברי ערבית"): from three words up, one may be missing.
+    return found >= (distinctive.length >= 3 ? distinctive.length - 1 : distinctive.length);
   });
 }
 
 export function serializeRecommendation(doc, access) {
   const resolvedAccess = normalizedAccess(access);
   const recommendationId = doc?._id ? String(doc._id) : "";
+  const ranked = rankedRoles(doc);
   const lockedTitles = resolvedAccess.topTwoUnlocked
     ? []
-    : rankedRoles(doc)
-        .filter(({ rank }) => rank <= LOCKED_TOP_RANKS)
-        .map(({ role }) => role.roleTitle);
+    : ranked.filter(({ rank }) => rank <= LOCKED_TOP_RANKS).map(({ role }) => role.roleTitle);
+  const openTitles = ranked.filter(({ rank }) => rank > LOCKED_TOP_RANKS).map(({ role }) => role.roleTitle);
   const answer = text(doc?.personalAnswer);
-  const personalAnswerLocked = answerNamesLockedRole(answer, lockedTitles);
+  // Only the sentences that name a locked role wait for the unlock: "669 סגור בפניכם כי..." stays free.
+  const sentences = answer.split(/(?<=[.!?])\s+|\n+/).filter((sentence) => sentence.trim());
+  const kept = sentences.filter((sentence) => !answerNamesLockedRole(sentence, lockedTitles, openTitles));
+  const personalAnswerLocked = kept.length < sentences.length;
+  const visibleAnswer = personalAnswerLocked
+    ? kept.length
+      ? `${kept.join(" ")}\nשאר התשובה מזכירה תפקידים מהמקומות הנעולים ותיפתח יחד עם מקומות 3, 2 ו־1.`
+      : ""
+    : answer;
   return {
     recommendationId,
     createdAt: doc?.createdAt ?? null,
@@ -160,7 +193,7 @@ export function serializeRecommendation(doc, access) {
     catalogVersion: text(doc?.catalogVersion),
     promptVersion: text(doc?.promptVersion),
     notice: text(doc?.notice),
-    personalAnswer: personalAnswerLocked ? "" : answer,
+    personalAnswer: visibleAnswer,
     personalAnswerLocked,
     roles: serializeRecommendationRoles(doc, resolvedAccess),
     access: resolvedAccess,

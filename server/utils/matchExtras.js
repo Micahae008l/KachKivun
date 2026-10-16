@@ -1,4 +1,5 @@
 import { rankRolesV3, scoreRole, isFlatYom } from "./roleScoring.js";
+import { textForGender } from "./genderText.js";
 
 /**
  * Paid extras computed from the same deterministic scoring as the match itself:
@@ -36,7 +37,8 @@ function planNotes(role, catalogRole, profile) {
   if (dapar != null && floor != null && trusted(catalogRole) && dapar - floor < 10) {
     notes.push(`הדפ״ר שלכם על הסף של התפקיד (${floor}).`);
   }
-  const length = role.serviceLengthLabel || catalogRole?.serviceLengthLabel || "";
+  // Backups and older saved roles carry the catalog label for both genders.
+  const length = textForGender(role.serviceLengthLabel || catalogRole?.serviceLengthLabel || "", profile.gender);
   if (length) notes.push(`משך שירות: ${length}.`);
   return notes;
 }

@@ -36,6 +36,10 @@ function catalogRole(title) {
 
 const has = (list, value) => Array.isArray(list) && list.includes(value);
 
+// Measured combat fitness bands (3 km run, pull-ups, push-ups).
+const STRONG_BANDS = new Set(["under_13", "16_plus", "61_plus"]);
+const WEAK_BANDS = new Set(["over_15", "0_to_5", "0_to_30"]);
+
 // The catalog's interestAreas come from every tag (a paramedic has "fitness", so it is also
 // "combat"). For a reason shown to the user only the role's main field counts.
 const FIELD_WORDS = [
@@ -112,8 +116,11 @@ export function fitReasonsFor(role, snapshot) {
     add("הרמה הטכנולוגית הגבוהה שלכם");
   }
 
-  if (snapshot.physicalActivityLevel === "High" && (c.physicalDemand ?? 0) >= 4)
-    add("הכושר הגבוה שלכם");
+  // physicalActivityLevel is a preference, not ability: only the measured bands can claim fitness.
+  const bands = Object.values(s.combatDetails || {});
+  const measuredFit =
+    bands.some((b) => STRONG_BANDS.has(b)) && !bands.some((b) => WEAK_BANDS.has(b));
+  if (measuredFit && (c.physicalDemand ?? 0) >= 4) add("הכושר הגבוה שלכם");
   else if (c.combat && s.combatDetails?.readiness === "ready") add("המוכנות שלכם למסלול קרבי");
 
   if (s.leadership === "want_lead" && (c.leadershipDemand ?? 0) >= 4) add("הרצון שלכם לפקד");

@@ -157,6 +157,7 @@ test("fit reasons come from the user's own answers matched to the role, never th
         rolesInterested: ["combat", "medical"],
         motivations: [],
         technicalDetails: {},
+        combatDetails: { run3kmBand: "under_13", pullUpsBand: "16_plus" },
       },
     },
     roles: [{ rank: 1, roleTitle: "פרמדיק/ית", tags: ["פרמדיק"], matchPercentage: 95 }],
@@ -165,6 +166,11 @@ test("fit reasons come from the user's own answers matched to the role, never th
   // A paramedic's main field is medicine, so an interest in combat alone is not offered as a reason.
   assert.deepEqual(role.because, ["העניין שלכם ברפואה", "הכושר הגבוה שלכם"]);
   assert.equal(JSON.stringify(role).includes("פרמדיק"), false);
+
+  // "High" activity is a preference, not ability: without measured fitness it claims none.
+  const unmeasured = structuredClone(doc);
+  delete unmeasured.profileSnapshot.assessmentSignals.combatDetails;
+  assert.deepEqual(serializeRecommendation(unmeasured, lockedAccess).roles[0].because, ["העניין שלכם ברפואה"]);
 });
 
 test("history list and detail use the same locked serializer", () => {
@@ -260,4 +266,62 @@ test("gender slashes and parentheses do not hide a locked role name", () => {
   assert.equal(answerNamesLockedRole("תפקיד מפעיל רחפנים יתאים לכם", ["מפעיל/ת רחפנים"]), true);
   assert.equal(answerNamesLockedRole("מומלץ: תלפיות", ["תלפיות (כולל תואר)"]), true);
   assert.equal(answerNamesLockedRole("לוחם תותחנים", ["מפעיל/ת רחפנים"]), false);
+});
+
+test("a shortened locked title still hides the answer; free titles and generic words do not", () => {
+  // Real misses from production answers.
+  assert.equal(answerNamesLockedRole("מסלול בכיר לדוברי ערבית מתאים לכם", ["מסלול בכיר לדוברי השפה הערבית"]), true);
+  assert.equal(answerNamesLockedRole("מי שרוצה עוקץ צריך לכוון לסיירות", ["לוחם עוקץ"]), true);
+  assert.equal(answerNamesLockedRole("עריכת וידאו ביחידת ההסרטה", ["עורכ/ת וידאו ביחידת ההסרטה"]), true);
+  assert.equal(answerNamesLockedRole("ביחידות החי״ר ובהנדסה הקרבית", ["לוחם הנדסה קרבית"]), true);
+  assert.equal(answerNamesLockedRole("קצונה במשטרה הצבאית", ["ייעודי לקצונה בחיל המשטרה הצבאית"]), true);
+
+  assert.equal(answerNamesLockedRole("כדאי לשקול מסלול לוחם בחיל", ["לוחם עוקץ", "מסלול בכיר לדוברי השפה הערבית"]), false);
+  assert.equal(answerNamesLockedRole("טכנאי שריון יתאים לכם", ["לוחם שריון"], ["טכנאי/ת שריון"]), false);
+  assert.equal(
+    answerNamesLockedRole("מסלולי העתודה הרפואיים דורשים מיון", ["מסלול צמרת - עתודה לרפואה"], ["עתודה לרוקחות"]),
+    false,
+  );
+  assert.equal(answerNamesLockedRole("חוקר סייבר", ["מגן/ת סייבר"]), false);
+
+  const doc = {
+    ...recommendation,
+    roles: [
+      { ...role(1, "x"), roleTitle: "לוחם עוקץ" },
+      ...recommendation.roles.slice(1, 3),
+      { ...role(4, "y"), roleTitle: "לוחם בגבעתי" },
+      recommendation.roles[4],
+    ],
+  };
+  assert.equal(serializeRecommendation({ ...doc, personalAnswer: "עוקץ דורש גיבוש" }, lockedAccess).personalAnswerLocked, true);
+  assert.equal(serializeRecommendation({ ...doc, personalAnswer: "גבעתי פתוחה לכם" }, lockedAccess).personalAnswerLocked, false);
+});
+
+test("a saved card shows only the candidate's gender's catalog clauses", () => {
+  const saved = {
+    ...recommendation,
+    profileSnapshot: { gender: "male" },
+    roles: recommendation.roles.map((r) => ({
+      ...r,
+      requirements: ["פרופיל 82 ומעלה", "נשים דרך מיון לוחמות"],
+      serviceLengthLabel: "32 חודשים (גם לנשים)",
+    })),
+  };
+  const card = serializeRecommendation(saved, unlockedAccess).roles[0];
+  assert.deepEqual(card.requirements, ["פרופיל 82 ומעלה"]);
+  assert.equal(card.serviceLengthLabel, "32 חודשים");
+  const unknown = serializeRecommendation({ ...saved, profileSnapshot: {} }, unlockedAccess).roles[0];
+  assert.equal(unknown.requirements.length, 2, "no gender, nothing removed");
+});
+
+test("only the sentences that name a locked role wait for the unlock", () => {
+  const doc = {
+    ...recommendation,
+    personalAnswer: "לוחם 669 סגור בפניכם כי הוא לגברים בלבד. כותרת-LOCKED-THREE הוא הקרוב ביותר אליו.",
+  };
+  const locked = serializeRecommendation(doc, lockedAccess);
+  assert.equal(locked.personalAnswerLocked, true);
+  assert.match(locked.personalAnswer, /^לוחם 669 סגור בפניכם/);
+  assert.equal(locked.personalAnswer.includes("LOCKED-THREE"), false);
+  assert.equal(serializeRecommendation(doc, unlockedAccess).personalAnswer, doc.personalAnswer);
 });

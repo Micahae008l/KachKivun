@@ -13,8 +13,9 @@ import {
   buildProfileNotice,
   sanitizeScoreBreakdown,
   SCORE_BREAKDOWN_KEYS,
+  admissionChance,
 } from "../utils/roleScoring.js";
-import { normalizeRoleV3 } from "../utils/roleCatalogV3.js";
+import { normalizeRoleV3, getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
 import { preFilterRoles } from "../utils/rolePreFilter.js";
 
 const flatYom = Object.fromEntries(
@@ -446,4 +447,193 @@ test("all known structured fields score while unknown environment and base type 
   });
   assert.equal(unknown.components.environment, null);
   assert.equal(unknown.components.base, null);
+});
+
+test("clearing a medical floor is pass/fail: headroom above it earns nothing extra", () => {
+  const at = (medicalFloor) =>
+    scoreRole(normalizeRoleV3({ ...combatRole, medicalFloor, enrichment: { status: "reviewed" } }), {
+      ...techProfile,
+      medicalProfile: 97,
+      combatPreference: "FieldCombat",
+    }).scoreBreakdown.eligibility;
+  assert.equal(at(64), at(82));
+});
+
+test("profile-97 field-combat male: the brigades outrank combat medic", () => {
+  const roles = getIdfRoleCatalogV3().roles;
+  const find = (title) => roles.find((r) => r.roleTitle === title);
+  for (const daparScore of [60, 80]) {
+    const profile = {
+      daparScore, medicalProfile: 97, gender: "male", combatPreference: "FieldCombat",
+      focus: "Physical", physicalActivityLevel: "High", yom: flatYom, yomSource: "official",
+      assessmentSignals: { rolesInterested: ["combat"], environment: "field" },
+    };
+    const medic = scoreRole(find("חובש/ת קרבי/ת"), profile).basePercent;
+    assert.ok(scoreRole(find("לוחם בגולני"), profile).basePercent > medic, `דפ"ר ${daparScore}`);
+    assert.ok(scoreRole(find("לוחם בגבעתי"), profile).basePercent > medic, `דפ"ר ${daparScore}`);
+  }
+});
+
+test("admission chance: elite never gains from a low floor, and 90 is never 'on the edge'", () => {
+  const elite = { roleTitle: "מסלול תלפיות", category: "עילית", combat: false, competitiveness: "very_high", daparFloor: 90 };
+  const atMax = admissionChance(elite, { gender: "female", medicalProfile: 97, daparScore: 90 });
+  assert.equal(atMax.level, "low");
+  assert.ok(!atMax.reason.includes("על הסף"));
+  const plain = { ...elite, competitiveness: "medium" };
+  assert.equal(admissionChance(plain, { gender: "female", medicalProfile: 97, daparScore: 90 }).level, "medium");
+  // Elite combat selection is a גיבוש far above the floor: a big margin does not help.
+  const sayeret = { ...elite, roleTitle: "לוחם שלדג", combat: true, daparFloor: 50 };
+  const far = admissionChance(sayeret, { gender: "female", medicalProfile: 97, daparScore: 90 });
+  assert.equal(far.level, "low");
+  assert.ok(!far.reason.includes("גבוה ב"));
+  // A cognitive non-combat track (גאמ"א floor 60): a high דפ"ר does lift the chance.
+  const cognitive = admissionChance({ ...elite, daparFloor: 60 }, { gender: "female", medicalProfile: 97, daparScore: 90 });
+  assert.equal(cognitive.level, "medium");
+  assert.ok(cognitive.reason.includes("גבוה ב"));
+});
+
+test("admission chance: weak fitness is the first reason on elite combat", () => {
+  const sayeret = { roleTitle: "לוחם סיירת מטכ״ל", category: "לחימה עילית", combat: true, competitiveness: "very_high", daparFloor: 50, combatFitnessDemand: 4 };
+  const profile = {
+    gender: "male", medicalProfile: 97, daparScore: 80,
+    assessmentSignals: { combatDetails: { run3kmBand: "over_15", pullUpsBand: "6_to_15" } },
+  };
+  const chance = admissionChance(sayeret, profile);
+  assert.equal(chance.level, "low");
+  assert.ok(chance.reason.startsWith("הכושר הנוכחי שלכם רחוק מהנדרש במיון"));
+  // Top bands are what an elite גיבוש looks for: the badge lifts to medium and says why.
+  const fit = { ...profile, assessmentSignals: { combatDetails: { run3kmBand: "under_13", pullUpsBand: "16_plus" } } };
+  const strong = admissionChance(sayeret, fit);
+  assert.equal(strong.level, "medium");
+  assert.ok(strong.reason.startsWith("הכושר שמדדתם ברמה הגבוהה שהמיון בודק"));
+  // Pilots and paramedics are very competitive, but the screening is not a fitness גיבוש.
+  const pilot = { ...sayeret, roleTitle: "טייס", combatFitnessDemand: 3 };
+  assert.ok(!admissionChance(pilot, profile).reason.includes("כושר"));
+});
+
+test("admission chance: quota reason comes first, and the 80 + 10 sentence only for computer-cluster men", () => {
+  const male = { gender: "male", medicalProfile: 97, daparScore: 75 };
+  const female = { ...male, gender: "female" };
+  const programmer = { roleTitle: "תוכניתן/ית", category: "מקצועות המחשב", combat: false, competitiveness: "very_high", daparFloor: 70 };
+  const intel = { roleTitle: "מסלול נץ", category: "מודיעין / מבצעים", combat: false, competitiveness: "medium", daparFloor: null };
+  const storekeeper = { roleTitle: "טכנאי/ת אלקטרוניקה", category: "טכנולוגיה ואחזקה", combat: false, competitiveness: "medium", daparFloor: null };
+
+  const prog = admissionChance(programmer, male).reason;
+  assert.ok(prog.startsWith("לבעלי פרופיל קרבי המכסות"), prog);
+  assert.ok(prog.includes("10 יח״ל"));
+  assert.ok(!admissionChance(programmer, female).reason.includes("יח״ל"));
+  const nets = admissionChance(intel, male).reason;
+  assert.ok(nets.includes("המכסות") && !nets.includes("יח״ל"), nets);
+  assert.ok(!admissionChance(storekeeper, male).reason.includes("המכסות"));
+});
+
+test("profile notices carry no em dash", () => {
+  for (const yomSource of ["self", "unknown", "official"]) {
+    for (const gender of ["male", "female"]) {
+      for (const medicalProfile of [45, 72, 97, "unknown"]) {
+        assert.ok(!buildProfileNotice({ yomSource, gender, medicalProfile, daparScore: 70 }).includes(String.fromCharCode(0x2014)));
+      }
+    }
+  }
+});
+
+test("owner-confirmed catalog facts gate exactly what was confirmed", () => {
+  const roles = getIdfRoleCatalogV3().roles;
+  const find = (title) => roles.find((r) => r.roleTitle === title);
+  const boy = (medicalProfile) => ({ gender: "male", medicalProfile, daparScore: 60, yom: flatYom, yomSource: "official" });
+  // דובר צה"ל: closed to a profile-97 boy; 72 and 82 are unconfirmed, so no gate.
+  const photographer = find('צלם/ת ביחידת דובר צה"ל');
+  assert.deepEqual(scoreRole(photographer, boy(97)).hardFailReasons, ["פתוח לגברים רק עד פרופיל 82, ובפרופיל 97 מיועדים ללוחמה"]);
+  assert.ok(scoreRole(photographer, boy(82)).eligible);
+  // No gender rule nobody confirmed; combat-collection keeps its field dimensions.
+  assert.equal(find("מאמנת סימולטור").genderEligibility, "all");
+  assert.ok(find("לוחם איסוף קרבי").keyDimensions.includes("frameworkBehavior"));
+});
+
+test("admission chance: rear roles are low for a combat-designated boy, and the quota never reads high", () => {
+  const rear = { roleTitle: "מש\"ק/ית לוגיסטיקה", category: "לוגיסטיקה", combat: false, competitiveness: "low", daparFloor: 30, medicalFloor: 45 };
+  const boy = { gender: "male", medicalProfile: 97, daparScore: 80 };
+  const chance = admissionChance(rear, boy);
+  assert.equal(chance.level, "low");
+  assert.equal(chance.reason, "בנים עם פרופיל קרבי מיועדים ללוחמה, והסיכוי שלהם להשתבץ בתפקידי עורף נמוך");
+  assert.equal(admissionChance(rear, { ...boy, gender: "female" }).level, "high");
+  assert.equal(admissionChance(rear, { ...boy, medicalProfile: 64 }).level, "high");
+  // An easy tech role with a big margin was "high" with "easy to get into" next to "quotas are cut".
+  const easyTech = { roleTitle: "טכנאי/ת מחשבים", category: "תקשוב", combat: false, competitiveness: "low", daparFloor: 40, medicalFloor: 64 };
+  const quota = admissionChance(easyTech, boy);
+  assert.equal(quota.level, "medium");
+  assert.ok(quota.reason.startsWith("לבעלי פרופיל קרבי המכסות") && !quota.reason.includes("שקל יחסית"), quota.reason);
+  assert.equal(admissionChance(easyTech, { ...boy, gender: "female" }).level, "high");
+});
+
+test("admission chance: weak fitness also counts on combat roles with a גיבוש, not on screenings that are no fitness test", () => {
+  const weak = { gender: "male", medicalProfile: 97, daparScore: 70, assessmentSignals: { combatDetails: { run3kmBand: "over_15", pullUpsBand: "0_to_5" } } };
+  const paratroopers = { roleTitle: "לוחם בצנחנים", category: "לחימה", combat: true, competitiveness: "high", combatFitnessDemand: 4, requirements: ["גיבוש צנחנים (אפריל/אוגוסט/דצמבר) או שבוע ראיונות"] };
+  assert.ok(admissionChance(paratroopers, weak).reason.startsWith("הכושר הנוכחי שלכם רחוק מהנדרש במיון"));
+  assert.ok(!admissionChance({ ...paratroopers, requirements: [] }, weak).reason.includes("כושר"), "no גיבוש, no fitness penalty");
+  const pilot = { roleTitle: "טייס", category: "אוויר", combat: true, competitiveness: "very_high", combatFitnessDemand: 3, requirements: ["גיבוש טיס 5 ימים"] };
+  assert.ok(!admissionChance(pilot, weak).reason.includes("כושר"));
+});
+
+test("a combat interest under a non-combat direction lifts combat roles only", () => {
+  const profile = { ...techProfile, medicalProfile: 97, gender: "male", yomSource: "official" };
+  const ticked = { ...profile, assessmentSignals: { rolesInterested: ["cyber", "combat"] } };
+  const unticked = { ...profile, assessmentSignals: { rolesInterested: ["cyber"] } };
+  const combatCtx = (p) => scoreRole(combatRole, p).subscores.prefFit;
+  assert.ok(combatCtx(ticked) > combatCtx(unticked));
+  assert.equal(scoreRole(techRole, ticked).subscores.prefFit, scoreRole(techRole, unticked).subscores.prefFit);
+  // FieldCombat already scores combat at full; the floor never lowers it.
+  const field = { ...ticked, combatPreference: "FieldCombat" };
+  assert.equal(combatCtx(field), scoreRole(combatRole, { ...field, assessmentSignals: {} }).subscores.prefFit);
+});
+
+test("round 3: badges for rear caps, unknown דפ\"ר and מיון לוחמות; cleared floors stay off the prompt", async () => {
+  const { admissionChance, rolesForAi } = await import("../utils/roleScoring.js");
+  // A role capped for men below this boy's profile is rear for him, by its own data.
+  const dover = { roleTitle: "צלם/ת ביחידת דובר צה\"ל", category: "דוברות", combat: false, competitiveness: "medium", maleMedicalMax: 82 };
+  assert.equal(admissionChance(dover, { gender: "male", medicalProfile: 97, daparScore: 70 }).level, "low");
+  assert.notEqual(admissionChance(dover, { gender: "female", medicalProfile: 97, daparScore: 70 }).level, "low");
+  // Unknown דפ"ר is not a pass: never "high" on a role with a known floor.
+  const easy = { roleTitle: "מש\"ק", category: "מנהלה", combat: false, competitiveness: "low", daparFloor: 60 };
+  const unknown = admissionChance(easy, { gender: "female", medicalProfile: 64, daparScore: "unknown" });
+  assert.equal(unknown.level, "medium");
+  assert.ok(unknown.reason.includes("לתפקיד נדרש דפ״ר 60"));
+  // "נשים דרך מיון לוחמות" screens women on fitness, and says nothing about a boy.
+  const ad = { roleTitle: "לוחם הגנה אווירית", category: "לחימה", combat: true, competitiveness: "medium", daparFloor: 30, combatFitnessDemand: 4, requirements: ["נשים דרך מיון לוחמות"] };
+  const weak = { assessmentSignals: { combatDetails: { run3kmBand: "over_15", pullUpsBand: "0_to_5" } }, medicalProfile: 82, daparScore: 80 };
+  assert.ok(admissionChance(ad, { ...weak, gender: "female" }).reason.includes("כושר"));
+  assert.ok(!admissionChance(ad, { ...weak, gender: "male" }).reason.includes("כושר"));
+
+  const roles = [
+    { roleTitle: "לוחם יהל״ם", category: "לחימה", combat: true, requirements: ["פרופיל 82 ומעלה", "גיבוש 4-5 ימים", "נשים במסלול ייעודי"], avoidanceSignals: ["office_only"] },
+  ];
+  const [entry] = rolesForAi(roles, { gender: "male", medicalProfile: 97, daparScore: 80, assessmentSignals: { rolesAvoided: ["office_only"], environment: "office" } });
+  assert.deepEqual(entry.promptRequirements, ["גיבוש 4-5 ימים"]);
+  assert.deepEqual(entry.requirements, ["פרופיל 82 ומעלה", "גיבוש 4-5 ימים"]);
+  assert.deepEqual(entry.clashes, [], "chose an office environment: the office is not a clash");
+  const [atBar] = rolesForAi(roles, { gender: "male", medicalProfile: 82, daparScore: 80 });
+  assert.ok(atBar.promptRequirements.includes("פרופיל 82 ומעלה"), "a floor the candidate sits right at stays");
+});
+
+test("round 3: MedicalInstruction ranks medicine and teaching above other desk roles", async () => {
+  const { normalizeRoleV3 } = await import("../utils/roleCatalogV3.js");
+  const profile = { combatPreference: "MedicalInstruction", focus: "Medical", physicalActivityLevel: "Medium", medicalProfile: 64, daparScore: 60, gender: "female" };
+  const medic = scoreRole(normalizeRoleV3({ roleTitle: "מדריך/ת רפואה דחופה", combat: false, interestAreas: ["medical"], preferenceTags: ["medicine"] }), profile);
+  const desk = scoreRole(normalizeRoleV3({ roleTitle: "מש\"ק/ית תובלה", combat: false, interestAreas: ["logistics"], preferenceTags: ["logistics"] }), profile);
+  assert.ok(medic.basePercent > desk.basePercent, `${medic.basePercent} > ${desk.basePercent}`);
+});
+
+test("owner answers 2026-10-16: rear low, intelligence better, computer cluster strict, low-placement role low", async () => {
+  const { admissionChance } = await import("../utils/roleScoring.js");
+  const boy = { gender: "male", medicalProfile: 97, daparScore: 70 };
+  const rear = { roleTitle: "ספק/ית", category: "לוגיסטיקה", combat: false, competitiveness: "medium" };
+  assert.equal(admissionChance(rear, boy).level, "low");
+  assert.ok(admissionChance(rear, boy).reason.includes("נמוך"));
+  assert.notEqual(admissionChance(rear, { ...boy, gender: "female" }).level, "low");
+  const intel = { roleTitle: "חוקר/ת מודיעין אוויר", category: "מודיעין / אוויר", combat: false, competitiveness: "high" };
+  assert.equal(admissionChance(intel, boy).level, "medium");
+  const medic = { roleTitle: "חובש/ת קדמי/ת", category: "רפואה", combat: false, competitiveness: "high", daparFloor: 50, requirements: ["סיכויי שיבוץ נמוכים"] };
+  const m = admissionChance(medic, { gender: "female", medicalProfile: 97, daparScore: 90 });
+  assert.equal(m.level, "low");
+  assert.ok(m.reason.startsWith("סיכויי השיבוץ בתפקיד נמוכים"));
 });

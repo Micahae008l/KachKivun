@@ -14,7 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chatJson } from "../utils/llmClient.js";
 import { getIdfRoleCatalogV3 } from "../utils/roleCatalogV3.js";
-import { rolesForAi, rankRolesV3, normalizeAssessmentSignals } from "../utils/roleScoring.js";
+import { rolesForAi, rankRolesV3, normalizeAssessmentSignals, requestedButBlocked } from "../utils/roleScoring.js";
 import { finalizeRolesV3 } from "../utils/roleRecommendationV3.js";
 import {
   buildMatchUserPrompt,
@@ -74,6 +74,7 @@ for (const engine of engines) {
     assessmentSignals,
     filteredRoleCount: pool.length,
     personalRequest: profileForMatch.personalRequest,
+    blockedRequested: engine === "v2" ? requestedButBlocked(catalog.roles, profileForMatch) : [],
   });
 
   console.log(`\n${"=".repeat(70)}\nengine ${engine} · pool ${pool.length}${engine === "v2" ? ": " + pool.slice(0, 12).map((r) => r.roleTitle).join(" | ") + " …" : ""}`);
@@ -81,7 +82,7 @@ for (const engine of engines) {
   for (const model of models) {
     const startedAt = Date.now();
     try {
-      const completion = await chatJson({ model, system, user, maxTokens: 8000, temperature: 0 });
+      const completion = await chatJson({ model, system, user, maxTokens: 16000, temperature: 0 });
       const raw = parseRolesArray(completion.content) || [];
       const personalAnswer = parsePersonalAnswer(completion.content);
       const roles = engine === "v3" ? finalizeRolesV3(raw, pool, profileForMatch) : finalizeRolesV2(raw, pool);

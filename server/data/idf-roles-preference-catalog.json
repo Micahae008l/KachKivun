@@ -137,8 +137,7 @@
         "interviewing",
         "helping-people",
         "aviation",
-        "drones",
-        "sea"
+        "drones"
       ],
       "signals": [
         "העברת מבדקים",
@@ -146,7 +145,7 @@
         "כושר אבחון",
         "אחריות"
       ],
-      "bestFor": "Good fit for: people/admin, helping soldiers, aviation, drones/remote systems, sea/navy environment",
+      "bestFor": "Good fit for: people/admin, helping soldiers, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes hr, welfare, psychology, interviewing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
@@ -488,10 +487,9 @@
       "combat": false,
       "selective": false,
       "preferenceTags": [
-        "networks",
-        "it",
-        "electronics",
-        "sea"
+        "service",
+        "hr",
+        "admin"
       ],
       "signals": [
         "שירות למלש\"בים",
@@ -499,8 +497,8 @@
         "תקשורת",
         "אחריות"
       ],
-      "bestFor": "Good fit for: IT/networking, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: people/admin",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes service, hr, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -511,8 +509,7 @@
       "selective": false,
       "preferenceTags": [
         "admin",
-        "service",
-        "sea"
+        "service"
       ],
       "signals": [
         "שירותיות",
@@ -520,8 +517,8 @@
         "קשב",
         "הכוונה"
       ],
-      "bestFor": "Good fit for: sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes admin, service, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for broad service preferences.",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes admin, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -643,10 +640,7 @@
         "video",
         "creative",
         "writing",
-        "content",
-        "networks",
-        "it",
-        "electronics"
+        "content"
       ],
       "signals": [
         "כתיבה עיתונאית",
@@ -654,7 +648,7 @@
         "עריכה",
         "סקרנות"
       ],
-      "bestFor": "Good fit for: video editing / post-production, camera/video work, writing/research, content creation, IT/networking",
+      "bestFor": "Good fit for: video editing / post-production, camera/video work, writing/research, content creation",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes editing, video, creative, writing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
@@ -667,11 +661,7 @@
       "preferenceTags": [
         "writing",
         "content",
-        "creative",
-        "networks",
-        "it",
-        "electronics",
-        "sea"
+        "creative"
       ],
       "signals": [
         "כתיבה",
@@ -679,8 +669,8 @@
         "תקשורת",
         "דיוק"
       ],
-      "bestFor": "Good fit for: writing/research, content creation, IT/networking, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes writing, content, creative, networks. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: writing/research, content creation",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes writing, content, creative. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -1024,8 +1014,7 @@
       "selective": true,
       "preferenceTags": [
         "teaching",
-        "public-speaking",
-        "sea"
+        "public-speaking"
       ],
       "signals": [
         "הטמעת מערכות",
@@ -1033,8 +1022,8 @@
         "מחשבים",
         "יחסי אנוש"
       ],
-      "bestFor": "Good fit for: teaching/instruction, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: teaching/instruction",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -1372,8 +1361,7 @@
       "selective": true,
       "preferenceTags": [
         "teaching",
-        "public-speaking",
-        "sea"
+        "public-speaking"
       ],
       "signals": [
         "הדרכה",
@@ -1381,8 +1369,8 @@
         "עבודה עם מתנדבים",
         "יחסי אנוש"
       ],
-      "bestFor": "Good fit for: teaching/instruction, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: teaching/instruction",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -1393,8 +1381,7 @@
       "selective": true,
       "preferenceTags": [
         "teaching",
-        "public-speaking",
-        "sea"
+        "public-speaking"
       ],
       "signals": [
         "חינוך חברתי",
@@ -1402,8 +1389,8 @@
         "הכלה",
         "סבלנות"
       ],
-      "bestFor": "Good fit for: teaching/instruction, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: teaching/instruction",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -1414,7 +1401,7 @@
       "selective": true,
       "preferenceTags": [
         "leadership",
-        "sea"
+        "teaching"
       ],
       "signals": [
         "חינוך",
@@ -1422,8 +1409,8 @@
         "חוסן",
         "עבודה עם אנשים"
       ],
-      "bestFor": "Good fit for: leadership, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: leadership, teaching/instruction",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership, teaching. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -1648,7 +1635,8 @@
       "preferenceTags": [
         "sports",
         "fitness",
-        "teaching"
+        "teaching",
+        "fieldwork"
       ],
       "signals": [
         "כושר",
@@ -1657,7 +1645,7 @@
         "מוטיבציה"
       ],
       "bestFor": "Good fit for: sports/fitness, fitness, teaching/instruction",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sports, fitness, teaching. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes sports, fitness, teaching, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_family_validated",
       "validationSource": "Official/common IDF physical training instructor role"
     },
@@ -1668,8 +1656,7 @@
       "selective": false,
       "preferenceTags": [
         "admin",
-        "service",
-        "sea"
+        "service"
       ],
       "signals": [
         "מספרים",
@@ -1677,8 +1664,8 @@
         "אחריות תקציבית",
         "אקסל"
       ],
-      "bestFor": "Good fit for: sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes admin, service, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for broad service preferences.",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes admin, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -1881,10 +1868,10 @@
       "combat": true,
       "selective": false,
       "preferenceTags": [
-        "sea",
         "combat",
         "fitness",
-        "fieldwork"
+        "fieldwork",
+        "intelligence"
       ],
       "signals": [
         "סבלנות",
@@ -1892,8 +1879,8 @@
         "יכולת תצפית",
         "עצמאות בשטח"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: research/intelligence thinking, combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -1991,7 +1978,6 @@
       "combat": true,
       "selective": true,
       "preferenceTags": [
-        "sea",
         "combat",
         "fitness",
         "fieldwork",
@@ -2004,8 +1990,8 @@
         "קור רוח",
         "עבודת צוות"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes combat, fitness, fieldwork, religion. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -2063,7 +2049,8 @@
       "preferenceTags": [
         "combat",
         "fitness",
-        "fieldwork"
+        "fieldwork",
+        "intelligence"
       ],
       "signals": [
         "קשב וריכוז",
@@ -2071,8 +2058,8 @@
         "ניווט",
         "הסתגלות בשטח עוין"
       ],
-      "bestFor": "Good fit for: combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: research/intelligence thinking, combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -2157,13 +2144,9 @@
       "selective": false,
       "preferenceTags": [
         "math",
-        "physics",
-        "chemistry",
-        "biology",
-        "research",
-        "sea",
         "combat",
-        "fitness"
+        "fitness",
+        "fieldwork"
       ],
       "signals": [
         "חשיבה ריאלית/מתמטית",
@@ -2171,8 +2154,8 @@
         "תפיסה מרחבית",
         "שדה"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes math, physics, chemistry, biology. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes math, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -2589,7 +2572,6 @@
       "combat": true,
       "selective": true,
       "preferenceTags": [
-        "sea",
         "combat",
         "fitness",
         "fieldwork",
@@ -2601,8 +2583,8 @@
         "כושר גופני גבוה",
         "קור רוח"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness, animals/dogs",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: combat interest, fitness, animals/dogs",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes combat, fitness, fieldwork, animals. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -2639,8 +2621,7 @@
         "war-room",
         "attention-to-detail",
         "aviation",
-        "drones",
-        "sea"
+        "drones"
       ],
       "signals": [
         "מוטוריקה",
@@ -2648,7 +2629,7 @@
         "אוריינטציה טכנולוגית",
         "תפעול"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
+      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
@@ -2661,8 +2642,7 @@
       "preferenceTags": [
         "operations",
         "war-room",
-        "attention-to-detail",
-        "sea"
+        "attention-to-detail"
       ],
       "signals": [
         "חמ\"ל",
@@ -2670,8 +2650,8 @@
         "ריכוז",
         "קבלת החלטות"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: ops rooms / live coordination",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -2686,8 +2666,7 @@
         "electronics",
         "operations",
         "war-room",
-        "attention-to-detail",
-        "sea"
+        "attention-to-detail"
       ],
       "signals": [
         "ניהול אירועים",
@@ -2695,7 +2674,7 @@
         "עמידה בלחץ",
         "חמ\"ל"
       ],
-      "bestFor": "Good fit for: IT/networking, ops rooms / live coordination, sea/navy environment",
+      "bestFor": "Good fit for: IT/networking, ops rooms / live coordination",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, operations. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
@@ -2708,8 +2687,7 @@
       "preferenceTags": [
         "operations",
         "war-room",
-        "attention-to-detail",
-        "sea"
+        "attention-to-detail"
       ],
       "signals": [
         "חמ\"ל",
@@ -2717,8 +2695,8 @@
         "ריכוז",
         "תגובה מהירה"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: ops rooms / live coordination",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -2730,8 +2708,7 @@
       "preferenceTags": [
         "operations",
         "war-room",
-        "attention-to-detail",
-        "sea"
+        "attention-to-detail"
       ],
       "signals": [
         "ריכוז קריטי",
@@ -2739,8 +2716,8 @@
         "התמדה",
         "אחריות לחיי אדם"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: ops rooms / live coordination",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal",
       "nightDuty": true
@@ -2781,7 +2758,6 @@
         "attention-to-detail",
         "aviation",
         "drones",
-        "sea",
         "religion",
         "service"
       ],
@@ -2791,7 +2767,7 @@
         "קשב",
         "עבודת צוות"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
+      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
@@ -2809,7 +2785,6 @@
         "attention-to-detail",
         "aviation",
         "drones",
-        "sea",
         "religion",
         "service"
       ],
@@ -2819,7 +2794,7 @@
         "קשב",
         "עבודת צוות"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems, sea/navy environment",
+      "bestFor": "Good fit for: ops rooms / live coordination, aviation, drones/remote systems",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, aviation. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
@@ -3398,8 +3373,7 @@
         "math",
         "physics",
         "chemistry",
-        "biology",
-        "sea"
+        "biology"
       ],
       "signals": [
         "כימיה",
@@ -3407,7 +3381,7 @@
         "אנגלית",
         "מחקר"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking, sea/navy environment",
+      "bestFor": "Good fit for: research/intelligence thinking",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, math, physics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal",
@@ -3415,12 +3389,14 @@
     },
     {
       "roleTitle": "אנליסט בטחוני",
-      "category": "מודיעין / מחקר",
+      "category": "סיווג ומהימנות",
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "intelligence",
-        "research"
+        "research",
+        "data",
+        "attention-to-detail",
+        "law"
       ],
       "signals": [
         "ניתוח מידע",
@@ -3428,14 +3404,14 @@
         "מחקר",
         "הסקת מסקנות"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: security vetting analysts",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes research, data, attention-to-detail, law. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
     {
       "roleTitle": "אנליסט/ית ביטחוני/ת",
-      "category": "מודיעין / מחקר",
+      "category": "סיווג ומהימנות",
       "combat": false,
       "selective": true,
       "preferenceTags": [
@@ -3660,8 +3636,7 @@
       "selective": true,
       "preferenceTags": [
         "intelligence",
-        "research",
-        "sea"
+        "research"
       ],
       "signals": [
         "חשיבה אנליטית עילאית",
@@ -3669,8 +3644,8 @@
         "מצוינות אקדמית",
         "פיתוח אלגוריתמי"
       ],
-      "bestFor": "Good fit for: research/intelligence thinking, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: research/intelligence thinking",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes intelligence, research. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -3984,7 +3959,9 @@
       "combat": false,
       "selective": false,
       "preferenceTags": [
-        "sea"
+        "admin",
+        "attention-to-detail",
+        "service"
       ],
       "signals": [
         "עיבוד נתונים",
@@ -3992,8 +3969,8 @@
         "דיוק",
         "ניהול משרדי"
       ],
-      "bestFor": "Good fit for: sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for broad service preferences.",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes admin, attention-to-detail, service. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -4390,9 +4367,7 @@
         "welfare",
         "psychology",
         "interviewing",
-        "helping-people",
-        "driving",
-        "logistics"
+        "admin"
       ],
       "signals": [
         "ניהול כוח אדם",
@@ -4441,10 +4416,7 @@
         "welfare",
         "psychology",
         "interviewing",
-        "helping-people",
-        "sea",
-        "driving",
-        "logistics"
+        "helping-people"
       ],
       "signals": [
         "חוסן נפשי",
@@ -4452,7 +4424,7 @@
         "הכלה קיצונית",
         "יחסי אנוש"
       ],
-      "bestFor": "Good fit for: people/admin, helping soldiers, sea/navy environment, driving, logistics/supply",
+      "bestFor": "Good fit for: people/admin, helping soldiers",
       "aiRecommendationHint": "Suggest as an option when the user clearly likes hr, welfare, psychology, interviewing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
@@ -4463,9 +4435,9 @@
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "sea",
-        "driving",
-        "logistics"
+        "hr",
+        "admin",
+        "attention-to-detail"
       ],
       "signals": [
         "תכנון",
@@ -4473,8 +4445,8 @@
         "עברית גבוהה",
         "ניהול נתונים"
       ],
-      "bestFor": "Good fit for: sea/navy environment, driving, logistics/supply",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, driving, logistics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: people/admin",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes hr, admin, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -4591,9 +4563,10 @@
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "sea",
-        "driving",
-        "logistics"
+        "welfare",
+        "helping-people",
+        "hr",
+        "interviewing"
       ],
       "signals": [
         "אמפתיה חזקה",
@@ -4601,8 +4574,8 @@
         "יחסי אנוש מעולים",
         "אחריות"
       ],
-      "bestFor": "Good fit for: sea/navy environment, driving, logistics/supply",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, driving, logistics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: helping soldiers, people/admin",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes welfare, helping-people, hr, interviewing. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -4614,8 +4587,7 @@
       "preferenceTags": [
         "teaching",
         "public-speaking",
-        "leadership",
-        "sea"
+        "leadership"
       ],
       "signals": [
         "פיקוד",
@@ -4623,8 +4595,8 @@
         "בגרות",
         "סמכותיות"
       ],
-      "bestFor": "Good fit for: teaching/instruction, leadership, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, leadership, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: teaching/instruction, leadership",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, leadership. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -5487,11 +5459,10 @@
       "combat": false,
       "selective": true,
       "preferenceTags": [
-        "networks",
-        "it",
-        "electronics",
         "teaching",
-        "public-speaking"
+        "public-speaking",
+        "emergency",
+        "helping-people"
       ],
       "signals": [
         "הדרכה",
@@ -5499,8 +5470,8 @@
         "תקשורת עם אוכלוסייה",
         "בגרות"
       ],
-      "bestFor": "Good fit for: IT/networking, teaching/instruction",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, teaching. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: teaching/instruction, emergency care",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes teaching, public-speaking, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -5555,8 +5526,7 @@
       "preferenceTags": [
         "operations",
         "war-room",
-        "attention-to-detail",
-        "sea"
+        "attention-to-detail"
       ],
       "signals": [
         "חמ\"ל",
@@ -5564,8 +5534,8 @@
         "דיווחים",
         "סדר"
       ],
-      "bestFor": "Good fit for: ops rooms / live coordination, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: ops rooms / live coordination",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes operations, war-room, attention-to-detail. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -5618,7 +5588,6 @@
       "combat": true,
       "selective": true,
       "preferenceTags": [
-        "sea",
         "combat",
         "fitness",
         "fieldwork"
@@ -5629,8 +5598,8 @@
         "כושר גופני",
         "אומץ"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -5681,8 +5650,8 @@
       "combat": true,
       "selective": true,
       "preferenceTags": [
-        "leadership",
-        "sea"
+        "aviation",
+        "leadership"
       ],
       "signals": [
         "תפיסה מרחבית",
@@ -5690,8 +5659,8 @@
         "חלוקת קשב עילאית",
         "פיקוד"
       ],
-      "bestFor": "Good fit for: leadership, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: aviation, leadership",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes aviation, leadership. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -5702,7 +5671,6 @@
       "selective": true,
       "preferenceTags": [
         "leadership",
-        "sea",
         "logistics",
         "admin",
         "driving"
@@ -5713,8 +5681,8 @@
         "תכנון",
         "אחריות"
       ],
-      "bestFor": "Good fit for: leadership, sea/navy environment, logistics/supply, driving",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership, sea, logistics, admin. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: leadership, logistics/supply, driving",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes leadership, logistics, admin, driving. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -5958,8 +5926,7 @@
       "preferenceTags": [
         "medicine",
         "emergency",
-        "helping-people",
-        "sea"
+        "helping-people"
       ],
       "signals": [
         "ניהול תורים",
@@ -5967,8 +5934,8 @@
         "שירותיות",
         "דיוק"
       ],
-      "bestFor": "Good fit for: medical work, emergency care, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, emergency, helping-people, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: medical work, emergency care",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, emergency, helping-people. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -6111,7 +6078,6 @@
         "medicine",
         "emergency",
         "helping-people",
-        "sea",
         "combat",
         "fitness",
         "fieldwork"
@@ -6122,8 +6088,8 @@
         "קור רוח תחת אש",
         "עמידה בלחץ"
       ],
-      "bestFor": "Good fit for: medical work, emergency care, sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, emergency, helping-people, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: medical work, emergency care, combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes medicine, emergency, helping-people, combat. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -6306,7 +6272,6 @@
       "combat": true,
       "selective": false,
       "preferenceTags": [
-        "sea",
         "combat",
         "fitness",
         "fieldwork"
@@ -6317,8 +6282,8 @@
         "קור רוח",
         "קשב לפרטים"
       ],
-      "bestFor": "Good fit for: sea/navy environment, combat interest, fitness",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes sea, combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: combat interest, fitness",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes combat, fitness, fieldwork. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },
@@ -6329,8 +6294,7 @@
       "selective": true,
       "preferenceTags": [
         "languages",
-        "intelligence",
-        "sea"
+        "intelligence"
       ],
       "signals": [
         "תיאום בין גורמים",
@@ -6338,8 +6302,8 @@
         "שפות",
         "אחריות"
       ],
-      "bestFor": "Good fit for: languages/translation, research/intelligence thinking, sea/navy environment",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes languages, intelligence, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: languages/translation, research/intelligence thinking",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes languages, intelligence. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "official_public_validated",
       "validationSource": "Mitgaisim / IDF official-public role pages or role directory; verify current eligibility in personal portal"
     },
@@ -6373,7 +6337,6 @@
         "networks",
         "it",
         "electronics",
-        "sea",
         "mechanics"
       ],
       "signals": [
@@ -6382,8 +6345,8 @@
         "ניהול רשתות",
         "אוריינטציה למחשבים"
       ],
-      "bestFor": "Good fit for: IT/networking, sea/navy environment, hands-on technical work",
-      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, sea. For combat roles, present neutrally and include safety/official-eligibility caveat.",
+      "bestFor": "Good fit for: IT/networking, hands-on technical work",
+      "aiRecommendationHint": "Suggest as an option when the user clearly likes networks, it, electronics, mechanics. For combat roles, present neutrally and include safety/official-eligibility caveat.",
       "validationLevel": "seed_normalized",
       "validationSource": "User seed list normalized; many entries also appear in official Mitgaisim role families; verify current eligibility in portal"
     },

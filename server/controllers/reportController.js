@@ -181,7 +181,7 @@ export async function generateReport(req, res) {
 - אם ציין העדפת חמ"ש — כבד את זה ובחר תפקידים שמתאימים לטווח הזה.
 - אם ציין קרבה לבית — בחר בסיסים/תפקידים שמתאימים גיאוגרפית.
 - שים דגש על "למה זה מתאים לך ספציפית" ולא הסברים גנריים.
-- חמ"ש (אורך שירות) ומיקום: ציין רק אם ידוע לך בוודאות מהתפקיד. אם אינך בטוח — כתוב "משתנה לפי מסלול — יש לוודא במיטב". אל תמציא מספרים או שמות בסיסים.
+- חמ"ש (אורך שירות) ומיקום: ציין רק אם ידוע לך בוודאות מהתפקיד. אם אינך בטוח, כתוב "משתנה לפי מסלול, יש לוודא במיטב". אל תמציא מספרים או שמות בסיסים.
 
 ## מבנה JSON
 
@@ -202,7 +202,7 @@ export async function generateReport(req, res) {
       "tags": ["string — עד 5 תגיות"],
       "fitReason": "string — משפט אחד מנוסח אישית: 'אתה מתאים כי...'",
       "riskNote": "string — סיכון/חסם אם קיים, ריק אם אין",
-      "serviceLength": "string — חמ\"ש אם ידוע בוודאות, אחרת 'משתנה לפי מסלול — יש לוודא במיטב'",
+      "serviceLength": "string: חמ\"ש אם ידוע בוודאות, אחרת 'משתנה לפי מסלול, יש לוודא במיטב'",
       "location": "string — בסיס/אזור אם ידוע בוודאות, אחרת 'משתנה לפי מסלול'"
     }
   ],
@@ -371,7 +371,7 @@ ${JSON.stringify(
           ...r,
           roleTitle: pr?.roleTitle || roleTitle,
           matchPercentage: blendPercent(basePercent, r.adjustment),
-          serviceLength: pr?.serviceLengthLabel || "משתנה לפי מסלול — יש לוודא במיטב",
+          serviceLength: pr?.serviceLengthLabel || "משתנה לפי מסלול, יש לוודא במיטב",
           location: pr?.locations?.length ? pr.locations.join(", ") : "משתנה לפי מסלול",
         };
       });

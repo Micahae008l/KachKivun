@@ -6,7 +6,7 @@
       "daparFloor": 40,
       "medicalFloor": 72,
       "serviceLengthMonths": 24,
-      "serviceLengthLabel": "שירות חובה מלא; קורס מדריכות כחודשיים",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו קורס מדריכות כחודשיים",
       "locations": [
         "בסיסי אימון חטיבתיים ופיקודיים",
         "מרכז לאומי לאימונים ביבשה, צאלים"
@@ -31,14 +31,16 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-07-18",
-        "source": "mitgaisim.idf.il/תפקידים/מדריכת-חיר"
-      }
+        "source": "mitgaisim.idf.il/תפקידים/מדריכת-חיר",
+        "note": "genderEligibility female_only: instructor track not open to men (owner-confirmed 2026-10-16)."
+      },
+      "genderEligibility": "female_only"
     },
     "מדריך/ת הנדסה קרבית": {
       "daparFloor": 40,
       "medicalFloor": 72,
       "serviceLengthMonths": 24,
-      "serviceLengthLabel": "שירות חובה מלא; טירונות 02 (3 שבועות) + קורס קמ\"ד (4 חודשים)",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות 02 (3 שבועות) + קורס קמ\"ד (4 חודשים)",
       "locations": [
         "הל\"ץ, בית הספר למקצועות ההנדסה"
       ],
@@ -62,14 +64,16 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-07-18",
-        "source": "mitgaisim.idf.il/תפקידים/מדריכת-הנדסה-קרבית"
-      }
+        "source": "mitgaisim.idf.il/תפקידים/מדריכת-הנדסה-קרבית",
+        "note": "genderEligibility female_only: instructor track not open to men (owner-confirmed 2026-10-16)."
+      },
+      "genderEligibility": "female_only"
     },
     "מדריך/ת ERP": {
       "daparFloor": 50,
       "medicalFloor": 45,
       "serviceLengthMonths": 24,
-      "serviceLengthLabel": "שירות חובה מלא; הכשרה כ-8 שבועות",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו הכשרה כ-8 שבועות",
       "locations": [
         "מפקדת קצין משאבי האנוש הראשית, רמת גן",
         "הדרכות ביחידות ברחבי הארץ"
@@ -77,7 +81,6 @@
       "dayToDay": "מכשירות קצינים וחיילים על מערכות המידע והדיגיטל של חיל משאבי האנוש, מלווים כניסת קצינים חדשים לתפקיד ויוצאים להדרכות בבסיסים.",
       "requirements": [
         "פרופיל 45 ומעלה",
-        "קב\"א 52 ומעלה",
         "הדרכה 3+, הפעלה טכנית 2+ במא\"ה"
       ],
       "physicalDemand": 1,
@@ -94,7 +97,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-07-18",
-        "source": "mitgaisim.idf.il/תפקידים/מדריכת-erp-ודיגיטל"
+        "source": "mitgaisim.idf.il/תפקידים/מדריכת-erp-ודיגיטל",
+        "note": "Removed obsolete \"קב\"א 52 ומעלה\" 2026-10-16 (קב\"א is no longer shown to candidates)."
       }
     },
     "מאבחן/ת צוות אוויר": {
@@ -132,14 +136,14 @@
       "daparFloor": 70,
       "medicalFloor": 21,
       "serviceLengthMonths": 24,
-      "serviceLengthLabel": "שירות חובה מלא; קורס כ-19 שבועות בבסמ\"ח",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו קורס כ-19 שבועות בבסמ\"ח",
       "locations": [
         "בסמ\"ח (הכשרה)",
         "יחידות הגנת הסייבר"
       ],
       "dayToDay": "מאתרים, מנתחים ומטפלים באיומי סייבר בזמן אמת, ומבצעים חקירת עומק ופורנזיקה דיגיטלית לזיהוי מקור התקיפה והיקפה.",
       "requirements": [
-        "דפ\"ר 70 ומעלה",
+        "דפ\"ר 70 ומעלה (80 לבנים בעלי פרופיל קרבי)",
         "סיווג ביטחוני",
         "לא נדרש ידע מוקדם, רק חשיבה לוגית"
       ],
@@ -162,23 +166,22 @@
       }
     },
     "לוחם בגולני": {
-      "daparFloor": 40,
+      "daparFloor": null,
       "medicalFloor": 82,
       "serviceLengthMonths": 32,
-      "serviceLengthLabel": "שירות חובה מלא; טירונות כ-4 חודשים + אימון מתקדם כ-3 חודשים",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות כ-4 חודשים + אימון מתקדם כ-3 חודשים",
       "locations": [
         "גדודי חטיבת גולני"
       ],
       "dayToDay": "פעילות מבצעית בכל גזרות הלחימה: מארבים, סיורים ומשימות מיוחדות, לחימה רגלית ובאמצעות נגמ\"שים.",
       "requirements": [
         "פרופיל 82 ומעלה",
-        "BMI 17-32",
-        "מיון גיבוש"
+        "BMI 17-32"
       ],
       "physicalDemand": 5,
       "techIntensity": 1,
       "peopleIntensity": 2,
-      "competitiveness": "high",
+      "competitiveness": "low",
       "keyDimensions": [
         "spatialPerception",
         "frameworkBehavior",
@@ -190,27 +193,27 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-07-18",
-        "source": "mitgaisim.idf.il/roles/לוחם-בחטיבת-גולני"
+        "source": "mitgaisim.idf.il/roles/לוחם-בחטיבת-גולני",
+        "note": "Regular לוחם: no דפ\"ר floor and no גיבוש (owner-confirmed 2026-10-16); assignment by the preference questionnaire, so competitiveness low."
       }
     },
     "לוחם בגבעתי": {
-      "daparFloor": 40,
+      "daparFloor": null,
       "medicalFloor": 82,
       "serviceLengthMonths": 32,
-      "serviceLengthLabel": "שירות חובה מלא; מסלול הכשרה כ-10 חודשים (טירונות 4 + מתקדם 3 + מסלול 3)",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו מסלול הכשרה כ-10 חודשים (טירונות 4 + מתקדם 3 + מסלול 3)",
       "locations": [
         "גדודי חטיבת גבעתי"
       ],
       "dayToDay": "פעילות מבצעית בכל גזרות הלחימה: מארבים, סיורים ומשימות. במהלך המסלול אפשריות הכשרות: חובשים, צלפים, נשק כבד וקשר.",
       "requirements": [
         "פרופיל 82 ומעלה",
-        "BMI 17-32",
-        "מיון גיבוש"
+        "BMI 17-32"
       ],
       "physicalDemand": 5,
       "techIntensity": 1,
       "peopleIntensity": 2,
-      "competitiveness": "high",
+      "competitiveness": "low",
       "keyDimensions": [
         "spatialPerception",
         "frameworkBehavior",
@@ -222,14 +225,15 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-07-18",
-        "source": "mitgaisim.idf.il/roles/לוחם-בחטיבת-גבעתי"
+        "source": "mitgaisim.idf.il/roles/לוחם-בחטיבת-גבעתי",
+        "note": "Regular לוחם: no דפ\"ר floor and no גיבוש (owner-confirmed 2026-10-16); assignment by the preference questionnaire, so competitiveness low."
       }
     },
     "לוחם הנדסה קרבית": {
       "daparFloor": 40,
       "medicalFloor": 82,
       "serviceLengthMonths": 32,
-      "serviceLengthLabel": "שירות חובה מלא; טירונות קרבית + הכשרת הנדסה (חבלה, מיקוש, צמ\"ה / רק\"ם לפי מסלול)",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות קרבית + הכשרת הנדסה (חבלה, מיקוש, צמ\"ה / רק\"ם לפי מסלול)",
       "locations": [
         "יחידות חיל ההנדסה הקרבית",
         "הל\"ץ, בית הספר למקצועות ההנדסה"
@@ -263,7 +267,7 @@
       "daparFloor": 50,
       "medicalFloor": 64,
       "serviceLengthMonths": 32,
-      "serviceLengthLabel": "שירות חובה מלא; קורס חובשים קרביים כ-3 חודשים",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו קורס חובשים קרביים כ-3 חודשים",
       "locations": [
         "יחידות שדה ומרפאות יחידתיות"
       ],
@@ -348,7 +352,13 @@
         "source": "mitgaisim.idf.il/roles/לוחם-ביחידת-669/"
       },
       "daparFloor": 50,
-      "serviceLengthLabel": "הכשרה 1.5 שנים; נדרשת התחייבות קבע (אורכה לא מפורסם רשמית)"
+      "serviceLengthLabel": "הכשרה 1.5 שנים; נדרשת התחייבות קבע (אורכה לא מפורסם רשמית)",
+      "interestAreas": [
+        "air_force",
+        "combat",
+        "medical"
+      ],
+      "category": "לחימה עילית / חילוץ / חיל האוויר"
     },
     "לוחם שייטת 13": {
       "medicalFloor": 82,
@@ -387,7 +397,12 @@
         "source": "mitgaisim.idf.il/roles/לוחם-ביחידת-שלדג/"
       },
       "daparFloor": 50,
-      "serviceLengthLabel": "3 שנים + 18 חודשי קבע"
+      "serviceLengthLabel": "32 חודשים, ואחריהם 18 חודשי קבע",
+      "interestAreas": [
+        "air_force",
+        "combat"
+      ],
+      "category": "לחימה עילית / חיל האוויר"
     },
     "טייס": {
       "medicalFloor": 97,
@@ -407,7 +422,8 @@
         "source": "mitgaisim.idf.il/תפקידים/טייסת/"
       },
       "daparFloor": 60,
-      "serviceLengthLabel": "קורס 3 שנים כולל תואר + 7 שנות קבע"
+      "serviceLengthLabel": "קורס 3 שנים כולל תואר + 7 שנות קבע",
+      "combatFitnessDemand": 3
     },
     "חובל": {
       "medicalFloor": 82,
@@ -427,7 +443,8 @@
         "source": "mitgaisim.idf.il/תפקידים/חובלת/"
       },
       "daparFloor": 60,
-      "serviceLengthLabel": "קורס כ-2.5 שנים כולל תואר + 5 שנות קבע"
+      "serviceLengthLabel": "קורס כ-2.5 שנים כולל תואר + 5 שנות קבע",
+      "combatFitnessDemand": 3
     },
     "צוללן": {
       "medicalFloor": 82,
@@ -517,11 +534,13 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/מסלול-אעמ/"
+        "source": "mitgaisim.idf.il/roles/מסלול-אעמ/",
+        "note": "dayToDay from the official mitgaisim page, 2026-10-16"
       },
       "daparFloor": 80,
       "serviceLengthLabel": "32 חודשים (גם לנשים) + חצי שנת קבע",
-      "medicalFloor": 21
+      "medicalFloor": 21,
+      "dayToDay": "חלק מהמרכז הלאומי לאיסוף מודיעין ולהתרעה: עיבוד וניתוח מידע, עם עבודה במחשבים ובמערכות טכנולוגיות"
     },
     "מסלול שחקים - אמ\"מ": {
       "genderEligibility": "all",
@@ -535,11 +554,19 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/מסלול-אממ/"
+        "source": "mitgaisim.idf.il/roles/מסלול-אממ/",
+        "note": "dayToDay from the official mitgaisim page, 2026-10-16"
       },
       "daparFloor": 80,
       "serviceLengthLabel": "32 חודשים (גם לנשים) + חצי שנת קבע",
-      "medicalFloor": 21
+      "medicalFloor": 21,
+      "dayToDay": "המסלול המרכזי של חטיבת המחקר באמ\"ן: אנליסטים מגבשים תמונת מודיעין ומציגים את משמעויותיה לדרגי קבלת ההחלטות, ודאטא אנליסטים מנתחים מידע גולמי בכלים טכנולוגיים",
+      "preferenceTags": [
+        "intelligence",
+        "math",
+        "research",
+        "geopolitics"
+      ]
     },
     "מסלול שחקים - מח\"א": {
       "genderEligibility": "all",
@@ -553,11 +580,13 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/מסלול-מחא/"
+        "source": "mitgaisim.idf.il/roles/מסלול-מחא/",
+        "note": "dayToDay from the official mitgaisim page, 2026-10-16"
       },
       "daparFloor": 80,
       "serviceLengthLabel": "32 חודשים (גם לנשים) + 1.5 שנות קבע",
-      "medicalFloor": 21
+      "medicalFloor": 21,
+      "dayToDay": "מחקר שמשלב כלים מדעיים וטכנולוגיים, וחשיפה וניתוח של איומים טכנולוגיים-מודיעיניים"
     },
     "מסלול שחקים - שוב\"ל": {
       "genderEligibility": "all",
@@ -590,11 +619,19 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/מסלול-שממ/"
+        "source": "mitgaisim.idf.il/roles/מסלול-שממ/",
+        "note": "dayToDay from the official mitgaisim page, 2026-10-16"
       },
       "daparFloor": 80,
       "serviceLengthLabel": "32 חודשים (גם לנשים) + חצי שנת קבע",
-      "medicalFloor": 21
+      "medicalFloor": 21,
+      "dayToDay": "יחידה מסווגת באמ\"ן; הקורס עוסק בטכנולוגיה, לימודי מזרח תיכון, שפה ושיטות מחקר",
+      "preferenceTags": [
+        "intelligence",
+        "research",
+        "data",
+        "geopolitics"
+      ]
     },
     "מסלול שחקים - ארזים": {
       "genderEligibility": "all",
@@ -752,7 +789,7 @@
       "competitiveness": "very_high",
       "requirements": [
         "מיוני אשכול מקצועות המחשב",
-        "דפ\"ר 70 ומעלה (80 + 10 יח\"ל טכנולוגיות לבעלי פרופיל קרבי)",
+        "דפ\"ר 70 ומעלה (80 + 10 יח\"ל טכנולוגיות לבנים בעלי פרופיל קרבי)",
         "קד\"צ כ-22 שבועות בבסמ\"ח"
       ],
       "enrichment": {
@@ -771,7 +808,7 @@
       "competitiveness": "very_high",
       "requirements": [
         "מיוני אשכול או מיון ייעודי",
-        "דפ\"ר 70 ומעלה (80 לבעלי פרופיל קרבי)",
+        "דפ\"ר 70 ומעלה (80 לבנים בעלי פרופיל קרבי)",
         "קד\"צ כ-15 שבועות"
       ],
       "enrichment": {
@@ -790,7 +827,7 @@
       "competitiveness": "high",
       "requirements": [
         "מיוני אשכול מקצועות המחשב",
-        "דפ\"ר 70 ומעלה (80 לבעלי פרופיל קרבי)",
+        "דפ\"ר 70 ומעלה (80 לבנים בעלי פרופיל קרבי)",
         "קד\"צ כ-18 שבועות"
       ],
       "enrichment": {
@@ -994,14 +1031,14 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/roles/לוחם-בחטיבת-הצנחנים/"
       },
-      "serviceLengthLabel": "32 חודשים; הכשרה כשנה",
+      "serviceLengthLabel": "32 חודשים, ובתוכם הכשרה של כשנה",
       "daparFloor": null
     },
     "לוחם בנח״ל": {
       "medicalFloor": 82,
       "genderEligibility": "male_only",
       "tier": "standard",
-      "competitiveness": "medium",
+      "competitiveness": "low",
       "requirements": [
         "פרופיל 82 ומעלה, BMI 17-32"
       ],
@@ -1009,7 +1046,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/"
+        "source": "mitgaisim.idf.il/roles/",
+        "note": "owner-confirmed 2026-10-16: no דפ\"ר floor and no גיבוש, assignment by the preference questionnaire"
       },
       "serviceLengthLabel": "32 חודשים",
       "daparFloor": null
@@ -1018,7 +1056,7 @@
       "medicalFloor": 82,
       "genderEligibility": "male_only",
       "tier": "standard",
-      "competitiveness": "medium",
+      "competitiveness": "low",
       "requirements": [
         "פרופיל 82 ומעלה, BMI 17-32"
       ],
@@ -1026,7 +1064,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/"
+        "source": "mitgaisim.idf.il/roles/",
+        "note": "owner-confirmed 2026-10-16: no דפ\"ר floor and no גיבוש, assignment by the preference questionnaire"
       },
       "serviceLengthLabel": "32 חודשים",
       "daparFloor": null
@@ -1047,14 +1086,14 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחםת-חוד-איסוף-קרבי/"
       },
-      "serviceLengthLabel": "32 חודשים (גם לנשים) + מילואים",
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
       "daparFloor": null
     },
     "לוחם שריון": {
       "medicalFloor": 72,
       "genderEligibility": "male_only",
       "tier": "standard",
-      "competitiveness": "medium",
+      "competitiveness": "low",
       "requirements": [
         "פרופיל 72 ומעלה",
         "הפעלה טכנית 3",
@@ -1064,7 +1103,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/לוחם-שריון/"
+        "source": "mitgaisim.idf.il/roles/לוחם-שריון/",
+        "note": "owner-confirmed 2026-10-16: no דפ\"ר floor and no גיבוש, assignment by the preference questionnaire"
       },
       "serviceLengthLabel": "32 חודשים",
       "daparFloor": null
@@ -1073,7 +1113,7 @@
       "medicalFloor": 72,
       "genderEligibility": "all",
       "tier": "standard",
-      "competitiveness": "medium",
+      "competitiveness": "low",
       "requirements": [
         "פרופיל 72 ומעלה, BMI 17-35",
         "נשים דרך מיון לוחמות"
@@ -1082,7 +1122,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/תפקידים/לוחםת-בכוחות-האש-של-חיל-התותחנים/"
+        "source": "mitgaisim.idf.il/תפקידים/לוחםת-בכוחות-האש-של-חיל-התותחנים/",
+        "note": "owner-confirmed 2026-10-16: no דפ\"ר floor and no גיבוש, assignment by the preference questionnaire"
       },
       "serviceLengthLabel": "32 חודשים (גם לנשים)",
       "daparFloor": null
@@ -1091,7 +1132,7 @@
       "medicalFloor": 72,
       "genderEligibility": "all",
       "tier": "standard",
-      "competitiveness": "medium",
+      "competitiveness": "low",
       "requirements": [
         "פרופיל 72 ומעלה, BMI 17-35",
         "עברית 6",
@@ -1102,7 +1143,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/לוחםת-הגנה-אווירית/"
+        "source": "mitgaisim.idf.il/roles/לוחםת-הגנה-אווירית/",
+        "note": "owner-confirmed 2026-10-16: no דפ\"ר floor and no גיבוש, assignment by the preference questionnaire"
       },
       "serviceLengthLabel": "32 חודשים (גם לנשים)",
       "daparFloor": null
@@ -1140,7 +1182,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחםת-חיר-גבולות-קרקל-ברדלס-אריות-הירדן-ולביא-הבקעה/"
       },
-      "serviceLengthLabel": "32 חודשים (גם לנשים) + מילואים",
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
       "daparFloor": null
     },
     "לוחם ברדלס": {
@@ -1158,7 +1200,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחםת-חיר-גבולות-קרקל-ברדלס-אריות-הירדן-ולביא-הבקעה/"
       },
-      "serviceLengthLabel": "32 חודשים (גם לנשים) + מילואים",
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
       "daparFloor": null
     },
     "לוחם אריות הירדן": {
@@ -1176,7 +1218,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחםת-חיר-גבולות-קרקל-ברדלס-אריות-הירדן-ולביא-הבקעה/"
       },
-      "serviceLengthLabel": "32 חודשים (גם לנשים) + מילואים",
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
       "daparFloor": null
     },
     "לוחם חי״ר גבולות": {
@@ -1194,7 +1236,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחםת-חיר-גבולות-קרקל-ברדלס-אריות-הירדן-ולביא-הבקעה/"
       },
-      "serviceLengthLabel": "32 חודשים (גם לנשים) + מילואים",
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
       "daparFloor": null
     },
     "לוחם מג״ב": {
@@ -1304,7 +1346,7 @@
         "enrichedAt": "2026-10-08",
         "source": "timesofisrael.com 05.12.2025; kosherkravi"
       },
-      "serviceLengthLabel": "כ-16 חודשי הכשרה; 32 חודשים",
+      "serviceLengthLabel": "32 חודשים, ובתוכם כ-16 חודשי הכשרה",
       "daparFloor": null
     },
     "לוחם עוקץ": {
@@ -1382,7 +1424,7 @@
         "source": "mitgaisim.idf.il/תפקידים/ילתם/"
       },
       "daparFloor": 50,
-      "serviceLengthLabel": "32 חודשים (גם לנשים); הכשרה כשנה"
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ובתוכם הכשרה של כשנה"
     },
     "לוחם דבור": {
       "medicalFloor": 72,
@@ -1409,20 +1451,16 @@
       "genderEligibility": "all",
       "tier": "standard",
       "competitiveness": "medium",
-      "requirements": [
-        "פרופיל 72 ומעלה",
-        "דפ\"ר 50 ומעלה",
-        "סיווג ביטחוני",
-        "10 שבועות בתל נוף"
-      ],
       "enrichment": {
         "status": "reviewed",
-        "confidence": "high",
-        "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/תפקידים/מפעילת-לוחמה-אלקטרונית/"
+        "confidence": "medium",
+        "enrichedAt": "2026-10-16",
+        "note": "owner-confirmed 2026-10-16: a combat EW role separate from the operator exists. Floor 72 is the general combat minimum (verified fact); other requirements not yet sourced."
       },
-      "daparFloor": 50,
-      "serviceLengthLabel": "32 חודשים (גם לנשים)"
+      "daparFloor": null,
+      "requirements": [
+        "פרופיל 72 ומעלה"
+      ]
     },
     "מפעיל/ת לוחמה אלקטרונית (ל\"א)": {
       "medicalFloor": 72,
@@ -1462,7 +1500,8 @@
         "source": "mitgaisim.idf.il/תפקידים/פרמדיקית/"
       },
       "daparFloor": 70,
-      "serviceLengthLabel": "מסלול כ-1.5 שנים; נשים 32 חודשים"
+      "serviceLengthLabel": "מסלול כ-1.5 שנים (בתוך השירות); נשים 32 חודשים",
+      "combatFitnessDemand": 3
     },
     "מדא\"ג/ית - מדריך/ת אימון גופני": {
       "medicalFloor": 72,
@@ -1481,7 +1520,10 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/מדריךת-כושר-קרבי-מדאגית/"
       },
-      "daparFloor": 30
+      "daparFloor": 30,
+      "physicalDemand": 4,
+      "techIntensity": 1,
+      "peopleIntensity": 5
     },
     "מטיס/ת חוץ כטמ\"ם": {
       "medicalFloor": 64,
@@ -1728,7 +1770,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/roles/מסלול-אחמ-פיתוח/"
       },
-      "serviceLengthLabel": "כ-6 חודשי הכשרה; 32 חודשים (גם לנשים) + 3 שנות קבע"
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ובתוכם כ-6 חודשי הכשרה, ואחריהם 3 שנות קבע"
     },
     "מסלול מט\"מ": {
       "daparFloor": 60,
@@ -1747,7 +1789,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/roles/מסלול-מטמ/"
       },
-      "serviceLengthLabel": "כ-4 חודשי הכשרה במרכז; נשים 32 חודשים"
+      "serviceLengthLabel": "כ-4 חודשי הכשרה במרכז (בתוך השירות); נשים 32 חודשים"
     },
     "מסלול בכיר לדוברי השפה הפרסית": {
       "daparFloor": 50,
@@ -1766,7 +1808,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/מסלול-בכיר-לדוברי-השפה-הפרסית/"
       },
-      "serviceLengthLabel": "4-5 חודשי הכשרה; עבודה במשמרות; נשים 32 חודשים"
+      "serviceLengthLabel": "4-5 חודשי הכשרה (בתוך השירות); עבודה במשמרות; נשים 32 חודשים"
     },
     "מסלולי ערבית (אלמוג, רשף, קדם)": {
       "daparFloor": 50,
@@ -1859,7 +1901,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/roles/מסלול-נץ/"
       },
-      "serviceLengthLabel": "3 חודשי הכשרה; נשים 30 חודשים"
+      "serviceLengthLabel": "3 חודשי הכשרה (בתוך השירות); נשים 30 חודשים"
     },
     "חוקר/ת מודיעין טכנולוגי (מסלול חומה)": {
       "daparFloor": null,
@@ -1876,7 +1918,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/roles/חוקר-מודיעין-טכנולוגי/"
       },
-      "serviceLengthLabel": "טירונות 02 + כ-20 שבועות; נשים 32 חודשים"
+      "serviceLengthLabel": "טירונות 02 + כ-20 שבועות (בתוך השירות); נשים 32 חודשים"
     },
     "אנליסט/ית ביטחוני/ת": {
       "daparFloor": 60,
@@ -1892,9 +1934,11 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/אנליסט-בטחוני/"
+        "source": "mitgaisim.idf.il/roles/אנליסט-בטחוני/",
+        "note": "dayToDay added 2026-10-16 to match the category (clearance vetting); wording pending owner review."
       },
-      "serviceLengthLabel": "כ-4 חודשים בבה\"ד 15"
+      "serviceLengthLabel": "כ-4 חודשים בבה\"ד 15",
+      "dayToDay": "בדיקות מהימנות וסיווג ביטחוני: בודקים מועמדים לתפקידים מסווגים ועובדים מול גורמי הסיווג של שב\"כ. תפקיד סיווג ומהימנות, לא מחקר מודיעיני."
     },
     "מש\"ק/ית מערך (מודיעין שדה)": {
       "daparFloor": 60,
@@ -1943,7 +1987,7 @@
       "competitiveness": "very_high",
       "requirements": [
         "מיוני אשכול או מיון ייעודי",
-        "דפ\"ר 70 (80 לפרופיל קרבי)"
+        "דפ\"ר 70 (80 לבנים בעלי פרופיל קרבי)"
       ],
       "enrichment": {
         "status": "reviewed",
@@ -2020,7 +2064,7 @@
       "requirements": [
         "מיוני אשכול + מיון ייעודי",
         "דפ\"ר 70",
-        "10 יח\"ל טכנולוגיות לפרופיל קרבי"
+        "10 יח\"ל טכנולוגיות לבנים בעלי פרופיל קרבי"
       ],
       "enrichment": {
         "status": "reviewed",
@@ -2338,7 +2382,7 @@
         "enrichedAt": "2026-10-08",
         "source": "mitgaisim.idf.il/תפקידים/לוחמות-טנקים-בגדודי-חיר-גבולות/"
       },
-      "serviceLengthLabel": "32 חודשים + מילואים"
+      "serviceLengthLabel": "32 חודשים, ואחריהם מילואים"
     },
     "חובש/ת קדמי/ת": {
       "daparFloor": 50,
@@ -2363,7 +2407,7 @@
     "חייל/ת שב\"כ": {
       "daparFloor": 40,
       "medicalFloor": 21,
-      "serviceLengthLabel": "שירות חובה מלא; טירונות 02 והכשרה תוך כדי התפקיד",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות 02 והכשרה תוך כדי התפקיד",
       "locations": [
         "משרדי השב\"כ ברחבי הארץ, בתנאי בסיס פתוח"
       ],
@@ -2393,8 +2437,9 @@
       }
     },
     "חייל/ת מוסד": {
+      "daparFloor": null,
       "medicalFloor": 21,
-      "serviceLengthLabel": "שירות חובה מלא; טירונות 02 והכשרה תוך כדי התפקיד",
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות 02 והכשרה תוך כדי התפקיד",
       "locations": [
         "משרדי השירות ברחבי הארץ, בתנאי בסיס פתוח"
       ],
@@ -2420,6 +2465,334 @@
         "confidence": "medium",
         "enrichedAt": "2026-10-13",
         "source": "web.archive.org/web/20250603005021/https://www.mitgaisim.idf.il/roles/חיילת-מוסד/"
+      }
+    },
+    "לוחם בסיירת חטיבתית": {
+      "daparFloor": null,
+      "medicalFloor": 82,
+      "genderEligibility": "all",
+      "requirements": [
+        "פרופיל 82 ומעלה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "Open to women (owner-confirmed 2026-10-16). Profile 82 per the app's verified fact \"82 חי\"ר, סיירות והנדסה קרבית\". דפ\"ר floor unknown."
+      }
+    },
+    "מדריכת סימולטור בחיל האוויר": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
+      }
+    },
+    "עובדת חדר מבצעים בחיל האוויר (פקמ\"צית)": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
+      }
+    },
+    "עורך/ת לשוני/ת צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "כתב/ת צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "מש\"ק/ית דוברות": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "אנימטור/ית צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "מנהל/ת ניו-מדיה צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "עורך/ת תוכן דיגיטלי צבאי": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "מפיק/ה ביחידת ההסרטה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "עורכ/ת וידאו ביחידת ההסרטה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "תסריטאי/ת ביחידת ההסרטה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "תחקירן/ית ביחידת ההסרטה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "גרפיקאי/ת צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "צלם/ת ביחידת דובר צה\"ל": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "צלם/ת וידאו צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "צלם/ת סטילס צבאי/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "מפיק/ת תוכן למדיה צבאית": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "maleMedicalMax": 82,
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "דובר צה\"ל: closed to men with profile 97 (owner-confirmed 2026-10-16). Whether men with profile 72 or 82 can serve is not confirmed, so the cap sits at 82. Other floors not verified, left unknown (no gate)."
+      }
+    },
+    "לוחם חוד בחיל האיסוף הקרבי": {
+      "medicalFloor": 72,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "פרופיל 82 ומעלה (72 במגבלות מסוימות)",
+        "עברית 5",
+        "נשים דרך מיון לוחמות"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/תפקידים/לוחםת-חוד-איסוף-קרבי/",
+        "note": "Duplicate row of לוחם איסוף קרבי (same official page); data copied 2026-10-16 so both rows gate the same."
+      },
+      "serviceLengthLabel": "32 חודשים (גם לנשים), ואחריהם מילואים",
+      "daparFloor": null,
+      "aliasOf": "לוחם איסוף קרבי"
+    },
+    "אנליסט בטחוני": {
+      "daparFloor": 60,
+      "medicalFloor": 21,
+      "genderEligibility": "all",
+      "tier": "standard",
+      "competitiveness": "medium",
+      "requirements": [
+        "דפ\"ר 60",
+        "עברית 8"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-08",
+        "source": "mitgaisim.idf.il/roles/אנליסט-בטחוני/",
+        "note": "Duplicate row of אנליסט/ית ביטחוני/ת (same official page); data copied 2026-10-16 so both rows gate the same."
+      },
+      "serviceLengthLabel": "כ-4 חודשים בבה\"ד 15",
+      "aliasOf": "אנליסט/ית ביטחוני/ת"
+    },
+    "לוחם חוד בחיל ההנדסה הקרבית": {
+      "medicalFloor": 82,
+      "genderEligibility": "male_only",
+      "competitiveness": "high",
+      "requirements": [
+        "פרופיל 82 ומעלה",
+        "כושר קרבי",
+        "מיון בהתאם ליחידה"
+      ],
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "product: combat engineering requires medical profile 82+",
+        "note": "Unreviewed twin of לוחם הנדסה קרבית; gating copied 2026-10-16 so both rows gate the same. Owner to confirm whether a separate חוד role exists."
+      },
+      "serviceLengthLabel": "שירות חובה מלא, ובתוכו טירונות קרבית + הכשרת הנדסה (חבלה, מיקוש, צמ\"ה / רק\"ם לפי מסלול)",
+      "daparFloor": 40,
+      "aliasOf": "לוחם הנדסה קרבית"
+    },
+    "מדריך/ת שריון": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
+      }
+    },
+    "מדריכה בחיל הלוגיסטיקה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
+      }
+    },
+    "מזכירת שירותי רפואה": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
+      }
+    },
+    "מורה חייל/ת": {
+      "daparFloor": null,
+      "medicalFloor": null,
+      "genderEligibility": "female_only",
+      "enrichment": {
+        "status": "reviewed",
+        "confidence": "high",
+        "enrichedAt": "2026-10-16",
+        "source": "owner-confirmed 2026-10-16",
+        "note": "genderEligibility female_only: not open to men (owner-confirmed 2026-10-16). Floors not verified, left unknown."
       }
     }
   }

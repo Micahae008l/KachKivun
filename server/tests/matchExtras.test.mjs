@@ -98,6 +98,9 @@ test("plan rates the five matches 5/5/4/4/3 and adds distinct eligible backups a
   );
   assert.ok(plan[0].notes.some((n) => n.includes("סיכוי הקבלה נמוך")));
   assert.ok(plan[1].notes.some((n) => n.includes("32 חודשים")));
+  // A catalog label with both genders keeps only the candidate's clause.
+  const both = buildQuestionnairePlan([{ rank: 1, roleTitle: "x", serviceLengthLabel: "גברים 32, נשים 24" }], catalog, profile);
+  assert.ok(both[0].notes.includes("משך שירות: נשים 24."));
 });
 
 test("free view keeps places 4-5 and backups, and withholds the names of places 1-3", () => {

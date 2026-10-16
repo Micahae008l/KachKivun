@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import { TAG_TO_DIMENSIONS } from "./roleCatalogV3.js";
+import { requirementsForGender, textForGender } from "./genderText.js";
 
-export const SCORING_VERSION = "role-scoring-v3-integrity-2";
+export const SCORING_VERSION = "role-scoring-v3-integrity-4";
 export const SCORE_BREAKDOWN_KEYS = [
   "preference",
   "focus",
@@ -256,8 +257,8 @@ function yomFit(role, yom) {
 function medicalStepMargin(medical, floor) {
   if (medical == null) return 0.5;
   if (floor == null) return 0.6;
-  if (medical < floor) return 0.15;
-  return clamp01(0.5 + (medical - floor) / 60);
+  // Clearing a profile floor is pass/fail. Rewarding headroom put combat medic (64) above the brigades (82) at profile 97.
+  return medical >= floor ? 1 : 0.15;
 }
 
 function eligibilityMargin(role, dapar, medical) {
@@ -276,6 +277,8 @@ function eligibilityMargin(role, dapar, medical) {
     if (dapar != null && (role.daparFloor == null || dapar >= role.daparFloor)) daparComp = 1;
     if (medical != null && (medFloor == null || medical >= medFloor)) medComp = 1;
   }
+  // Line combat has no דפ"ר floor unless the catalog names one, so a missing floor is no gate there either.
+  if (role.combat && role.daparFloor == null && dapar != null) daparComp = 1;
   let margin = 0.5 * daparComp + 0.5 * medComp;
   if (role.competitiveness === "very_high" && daparComp < 0.3) margin *= 0.85;
   return clamp01(margin);
@@ -533,9 +536,15 @@ export function scoreRole(role, profile) {
     if (role.genderEligibility !== wanted) hardFailReasons.push("התפקיד אינו פתוח למגדר הנבחר");
   }
 
-  // Several rear roles cap men at a rear profile ("גברים פרופיל 45-64"); women are uncapped.
+  // Several rear roles cap men at a rear profile ("גברים פרופיל 45-64"); women are uncapped. A cap above 64
+  // (דובר צה"ל: 82) closes only the top profile, so it is not called "עורפי".
   if (profile.gender === "male" && medical != null && role.maleMedicalMax != null && medical > role.maleMedicalMax) {
-    if (floorsTrusted) hardFailReasons.push(`מיועד לגברים עם פרופיל עורפי (עד ${role.maleMedicalMax})`);
+    if (floorsTrusted)
+      hardFailReasons.push(
+        role.maleMedicalMax <= 64
+          ? `מיועד לגברים עם פרופיל עורפי (עד ${role.maleMedicalMax})`
+          : `פתוח לגברים רק עד פרופיל ${role.maleMedicalMax}, ובפרופיל ${medical} מיועדים ללוחמה`,
+      );
     else softMult *= SOFT_FLOOR_MULT;
   }
 
@@ -553,7 +562,21 @@ export function scoreRole(role, profile) {
     else softMult *= SOFT_FLOOR_MULT;
   }
 
-  const prefFit = 0.6 * combatMatch(role.combat, profile.combatPreference) + 0.4 * physMatch(role.physicalDemand, profile.physicalActivityLevel);
+  // Ticking "combat" under a non-combat direction keeps combat roles in reach (else they score 0 here and sink to #49).
+  const combatInterest = role.combat && assessmentSignals.rolesInterested.includes("combat");
+  // MedicalInstruction names a field: a non-combat role outside medicine and teaching fits it only partly
+  // (otherwise every desk role tied with the medical ones and those sank to one-liners at #190).
+  const offField =
+    profile.combatPreference === "MedicalInstruction" &&
+    !role.combat &&
+    !(role.interestAreas || []).some((a) => a === "medical" || a === "instruction_education");
+  const prefFit =
+    0.6 *
+      Math.max(
+        combatMatch(role.combat, profile.combatPreference) * (offField ? 0.5 : 1),
+        combatInterest ? 0.35 : 0,
+      ) +
+    0.4 * physMatch(role.physicalDemand, profile.physicalActivityLevel);
   // A combat role is not "off focus" for someone who asked for combat or a mix of both.
   const wantsAnyCombat = profile.combatPreference === "FieldCombat" || profile.combatPreference === "Mixed";
   const ff = role.combat && wantsAnyCombat ? Math.max(focusFit(role, profile.focus), 0.65) : focusFit(role, profile.focus);
@@ -583,11 +606,13 @@ export function scoreRole(role, profile) {
   // that role (×0.93); within 20 points of the floor is right-sized (×1.05). Replace with a learned prior if needed.
   // Elite tracks (סיירות, תלפיות, טיס, שחקים) have low official דפ"ר floors but select the top of the
   // cohort, so they are never "over-qualified for" and get a lift for strong candidates instead.
+  // Line combat floors (medic 50, navy 30) are entry gates, not fit, so they skip it: the lift put combat
+  // medic above the brigades, which publish no floor.
   let ambitionMult = 1;
   if (role.tier === "elite") {
     if (dapar != null && dapar >= 80) ambitionMult = 1.08;
     else if (dapar != null && dapar < 70) ambitionMult = 0.92;
-  } else if (dapar != null && role.daparFloor != null) {
+  } else if (!role.combat && dapar != null && role.daparFloor != null) {
     const over = dapar - role.daparFloor;
     if (over >= 30) ambitionMult = 0.93;
     else if (over >= 0 && over < 20) ambitionMult = 1.05;
@@ -654,7 +679,7 @@ export function buildProfileNotice(profile) {
     notes.push("תנאי ההתנדבות והזכאות למסלולי לחימה לנשים משתנים בין מסלולים ויש לאמת אותם בערוצים הרשמיים.");
   }
   if (profile.yomSource === "self") {
-    notes.push("ציוני המא״ה שהוזנו הם הערכה עצמית — הם משפיעים פחות על הדירוג מנתונים רשמיים.");
+    notes.push("ציוני המא״ה שהוזנו הם הערכה עצמית, ולכן הם משפיעים פחות על הדירוג מנתונים רשמיים.");
   } else if (profile.yomSource === "unknown") {
     notes.push("ציוני המא״ה הניטרליים הם מצייני מקום בלבד ואינם משפיעים על הדירוג כאות אישי.");
   }
@@ -678,7 +703,12 @@ export function blendPercent(basePercent, aiAdjust) {
  */
 // ---------- personal request → catalog roles ----------
 
+// Final letters become regular ones so "קצין" and "קצינה", "צלם" and "צלמת" share a stem.
+const FINAL_LETTERS = { ך: "כ", ם: "מ", ן: "נ", ף: "פ", ץ: "צ" };
+const regularLetters = (text) => text.replace(/[ךםןףץ]/g, (letter) => FINAL_LETTERS[letter]);
+
 // Synonym groups so a free-text request ("drones", "רחפנים") finds roles named differently (כטמ"ם).
+// English entries are the catalog's preferenceTags (the noisy "religion" and "sea" tags are left out).
 const REQUEST_SYNONYMS = [
   ["רחפן", "רחפנים", "כטמ", "כטב", "מלט", "drone", "drones", "uav", "נשלטות"],
   ["סייבר", "cyber", "האקר", "האקינג", "8200"],
@@ -686,74 +716,248 @@ const REQUEST_SYNONYMS = [
   ["טיס", "טייס", "טיסה", "pilot"],
   ["מודיעין", "intelligence"],
   ["חובש", "פרמדיק", "רפואה", "רפואי", "medic"],
-  ["שייטת", "חובל", "חובלים", "צוללות", "צוללן", "navy"],
+  ["שייטת", "חובל", "חובלים", "צוללות", "צוללן", "navy", "ים", "ימי", "ימית", "ימאות", "ימאי", "סטיל"],
   ["כלבים", "עוקץ"],
   ["הנדסה", "מהנדס", "engineering"],
   ["דאטה", "data", "אנליסט"],
-];
+  ["קולנוע", "סרט", "הסרטה", "וידאו", "צילום", "צלם", "עריכ", "video", "photography", "editing"],
+  ["עיתונאות", "עיתונאי", "דובר", "דוברות", "דוברת", "כתב"],
+  ["כתיב", "בלשנות", "שפות", "לשון", "תרגום", "writing", "languages"],
+  ["מובחר", "עילית", "קומנדו", "סיירת", "סיירות"],
+  ["קצונה", "קצין"],
+  ["כושר", "מדאג", "fitness"],
+  ["הגנא", "כיפת", "אווירית"],
+  ["פיזיק", "חלל", "physics"],
+  ["מתמטיק", "math"],
+  ["ביולוג", "כימי", "biology", "chemistry"],
+  ["דתי", "דת", "כשרות", "רבנות"],
+  ["חומרה", "אלקטרוניק", "hardware"],
+  ["שבכ", "מוסד"],
+  ["תש"],
+  // Geopolitics: the Research Division tracks carry a "geopolitics" tag (שמ"מ also says "מזרח תיכון").
+  ["גאופוליטיק", "גיאופוליטיק", "גאו", "פוליטיק", "מדיני", "אזרחות", "מזרח", "geopolitics"],
+  // A basic-training level ("טירונות 03") is only stated in the service label.
+  ["03"],
+  ["ירי", "קליע", "צליפ", "צלף"],
+  ["אוויר", "מטוס", "תעופ", "aviation"],
+  ["טכני", "טכנאי", "טכנאים", "אחזקה"],
+].map((group) => group.map(regularLetters));
+
+// Short or ambiguous terms that only match a whole word: "ים" is not "ימין", "דובר" is not "לדוברי השפה".
+const REQUEST_WHOLE_WORDS = new Set(
+  ["ים", "ימי", "סטיל", "דובר", "כתב", "תש", "חלל", "דת", "מוסד", "ירי", "אוויר", "אווירית", "גאו", "03"].map(regularLetters),
+);
+const SYNONYM_TERMS = new Set(REQUEST_SYNONYMS.flat());
+
+// Words many titles share; on their own they name no particular role.
+export const GENERIC_TITLE_WORDS = new Set([
+  "לוחם", "לוחמת", "מסלול", "חיל", "יחידת", "יחידה", "תכנית", "תוכנית", "קורס", "צבאי", "צבאית", "ייעודי", "ייעודית",
+  "קרבי", "קרבית",
+]);
+const GENERIC_TERMS = new Set([...GENERIC_TITLE_WORDS].map(regularLetters));
 
 // Words that carry no role meaning; matching on them would flood the pool.
-const REQUEST_STOPWORDS = new Set([
-  "רוצה", "רוצים", "מאוד", "ממש", "משהו", "באמת", "תפקיד", "תפקידים", "שירות", "בצבא", "יכול",
-  "אפשר", "להיות", "הייתי", "אוהב", "אוהבת", "מעניין", "מעניינת", "בתחום", "דברים", "לעשות",
-  "שלי", "אבל", "גם", "want", "really", "into", "something", "like", "with",
-]);
+const REQUEST_STOPWORDS = new Set(
+  [
+    "רוצה", "רוצים", "מאוד", "ממש", "משהו", "באמת", "תפקיד", "תפקידים", "שירות", "בצבא", "יכול",
+    "אפשר", "להיות", "הייתי", "אוהב", "אוהבת", "מעניין", "מעניינת", "בתחום", "דברים", "לעשות",
+    "שלי", "אבל", "גם", "want", "really", "into", "something", "like", "with",
+    "חשוב", "חשובה", "יכולות", "יכולה", "יכולים", "סביבה", "לעבוד", "לעזור", "לצבא", "מרגיש",
+    "מרגישה", "יותר", "ניסיון", "אנשים", "הגיוס", "מיון", "פרופיל", "לעלות", "מתכוון", "מתכוונת",
+    "יחידה", "בשירות", "בקטע", "אווירה", "חייל", "חיילת", "אותי", "שאני", "ואני", "הרבה", "אולי", "כרגע",
+    "בגלל", "עכשיו", "יודע", "יודעת", "בעיקר", "איזה", "יהיה", "בשביל", "משנה", "אכפת", "בטוח", "בטוחה", "ארצה",
+    // "ימי חופש" in a note is not the navy; a role's "ימי" still matches the navy group.
+    "ימי",
+  ].map(regularLetters),
+);
+const NEGATIONS = new Set(["לא", "ולא", "שלא", "בלי", "אין", "ללא"].map(regularLetters));
+// "לא משנה לי X", "לא רק X" and "אם לא X אז Y" ask for X; "אז", "או", "אלא" start a new ask.
+const NOT_NEGATING_NEXT = new Set(["משנה", "אכפת", "יודע", "יודעת", "בטוח", "בטוחה", "רק"].map(regularLetters));
+const NOT_NEGATING_PREV = new Set(["אם", "ואם"].map(regularLetters));
+const NEGATION_ENDS = new Set(["אז", "או", "אלא", "אני", "ואני"]);
 
 function requestTokens(text) {
-  return String(text || "")
-    .toLowerCase()
+  return regularLetters(String(text || "").toLowerCase())
     .replace(/["'״׳`]/g, "")
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
 }
 
-// Hebrew glues ה/ו/ב/ל/מ/ש/כ to the front of words; allow one such prefix.
+// Request words minus what a nearby negation covers: "אני לא במגמת מחשבים" does not ask for computers.
+function requestWords(text) {
+  return String(text || "")
+    .split(/[,.;!?\r\n]|(?<!\p{L})אבל(?!\p{L})/u)
+    .flatMap((clause) => {
+      const tokens = requestTokens(clause);
+      // ponytail: drops up to 3 words after לא/בלי/אין inside a clause. Misreads longer negated
+      // phrases; move to a real parse (or ask the model) if notes start tripping it.
+      const negated = new Set();
+      tokens.forEach((token, i) => {
+        if (!NEGATIONS.has(token) || NOT_NEGATING_PREV.has(tokens[i - 1]) || NOT_NEGATING_NEXT.has(tokens[i + 1])) return;
+        for (let j = i + 1; j <= i + 5 && j < tokens.length && !NEGATION_ENDS.has(tokens[j]); j++) negated.add(j);
+      });
+      return tokens.filter((_, i) => !negated.has(i));
+    });
+}
+
+// A word has a term when it starts with it. A free request word also matches a role word it extends by a
+// short suffix ("לוחמת" has "לוחם"); synonym stems do not, or "תוכניתן" would hit every "תוכנית".
+function wordHasTerm(word, term) {
+  if (REQUEST_WHOLE_WORDS.has(term)) return word === term;
+  if (word.startsWith(term)) return true;
+  return !SYNONYM_TERMS.has(term) && word.length >= 4 && term.length - word.length <= 2 && term.startsWith(word);
+}
+
+// Role words whose first letter only looks like a prefix: "כימית" is not כ + "ימית", "הכשרות" not ה + "כשרות".
+const NO_STRIP = new Set(["כימית", "כימי", "הכשרות", "הכשרה"]);
+
+// Role words may carry one glued ה/ו/ב/ל/ש/כ, never מ: "חשוב לי" is not "מחשוב".
 function tokenHasTerm(token, term) {
-  return token.startsWith(term) || (token.length > term.length && token.slice(1).startsWith(term));
+  return (
+    wordHasTerm(token, term) ||
+    (/^[הובלשכ]./.test(token) && !NO_STRIP.has(token) && wordHasTerm(token.slice(1), term))
+  );
 }
 
 /**
- * Terms from a personal request. `group` terms come from a recognised topic (with synonyms) and
- * rank first; `raw` terms are other meaningful words from the request.
+ * Terms from a personal request. `group` terms come from recognised topics (with synonyms); `raw`
+ * terms are other meaningful words. `topics` keeps each synonym group and each raw word apart.
  */
 export function requestTerms(personalRequest) {
-  const tokens = requestTokens(personalRequest);
-  const group = new Set();
-  for (const synonyms of REQUEST_SYNONYMS) {
-    if (tokens.some((token) => synonyms.some((term) => tokenHasTerm(token, term)))) {
-      synonyms.forEach((term) => group.add(term));
-    }
+  // "לסיירת", "בדובר": each word is also tried with one glued prefix letter stripped. A stopword with a
+  // prefix ("בשירות") is still a stopword, but "מחשוב" is not "חשוב", so a stripped מ never drops a word.
+  const forms = [];
+  for (const word of new Set(requestWords(personalRequest))) {
+    const stripped = /^[הובלשכמ]./.test(word) ? word.slice(1) : "";
+    if (REQUEST_STOPWORDS.has(word) || (REQUEST_STOPWORDS.has(stripped) && word[0] !== "מ")) continue;
+    forms.push(stripped && !REQUEST_STOPWORDS.has(stripped) ? [word, stripped] : [word]);
   }
-  const raw = tokens.filter(
-    (token) =>
-      token.length >= 4 &&
-      !REQUEST_STOPWORDS.has(token) &&
-      ![...group].some((term) => tokenHasTerm(token, term)),
+  const isTerm = (form) => form.length >= 4 || /^\d{2,}$/.test(form);
+  const groups = REQUEST_SYNONYMS.filter((synonyms) =>
+    forms.some((wordForms) => wordForms.some((form) => synonyms.some((term) => wordHasTerm(form, term)))),
   );
-  return { group: [...group], raw: [...new Set(raw)] };
+  const group = groups.flat();
+  const topics = [...groups];
+  for (const wordForms of forms) {
+    if (wordForms.some((form) => group.some((term) => wordHasTerm(form, term)))) continue;
+    const terms = wordForms.filter(isTerm);
+    if (terms.length) topics.push(terms);
+  }
+  // `literal`: each word as typed, without synonyms ("פרמדיקית" is not every medical role) and without
+  // words many titles share ("קורס" is not "קורס מת"ן"). A word too short to stand alone ("טיס", "שב"כ")
+  // stands for its synonym group instead.
+  const literal = forms
+    .filter((wordForms) => !wordForms.some((form) => GENERIC_TERMS.has(form)))
+    .map((wordForms) => {
+      const terms = wordForms.filter((form, i) => isTerm(form) || (i > 0 && SYNONYM_TERMS.has(form)));
+      if (terms.length) return terms;
+      return groups.find((synonyms) => wordForms.some((form) => synonyms.some((term) => wordHasTerm(form, term)))) || [];
+    })
+    .filter((terms) => terms.length);
+  return { group, raw: [...new Set(topics.slice(groups.length).flat())], groups, topics, literal };
 }
 
-/** Roles whose title, category, tags or day-to-day mention something the request asked for. */
+// A religious-environment wish is context ("דתיים סביבי"), not a request for a kashrut role.
+const CONTEXT_TOPIC = regularLetters("דתי");
+
+/**
+ * For each field the note asks for (a curated synonym topic, not a loose word): the open roles in
+ * the pool that answer it, best first. The prompt names them so the ask is not lost to the general
+ * rules (an officer ask once got five non-officer roles while six officer tracks sat in the pool).
+ */
+export function requestTopicRoles(pool, personalRequest, perTopic = 3, maxTopics = 3) {
+  const flagged = (pool || []).filter((role) => role.requestMatch);
+  // In the order the note names them, so the first ask leads ("חיל הים" before "הדרכה").
+  const words = requestWords(personalRequest);
+  const firstMention = (group) => {
+    const i = words.findIndex((word) => group.some((term) => tokenHasTerm(word, term)));
+    return i < 0 ? words.length : i;
+  };
+  return requestTerms(personalRequest)
+    .groups.filter((group) => !group.includes(CONTEXT_TOPIC))
+    .sort((a, b) => firstMention(a) - firstMention(b))
+    .map((group) => requestMatchedRoles(flagged, group.join(" "), perTopic).map((role) => role.roleTitle))
+    .filter((titles, i, all) => titles.length && all.findIndex((t) => t.join("|") === titles.join("|")) === i)
+    .slice(0, maxTopics);
+}
+
+/**
+ * Roles whose title, category, tags or day-to-day mention something the request asked for.
+ */
 export function requestMatchedRoles(roles, personalRequest, limit = 5) {
-  const { group, raw } = requestTerms(personalRequest);
-  const hits = (fields, terms) =>
-    terms.length > 0 &&
-    requestTokens(fields.join(" ")).some((token) => terms.some((term) => tokenHasTerm(token, term)));
-  const named = (role, terms) => hits([role.roleTitle, role.category], terms);
-  const described = (role, terms) =>
-    hits([role.roleTitle, role.category, role.dayToDay, ...(role.preferenceTags || [])], terms);
-  // Best first: topic in the role's name, then topic only in its description, then other request words.
-  const tiers = [
-    roles.filter((role) => named(role, group)),
-    roles.filter((role) => described(role, group)),
-    roles.filter((role) => described(role, raw)),
-  ];
-  return [...new Set(tiers.flat())].slice(0, limit);
+  const { groups, topics } = requestTerms(personalRequest);
+  if (!topics.length) return [];
+  const words = new Map(
+    roles.map((role) => {
+      const title = requestTokens(role.roleTitle);
+      const rest = requestTokens([role.category, role.dayToDay, role.serviceLengthLabel, ...(role.preferenceTags || [])].join(" "));
+      return [role, { title, named: [...title, ...requestTokens(role.category)], described: [...title, ...rest] }];
+    }),
+  );
+  const hits = (role, field, terms) =>
+    words.get(role)[field].some((token) => terms.some((term) => tokenHasTerm(token, term)));
+  const named = topics.map((terms) => roles.filter((role) => hits(role, "named", terms)));
+  const described = topics.map((terms, i) =>
+    roles.filter((role) => !named[i].includes(role) && hits(role, "described", terms)),
+  );
+  // Names before descriptions; within each, topics take turns so one broad topic (מודיעין, ~35 roles)
+  // cannot crowd out the rest. In each turn recognised topics go before other note words, and the
+  // better-scoring role (roles come best first) before the rest, so a stray word ("אוכל" in
+  // "אוכלוסייה", "למערכת" in "מערך") does not lead just because it came first in the note.
+  const order = new Map(roles.map((role, i) => [role, i]));
+  const turn = (lists, i) => lists.map((list) => list[i]).filter(Boolean).sort((a, b) => order.get(a) - order.get(b));
+  const g = groups.length;
+  const out = new Set();
+  // A role two recognised topics name ("הטכני" + "חיל האוויר" = the air force technicians) leads: it answers
+  // the note better than a role one topic names. Other note words stay out of it, they cross by accident.
+  for (const role of roles) if (out.size < limit && named.slice(0, g).filter((list) => list.includes(role)).length > 1) out.add(role);
+  for (const lists of [named, described]) {
+    for (let i = 0; out.size < limit && lists.some((list) => i < list.length); i++) {
+      for (const role of [...turn(lists.slice(0, g), i), ...turn(lists.slice(g), i)]) if (out.size < limit) out.add(role);
+    }
+  }
+  return [...out];
+}
+
+/**
+ * Requested roles the gates closed (gender, דפ"ר, profile), with the reasons, so the AI can say
+ * "you asked for X, it is closed because Y" instead of improvising. Only the note's own words in a
+ * role title count (a short ask like "טיס" through its synonyms), and only a word in a few titles:
+ * "פרמדיקית" or "669" names a role, "לוחמה", "קרבי" or "מודיעין" names a field whose open roles are
+ * already in the pool.
+ */
+const BLOCKED_MAX_TITLES = 4;
+export function requestedButBlocked(roles, profile, limit = 5) {
+  const ctx = { ...profile, yomFlat: isFlatYom(profile.yom) };
+  const out = new Map();
+  const { literal, groups } = requestTerms(profile.personalRequest);
+  // Groups too: "דובר צה״ל" names the whole media family, not only the titles with the word דובר.
+  for (const terms of [...literal, ...groups]) {
+    const titled = roles.filter((role) =>
+      !role.aliasOf &&
+      requestTokens(role.roleTitle).some((token) => terms.some((term) => tokenHasTerm(token, term))),
+    );
+    if (titled.length > BLOCKED_MAX_TITLES) continue;
+    for (const role of titled) {
+      const s = scoreRole(role, ctx);
+      if (!s.eligible && !out.has(role)) out.set(role, s.hardFailReasons);
+    }
+  }
+  return [...out].slice(0, limit).map(([role, reasons]) => ({ roleTitle: role.roleTitle, reasons }));
 }
 
 // ---------- admission chance ----------
 
-const TECH_INTEL_RE = /סייבר|מודיעין|תקשוב|מחשב|שחקים|תוכנה|דאטה|נתונים|8200|טכנולוג/;
+// Rows with no profile floor in the catalog that are still rear service (owner, 2026-10-16: a combat-profile
+// boy can get these, with a low chance; intelligence tracks have a better one). Screening routes are excluded.
+const REAR_CATEGORY_RE =
+  /לוגיסטיקה|מנהלה|משאבי אנוש|גיוס ושירות|חינוך|כספים|בינוי|דוברות|משטרה צבאית|ביטחון מידע|אבטחת מידע|אבחון|תובלה|פיקוד \/ הדרכה|^הדרכה$|מבצעים \/ חמ"ל|חירום \/ מוקד|רפואה \/ (מנהלה|שיניים|הדרכה)|^רפואה$|פיקוד העורף \/ הדרכה/;
+const OPEN_ROUTE_RE = /עתודה|אוויר|מודיעין|שחקים|גאמ|חבצלות/;
+
+// No bare "טכנולוג": it pulled in mechanics, welders and storekeepers ("טכנולוגיה ואחזקה").
+const TECH_INTEL_RE = /סייבר|מודיעין|תקשוב|מחשב|שחקים|תוכנה|דאטה|נתונים|8200/;
+// The computer-cluster sortings, the only ones with the combat-profile bar of דפ"ר 80 + 10 יח"ל.
+const COMPUTER_CLUSTER_RE = /תוכניתן|מגן\/ת סייבר|devops|דבופס|בודק|דאטא|לה["״]ב|מט["״]ס/i;
 const CHANCE_LABEL = {
   high: "סיכוי קבלה גבוה",
   medium: "סיכוי קבלה בינוני",
@@ -763,7 +967,7 @@ const CHANCE_LABEL = {
 
 /**
  * Rough, explainable estimate of getting into a role: selection competitiveness, דפ"ר margin
- * over the floor, and the reduced tech/intel quotas for men with a combat profile (72+).
+ * over the floor, fitness for elite combat, and the reduced tech/intel quotas for men with a combat profile (72+).
  * ponytail: point heuristic, not a statistical model; replace if real acceptance data appears.
  */
 export function admissionChance(role, profile) {
@@ -778,28 +982,95 @@ export function admissionChance(role, profile) {
   else if (role.competitiveness === "high") reasons.push("מיון תחרותי");
   else if (role.competitiveness === "low") reasons.push("תפקיד שקל יחסית להתקבל אליו");
 
+  // Only this candidate's gender's requirements count ("נשים דרך מיון לוחמות" says nothing about a boy).
+  const req = requirementsForGender(role.requirements || [], profile.gender).join(" ");
+  const gibush = /גיבוש|מיון לוחמות|מיון כושר/.test(req);
+  const fitnessScreened = role.combat && (role.competitiveness === "very_high" || gibush);
+
   const floor = typeof role.daparFloor === "number" ? role.daparFloor : null;
   if (dapar != null && floor != null) {
     const margin = dapar - floor;
-    if (margin >= 20) {
+    // A combat screening (גיבוש, מיון לוחמות) happens far above the floor, so a big margin there says nothing;
+    // for very competitive non-combat tracks the screening is cognitive and a high דפ"ר does help. 90 is the top score.
+    if (margin >= 20 && !fitnessScreened) {
       points += 1;
       reasons.push(`הדפ״ר שלכם גבוה ב־${margin} מהסף`);
-    } else if (margin < 10) {
+    } else if (margin < 10 && dapar < 90) {
       points -= 1;
       reasons.push("הדפ״ר שלכם ממש על הסף");
+    }
+  } else if (dapar == null && floor != null) {
+    // Unknown is not zero, but it is not a pass either.
+    points = Math.min(points, 0);
+    reasons.push(`לתפקיד נדרש דפ״ר ${floor}`);
+  }
+
+  // Personal blockers and strengths go first so the two-reason cut below keeps them.
+  const fitness = normalizeAssessmentSignals(profile).combatDetails;
+  const run = RUN_LEVEL[fitness?.run3kmBand];
+  const pull = PULL_UP_LEVEL[fitness?.pullUpsBand];
+  const weakFitness = run <= 2 || pull <= 2;
+  const strongFitness = !weakFitness && (run === 5 || pull === 5);
+  if (fitnessScreened && role.combatFitnessDemand >= 4) {
+    if (weakFitness) {
+      points -= 1;
+      reasons.unshift("הכושר הנוכחי שלכם רחוק מהנדרש במיון");
+    } else if (strongFitness && role.competitiveness === "very_high") {
+      // A top-band athlete is exactly who an elite גיבוש looks for: still hard, not a long shot.
+      points += 1;
+      reasons.unshift("הכושר שמדדתם ברמה הגבוהה שהמיון בודק");
     }
   }
 
   const combatDesignatedMale = profile.gender === "male" && medical != null && medical >= 72;
+  // Verified fact: rear roles are not in a combat-designated boy's questionnaire. A role is rear by
+  // its own data: profile floor 45, or a cap for men below this boy's profile.
+  // Intelligence, Air Force and the academic/elite programs are routes open to him (better chances);
+  // the route test reads the category, not the title ("מאבחן/ת צוות אוויר" is HR testing, not an Air Force route).
+  const openRoute = OPEN_ROUTE_RE.test(role.category || "") || /עתודה|שחקים|גאמ|חבצלות/.test(role.roleTitle);
+  const rearForHim =
+    (role.maleMedicalMax != null && medical > role.maleMedicalMax) ||
+    (!openRoute &&
+      (role.medicalFloor === 45 ||
+        ((role.medicalFloor == null || role.medicalFloor <= 45) && REAR_CATEGORY_RE.test(role.category || ""))));
+  if (combatDesignatedMale && !role.combat && rearForHim) {
+    return { level: "low", label: CHANCE_LABEL.low, reason: "בנים עם פרופיל קרבי מיועדים ללוחמה, והסיכוי שלהם להשתבץ בתפקידי עורף נמוך" };
+  }
   if (combatDesignatedMale && !role.combat && TECH_INTEL_RE.test(`${role.category} ${role.roleTitle}`)) {
-    points -= 1;
-    reasons.push(
-      "לבעלי פרופיל קרבי המכסות בטכנולוגיה ובמודיעין מצומצמות, ולמיוני מקצועות המחשב נדרשים דפ״ר 80 ו־10 יח״ל טכנולוגיות",
+    // The quota caps the chance: never "high", and never "easy to get into".
+    const cluster = COMPUTER_CLUSTER_RE.test(role.roleTitle) || /אשכול מקצועות המחשב/.test(req);
+    points = Math.min(points, 0) - 1;
+    // Intelligence still beats a rear role for him (owner, 2026-10-16); the computer cluster keeps its 80 + 10 bar.
+    if (!cluster && role.competitiveness !== "very_high") points = Math.max(points, -1);
+    const easy = reasons.indexOf("תפקיד שקל יחסית להתקבל אליו");
+    if (easy >= 0) reasons.splice(easy, 1);
+    reasons.unshift(
+      cluster
+        ? "לבעלי פרופיל קרבי המכסות בטכנולוגיה ובמודיעין מצומצמות, ולמיוני מקצועות המחשב נדרשים דפ״ר 80 ו־10 יח״ל טכנולוגיות"
+        : "לבעלי פרופיל קרבי המכסות בטכנולוגיה ובמודיעין מצומצמות",
     );
+  }
+
+  // The official page itself says few get placed (חובש/ת קדמי/ת): the badge must not say otherwise.
+  if (/סיכויי שיבוץ נמוכים/.test(req)) {
+    points = Math.min(points, -2);
+    reasons.unshift("סיכויי השיבוץ בתפקיד נמוכים");
   }
 
   const level = points >= 1 ? "high" : points <= -2 ? "low" : "medium";
   return { level, label: CHANCE_LABEL[level], reason: reasons.slice(0, 2).join(". ") };
+}
+
+// Floors the candidate clears by 10+ ("פרופיל 72 ומעלה" at 97) only invite the model to recite them;
+// the prompt gets the rest, the card keeps every chip. Compound items ("70 (80 לבנים ...)") always stay.
+const SIMPLE_FLOOR_RE = /^(פרופיל|דפ["״]ר) ([0-9]+)( ומעלה)?$/;
+function promptRequirements(requirements, profile) {
+  return (requirements || []).filter((item) => {
+    const m = SIMPLE_FLOOR_RE.exec(String(item).trim());
+    if (!m) return true;
+    const mine = optionalMetric(m[1] === "פרופיל" ? profile.medicalProfile : profile.daparScore);
+    return mine == null || mine - Number(m[2]) < 10;
+  });
 }
 
 /**
@@ -812,6 +1083,8 @@ export function rolesForAi(roles, profile, { detailed = 80 } = {}) {
   const ctx = { ...profile, yomFlat: isFlatYom(profile.yom) };
   const scored = [];
   for (const role of roles) {
+    // A twin row of the same official role ("aliasOf") would let the AI pick the job twice.
+    if (role.aliasOf) continue;
     const s = scoreRole(role, ctx);
     if (!s.eligible) continue;
     scored.push({
@@ -827,12 +1100,25 @@ export function rolesForAi(roles, profile, { detailed = 80 } = {}) {
   const requested = requestMatchedRoles(scored, profile.personalRequest, 40);
   const requestedTitles = new Set(requested.map((r) => r.roleTitle));
   const ordered = [...requested, ...scored.filter((r) => !requestedTitles.has(r.roleTitle))];
-  return ordered.map((r, i) => ({
+  // Someone who chose an office environment and also ticked "only office" did not mean the office clashes.
+  const { rolesAvoided, environment } = normalizeAssessmentSignals(profile);
+  return ordered.map((r, i) => {
+    // The controller copies these onto the prompt and the cards: only the candidate's gender's clauses.
+    const requirements = requirementsForGender(r.requirements, profile.gender);
+    return {
     ...r,
+    requirements,
+    serviceLengthLabel: textForGender(r.serviceLengthLabel, profile.gender),
     requestMatch: requestedTitles.has(r.roleTitle) || undefined,
     admissionChance: admissionChance(r, profile),
+    // The candidate's own avoidances this role hits, so the AI can say so instead of hiding it.
+    clashes: (r.avoidanceSignals || []).filter(
+      (a) => rolesAvoided.includes(a) && !(a === "office_only" && environment === "office"),
+    ),
+    promptRequirements: promptRequirements(requirements, profile),
     detailed: i < detailed,
-  }));
+    };
+  });
 }
 
 export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCategory = 2, requestLimit = 6 } = {}) {
@@ -841,6 +1127,8 @@ export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCatego
 
   const scored = [];
   for (const role of roles) {
+    // A twin row of the same official role ("aliasOf") would let the AI pick the job twice.
+    if (role.aliasOf) continue;
     const s = scoreRole(role, ctx);
     if (!s.eligible) continue;
     scored.push({
@@ -888,6 +1176,8 @@ export function buildCandidatePool(roles, profile, { poolSize = 15, maxPerCatego
   }
   return pool.map((r) => ({
     ...r,
+    requirements: requirementsForGender(r.requirements, profile.gender),
+    serviceLengthLabel: textForGender(r.serviceLengthLabel, profile.gender),
     requestMatch: requested.has(r.roleTitle) || undefined,
     admissionChance: admissionChance(r, profile),
   }));
