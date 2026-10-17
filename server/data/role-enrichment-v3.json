@@ -336,7 +336,7 @@
     },
     "לוחם 669": {
       "medicalFloor": 97,
-      "genderEligibility": "male_only",
+      "genderEligibility": "all",
       "tier": "elite",
       "competitiveness": "very_high",
       "requirements": [
@@ -349,7 +349,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "mitgaisim.idf.il/roles/לוחם-ביחידת-669/"
+        "source": "mitgaisim.idf.il/roles/לוחם-ביחידת-669/",
+        "note": "owner-confirmed 2026-10-17: open to women"
       },
       "daparFloor": 50,
       "serviceLengthLabel": "הכשרה 1.5 שנים; נדרשת התחייבות קבע (אורכה לא מפורסם רשמית)",
@@ -1351,7 +1352,7 @@
     },
     "לוחם עוקץ": {
       "medicalFloor": 82,
-      "genderEligibility": "male_only",
+      "genderEligibility": "all",
       "tier": "elite",
       "competitiveness": "very_high",
       "requirements": [
@@ -1362,7 +1363,8 @@
         "status": "reviewed",
         "confidence": "high",
         "enrichedAt": "2026-10-08",
-        "source": "hamador.co.il/gibushoketz"
+        "source": "hamador.co.il/gibushoketz",
+        "note": "owner-confirmed 2026-10-17: open to women"
       },
       "serviceLengthLabel": "32 חודשים",
       "daparFloor": null

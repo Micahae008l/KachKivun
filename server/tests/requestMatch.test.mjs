@@ -91,11 +91,13 @@ test("requestedButBlocked explains requested roles the gates closed", async () =
   const { requestedButBlocked } = await import("../utils/roleScoring.js");
   const { getIdfRoleCatalogV3 } = await import("../utils/roleCatalogV3.js");
   const catalog = getIdfRoleCatalogV3().roles;
-  const female = { gender: "female", daparScore: 70, medicalProfile: 97, personalRequest: "עוקץ/669" };
+  const female = { gender: "female", daparScore: 70, medicalProfile: 97, personalRequest: "גולני" };
   const blocked = requestedButBlocked(catalog, female);
-  assert.deepEqual(blocked.map((b) => b.roleTitle).sort(), ["לוחם 669", "לוחם עוקץ"].sort());
+  assert.deepEqual(blocked.map((b) => b.roleTitle), ["לוחם בגולני"]);
   assert.ok(blocked.every((b) => b.reasons.includes("התפקיד אינו פתוח למגדר הנבחר")));
   assert.deepEqual(requestedButBlocked(catalog, { ...female, gender: "male" }), [], "open roles are not blocked");
+  // Owner, 2026-10-17: 669 and עוקץ are open to women.
+  assert.deepEqual(requestedButBlocked(catalog, { ...female, personalRequest: "עוקץ/669" }), []);
   assert.deepEqual(requestedButBlocked(catalog, { ...female, personalRequest: "" }), []);
   assert.deepEqual(requestedButBlocked(catalog, { ...female, personalRequest: "לא עוקץ" }), [], "negated");
   assert.deepEqual(requestedButBlocked(catalog, { ...female, personalRequest: "ktktk" }), [], "junk");

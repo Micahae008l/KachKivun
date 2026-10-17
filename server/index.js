@@ -20,6 +20,7 @@ import { corsOptions } from "./utils/corsOptions.js";
 import { SITE_NAME_EN, SITE_NAME_HE } from "./utils/brand.js";
 import { apiLimiter, growWebhookLimiter } from "./middleware/rateLimit.js";
 import contactRoutes from "./routes/contact.js";
+import gibushRoutes from "./routes/gibush.js";
 import { requireEnv, requireProductionEnv } from "./utils/requireEnv.js";
 import { rejectOversizedUrl, jsonErrorHandler } from "./middleware/rejectMalformed.js";
 import { ipBlockGuard, refreshBlockedIpCache } from "./middleware/ipBlock.js";
@@ -73,6 +74,7 @@ app.use("/api/metrics", metricsRoutes);
 app.use("/api/assessments", assessmentsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/gibush", gibushRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {

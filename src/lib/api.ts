@@ -1,4 +1,5 @@
 import { clearToken, getToken, setStoredRole, setToken } from "./auth";
+import type { GibushContent } from "@/features/gibush/types";
 import type { AssessmentCompletionPayload, SavedAssessment } from "@/features/assessment/types";
 
 function apiBase(): string {
@@ -789,6 +790,11 @@ export function listMatchHistory() {
     generations: MatchHistoryItem[];
     access?: RecommendationAccess;
   }>("/api/ai/match-history");
+}
+
+/** Paid content for /gibush. 403 GIBUSH_LOCKED until the user unlocks. */
+export function getGibushContent() {
+  return apiFetch<GibushContent>("/api/gibush/content");
 }
 
 export function getMatchHistory(id: string) {

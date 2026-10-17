@@ -21,6 +21,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as GibushRouteImport } from './routes/gibush'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PostSignupRouteImport } from './routes/post-signup'
@@ -95,6 +96,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GibushRoute = GibushRouteImport.update({
+  id: '/gibush',
+  path: '/gibush',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/gibush': typeof GibushRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/gibush': typeof GibushRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/gibush': typeof GibushRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/post-signup': typeof PostSignupRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/demo'
+    | '/gibush'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/demo'
+    | '/gibush'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/demo'
+    | '/gibush'
     | '/login'
     | '/onboarding'
     | '/post-signup'
@@ -364,6 +376,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   DemoRoute: typeof DemoRoute
+  GibushRoute: typeof GibushRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PostSignupRoute: typeof PostSignupRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gibush': {
+      id: '/gibush'
+      path: '/gibush'
+      fullPath: '/gibush'
+      preLoaderRoute: typeof GibushRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -598,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   DemoRoute: DemoRoute,
+  GibushRoute: GibushRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PostSignupRoute: PostSignupRoute,
