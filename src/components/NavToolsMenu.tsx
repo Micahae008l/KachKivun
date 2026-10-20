@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Calculator, ChevronDown, Crosshair, LayoutGrid, Lock, Mountain } from "lucide-react";
+import { Calculator, ChevronDown, Crosshair, LayoutGrid, Mountain } from "lucide-react";
 
 /** Free tools that feed into the questionnaire. Shared by the header dropdown, mobile menu and footer. */
 export const FREE_TOOLS = [
@@ -25,27 +25,16 @@ export const FREE_TOOLS = [
     Icon: LayoutGrid,
     tone: "text-teal",
   },
+  {
+    to: "/gibush",
+    label: "מוכנות לגיבוש",
+    desc: "סימולציה של יום הגיבוש ותוכנית אימון",
+    Icon: Mountain,
+    tone: "text-maroon",
+  },
 ] as const;
 
 export const FREE_TOOLS_LABEL = "כלים חינמיים";
-
-/** Paid, listed after the free tools and marked as such. */
-export const PAID_TOOL = {
-  to: "/gibush",
-  label: "מוכנות לגיבוש",
-  desc: "סימולציה של יום הגיבוש ותוכנית אימון",
-  Icon: Mountain,
-  tone: "text-sand",
-} as const;
-
-export function PaidBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 border border-sand/40 px-1.5 py-px font-mono text-[10px] font-normal text-sand">
-      <Lock className="h-2.5 w-2.5" aria-hidden />
-      בתשלום
-    </span>
-  );
-}
 
 /** Desktop disclosure: one header item instead of three equal-weight links. */
 export function NavToolsMenu({ authed }: { authed: boolean }) {
@@ -55,9 +44,7 @@ export function NavToolsMenu({ authed }: { authed: boolean }) {
   const panelId = useId();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const active =
-    pathname.startsWith("/roles/") ||
-    pathname.startsWith(PAID_TOOL.to) ||
-    FREE_TOOLS.some((t) => pathname.startsWith(t.to));
+    pathname.startsWith("/roles/") || FREE_TOOLS.some((t) => pathname.startsWith(t.to));
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -123,24 +110,6 @@ export function NavToolsMenu({ authed }: { authed: boolean }) {
                 </Link>
               </li>
             ))}
-            <li className="mt-1 border-t border-iron/20 pt-1">
-              <Link
-                to={PAID_TOOL.to}
-                className="flex items-start gap-3 px-4 py-2.5 transition hover:bg-iron/10 focus-visible:bg-iron/10"
-              >
-                <PAID_TOOL.Icon
-                  className={`mt-0.5 h-4 w-4 shrink-0 ${PAID_TOOL.tone}`}
-                  aria-hidden
-                />
-                <span>
-                  <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                    {PAID_TOOL.label}
-                    <PaidBadge />
-                  </span>
-                  <span className="block text-xs text-dust">{PAID_TOOL.desc}</span>
-                </span>
-              </Link>
-            </li>
           </ul>
           {!authed && (
             <Link

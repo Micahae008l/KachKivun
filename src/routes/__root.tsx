@@ -17,13 +17,7 @@ import { prefetchAuthedData, sessionQueryOptions } from "@/lib/queries";
 import { MotionConfig } from "framer-motion";
 import { ChevronLeft, ClipboardList, Menu, X } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
-import {
-  FREE_TOOLS,
-  FREE_TOOLS_LABEL,
-  NavToolsMenu,
-  PAID_TOOL,
-  PaidBadge,
-} from "@/components/NavToolsMenu";
+import { FREE_TOOLS, FREE_TOOLS_LABEL, NavToolsMenu } from "@/components/NavToolsMenu";
 import { SiteFooter } from "@/components/FooterNav";
 import appCss from "../styles.css?url";
 import { queryClient } from "@/lib/query-client";
@@ -438,16 +432,6 @@ function SiteHeader({
                 </span>
               </MobileNavLink>
             ))}
-            <MobileNavLink to={PAID_TOOL.to}>
-              <PAID_TOOL.Icon className={`h-4 w-4 shrink-0 ${PAID_TOOL.tone}`} aria-hidden />
-              <span className="min-w-0">
-                <span className="flex items-center gap-2">
-                  {PAID_TOOL.label}
-                  <PaidBadge />
-                </span>
-                <span className="block text-xs font-normal text-dust">{PAID_TOOL.desc}</span>
-              </span>
-            </MobileNavLink>
 
             <div className="mt-3">
               {NAV_SECONDARY.map((item) => (

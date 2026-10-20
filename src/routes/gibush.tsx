@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "framer-motion";
-import { ChevronLeft, Lock, Plane, Star } from "lucide-react";
-import { ApiError, getGibushContent, getLatestAssessment, getPaymentOffer } from "@/lib/api";
+import { ChevronLeft, Plane, Star } from "lucide-react";
+import { getGibushContent, getLatestAssessment } from "@/lib/api";
 import { getToken, hasSessionHint, subscribeAuth } from "@/lib/auth";
-import { formatPaymentPrice } from "@/lib/payment-offer";
 import { normalizeAssessmentAnswers } from "@/features/assessment/draft";
 import {
   BENCHMARK_NOTE,
@@ -15,7 +14,7 @@ import {
   type GibushContent,
 } from "@/features/gibush/types";
 import type { Answers } from "@/features/gibush/scoring";
-import { Simulation, Moment, type RunState } from "@/features/gibush/Simulation";
+import { Simulation, type RunState } from "@/features/gibush/Simulation";
 import { FighterCard, LEVEL_BADGE, Result, SHARE_URL } from "@/features/gibush/Result";
 import { DAWN, DUNE, STRETCHER } from "@/features/gibush/photos";
 
@@ -80,29 +79,21 @@ function GibushPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const token = useSyncExternalStore(subscribeAuth, getToken, () => null);
-  // A returning user's token is still being refreshed: wait, rather than flash the paywall.
+  // Free for everyone. A returning user's token is still being refreshed: wait for it, so their
+  // name and gender prefill instead of popping in.
   const authPending = mounted && !token && hasSessionHint();
-  // VITE_GIBUSH_FREE=1 (local .env.local only): guests get the simulation, for testing.
-  const free = import.meta.env.VITE_GIBUSH_FREE === "1";
 
-  // The content is the paywall: the API sends it only to unlocked users (403 otherwise).
   const contentQuery = useQuery({
     queryKey: ["gibush-content"],
     queryFn: getGibushContent,
-    enabled: mounted && (Boolean(token) || free) && s == null,
+    enabled: mounted && s == null,
     staleTime: Infinity,
-    retry: (count, err) => !(err instanceof ApiError && err.status === 403) && count < 1,
+    retry: 1,
   });
   const assessmentQuery = useQuery({
     queryKey: ["assessment", "latest"],
     queryFn: getLatestAssessment,
     enabled: Boolean(token) && s == null,
-    staleTime: 60_000,
-  });
-  const offerQuery = useQuery({
-    queryKey: ["payment-offer"],
-    queryFn: getPaymentOffer,
-    enabled: mounted && s == null,
     staleTime: 60_000,
   });
 
@@ -121,12 +112,9 @@ function GibushPage() {
   );
 
   if (s != null && u != null) return shell(<SharedTeaser score={s} levelIndex={u} />);
-  // The server sends the public teaser (the page is indexed); the buttons wait for the browser.
-  if (!mounted) return shell(<LockedTeaser authed={null} price={null} />);
-  if (
-    authPending ||
-    ((token || free) && (contentQuery.isPending || (token && assessmentQuery.isPending)))
-  ) {
+  // The server sends this intro (the page is indexed); the simulation itself waits for the browser.
+  if (!mounted) return shell(<StaticIntro />);
+  if (authPending || contentQuery.isPending || (token && assessmentQuery.isPending)) {
     return shell(
       <div
         className="h-96 animate-pulse border border-iron/20 bg-card/50"
@@ -134,12 +122,6 @@ function GibushPage() {
         aria-label="טוען"
       />,
     );
-  }
-
-  const locked = contentQuery.error instanceof ApiError && contentQuery.error.status === 403;
-  if ((!token && !free) || locked) {
-    const price = offerQuery.data?.enabled ? formatPaymentPrice(offerQuery.data.product) : null;
-    return shell(<LockedTeaser authed={Boolean(token)} price={price} />);
   }
 
   if (!contentQuery.data) {
@@ -542,66 +524,20 @@ function IntroOutcome() {
   );
 }
 
-/** The one moment shown (blurred) to people who have not unlocked; the rest comes from the API. */
-const TEASER_MOMENT = {
-  place: "ריצת 2 ק״מ",
-  scene: "שריקה אחת וכולם רצים. המגבשים לא אומרים מה הזמן שצריך.",
-  question: "מה הזמן שלכם ל־2 ק״מ?",
-  options: ["א", "ב", "ג", "ד"].map((label) => ({ label: `תשובה ${label}`, score: 0 })),
-};
-
-/** Logged out, or logged in without the unlock: a moment of the day, blurred, beside a real stretcher. */
-function LockedTeaser({ authed, price }: { authed: boolean | null; price: string | null }) {
+/** What the server sends (and search engines see): the headline, the promise, and the photo. */
+function StaticIntro() {
   return (
     <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] md:items-start lg:grid-cols-2 lg:gap-16">
       <div className="space-y-5">
-        <p className="font-mono text-xs tracking-wide text-sand">מוכנות לגיבוש · בתשלום</p>
-        <h1 className="text-balance text-3xl font-black leading-[1.05] text-foreground sm:text-5xl">
-          איפה הייתם נחתכים ביום הגיבוש?
+        <p className="font-mono text-sm tracking-wide text-sand">מוכנות לגיבוש</p>
+        <h1 className="text-balance text-4xl font-black leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+          כמה אתם מוכנים ליום סיירות ולגיבושים?
         </h1>
-        <p className="max-w-xl text-pretty text-base leading-7 text-dust">
+        <p className="max-w-xl text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
           סימולציה של יום שלם, מהקליטה בבוקר ועד הראיון: ריצות, דיונה, שקים, אלונקה. בסוף מקבלים
           כרטיס לוחם עם ציון, מפת מסלול עד הרמה שלכם, והפערים מול הרף עם תוכנית שבוע אחרי שבוע. אחר
           הצהריים מגיע החלק של טיס וחובלים: תכנון, חידות ותחקיר.
         </p>
-        {authed == null ? (
-          <div className="h-12" aria-hidden />
-        ) : authed ? (
-          <Link
-            to="/checkout"
-            className="flex min-h-12 w-full items-center justify-center gap-2 bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 sm:w-auto sm:inline-flex"
-          >
-            <Lock className="h-4 w-4" aria-hidden />
-            {price ? `פתיחה ב־${price}, יחד עם ההתאמות החזקות` : "לפתיחת הגישה"}
-          </Link>
-        ) : (
-          <div className="space-y-2">
-            <Link
-              to="/post-signup"
-              hash="login"
-              className="flex min-h-12 w-full items-center justify-center gap-2 bg-primary px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 sm:inline-flex sm:w-auto"
-            >
-              התחברות
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </Link>
-            <p className="text-xs text-dust">
-              עוד אין חשבון?{" "}
-              <Link to="/post-signup" className="font-semibold text-primary">
-                מתחילים מהשאלון
-              </Link>
-            </p>
-          </div>
-        )}
-        <div className="relative select-none" aria-hidden>
-          <div className="pointer-events-none blur-[5px]" inert>
-            <Moment stage={TEASER_MOMENT} step={2} total={20} />
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/50 bg-background/80">
-              <Lock className="h-5 w-5 text-primary" />
-            </span>
-          </div>
-        </div>
         <p className="text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
       </div>
       <figure className="md:sticky md:top-24">
@@ -610,7 +546,6 @@ function LockedTeaser({ authed, price }: { authed: boolean | null; price: string
           srcSet={STRETCHER.srcSet}
           sizes="(min-width: 1024px) 50vw, (min-width: 768px) 24rem, 100vw"
           alt={STRETCHER.alt}
-          loading="lazy"
           decoding="async"
           className="aspect-[4/5] w-full object-cover lg:aspect-auto lg:h-[36rem]"
           style={{ objectPosition: STRETCHER.position }}

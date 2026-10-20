@@ -271,12 +271,7 @@ function DashboardPage() {
               offerQuery.data?.enabled ? formatPaymentPrice(offerQuery.data.product) : null
             }
           />
-          <GibushLink
-            open={Boolean(
-              historyQuery.data?.access &&
-              (!historyQuery.data.access.paywallEnabled || historyQuery.data.access.topTwoUnlocked),
-            )}
-          />
+          <GibushLink />
           {answers ? <NextStepsCard steps={nextSteps(answers)} /> : null}
         </div>
 
@@ -535,28 +530,24 @@ function NextStepsCard({ steps }: { steps: string[] }) {
   );
 }
 
-/** The paid gibush simulation, right under the results it is sold with. */
-function GibushLink({ open }: { open: boolean }) {
+/** The free gibush simulation, right under the results. */
+function GibushLink() {
   return (
     <Link
       to="/gibush"
-      className="group flex min-h-16 items-center gap-3 border border-sand/30 bg-sand/[0.05] px-4 py-3 transition hover:border-sand/60"
+      className="group flex min-h-16 items-center gap-3 border border-maroon/30 bg-maroon/[0.05] px-4 py-3 transition hover:border-maroon/60"
     >
-      <Mountain className="h-5 w-5 shrink-0 text-sand" aria-hidden />
+      <Mountain className="h-5 w-5 shrink-0 text-maroon" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-black text-foreground">מוכנות לגיבוש</span>
         <span className="block text-xs leading-5 text-dust">
           סימולציה של יום הגיבוש, כרטיס לוחם ותוכנית אימון
         </span>
       </span>
-      {open ? (
-        <ChevronLeft
-          className="h-4 w-4 shrink-0 text-dust transition group-hover:text-sand"
-          aria-hidden
-        />
-      ) : (
-        <Lock className="h-4 w-4 shrink-0 text-sand" aria-label="בתשלום" />
-      )}
+      <ChevronLeft
+        className="h-4 w-4 shrink-0 text-dust transition group-hover:text-maroon"
+        aria-hidden
+      />
     </Link>
   );
 }

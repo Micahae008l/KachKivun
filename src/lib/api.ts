@@ -792,9 +792,9 @@ export function listMatchHistory() {
   }>("/api/ai/match-history");
 }
 
-/** Paid content for /gibush. 403 GIBUSH_LOCKED until the user unlocks. */
+/** Content for /gibush. Free and public: no login, so no token is sent. */
 export function getGibushContent() {
-  return apiFetch<GibushContent>("/api/gibush/content");
+  return apiFetch<GibushContent>("/api/gibush/content", { skipAuth: true });
 }
 
 export function getMatchHistory(id: string) {
