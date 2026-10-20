@@ -16,7 +16,7 @@ import {
 import type { Answers } from "@/features/gibush/scoring";
 import { Simulation, type RunState } from "@/features/gibush/Simulation";
 import { FighterCard, LEVEL_BADGE, Result, SHARE_URL } from "@/features/gibush/Result";
-import { DAWN, DUNE, STRETCHER } from "@/features/gibush/photos";
+import { DAWN, DUNE } from "@/features/gibush/photos";
 
 const TITLE = "מוכנות לגיבוש: סימולציה של יום הגיבוש | קח כיוון";
 const DESCRIPTION =
@@ -99,10 +99,10 @@ function GibushPage() {
 
   // pb-20: the last lines clear the floating accessibility button.
   const shell = (children: React.ReactNode) => (
-    // During the run (no site header or footer) on desktop: the background fills the screen and
-    // the moment sits in the middle of it. Phones keep the top-aligned layout tested at 320px.
+    // During the run (no site header or footer) the run lays itself out to the screen's height.
+    // Not centered: on a short screen a centered run spilled off the top, out of reach.
     <div
-      className="topo-lines min-h-[70vh] overflow-x-clip lg:[html[data-run]_&]:flex lg:[html[data-run]_&]:min-h-dvh lg:[html[data-run]_&]:items-center"
+      className="topo-lines min-h-[70vh] overflow-x-clip lg:[html[data-run]_&]:min-h-dvh"
       dir="rtl"
     >
       <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-4 sm:px-6 sm:pt-12 lg:[html[data-run]_&]:py-10 2xl:[html[data-run]_&]:max-w-[88rem]">
@@ -112,15 +112,17 @@ function GibushPage() {
   );
 
   if (s != null && u != null) return shell(<SharedTeaser score={s} levelIndex={u} />);
-  // The server sends this intro (the page is indexed); the simulation itself waits for the browser.
-  if (!mounted) return shell(<StaticIntro />);
-  if (authPending || contentQuery.isPending || (token && assessmentQuery.isPending)) {
+  // The server sends the intro's first screen (the page is indexed), and it stays put while the
+  // day loads: only the controls under it fill in, so the page never swaps layouts.
+  if (!mounted || authPending || contentQuery.isPending || (token && assessmentQuery.isPending)) {
     return shell(
-      <div
-        className="h-96 animate-pulse border border-iron/20 bg-card/50"
-        role="status"
-        aria-label="טוען"
-      />,
+      <IntroHero>
+        <div
+          className="min-h-72 animate-pulse bg-card/40 motion-reduce:animate-none"
+          role="status"
+          aria-label="טוען"
+        />
+      </IntroHero>,
     );
   }
 
@@ -219,7 +221,7 @@ function GibushApp({
       type="button"
       disabled={!gender}
       onClick={() => setPhase("sim")}
-      className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-primary px-6 text-base font-black text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100 sm:w-auto"
+      className="inline-flex min-h-12 w-full items-center justify-center gap-2 border border-primary bg-primary px-6 text-base font-black text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:border-iron/50 disabled:bg-transparent disabled:font-bold disabled:text-dust disabled:hover:brightness-100 sm:w-auto"
     >
       {gender ? "מתחילים את היום" : "בחרו בנים או בנות כדי להתחיל"}
       {gender ? <ChevronLeft className="h-4 w-4" aria-hidden /> : null}
@@ -228,98 +230,50 @@ function GibushApp({
 
   return (
     <div className="space-y-20 sm:space-y-32">
-      <div className="relative">
-        {/* First light: a band across the top on phones, the left of the screen on wider ones. */}
-        <div
-          className="pointer-events-none absolute -inset-x-4 -top-4 h-80 overflow-hidden sm:-inset-x-6 sm:-top-12 md:inset-y-0 md:-top-12 md:left-[calc(50%-50vw)] md:right-auto md:h-auto md:w-[55vw]"
-          aria-hidden
+      <IntroHero name={name}>
+        <motion.p
+          {...rise(0)}
+          className="border-r-2 border-sand bg-sand/5 px-4 py-3 text-base leading-7 text-foreground"
         >
-          <img
-            src={DAWN.src}
-            srcSet={DAWN.srcSet}
-            sizes="(min-width: 768px) 55vw, 100vw"
-            alt=""
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover opacity-60 md:opacity-85"
-            style={{ objectPosition: DAWN.position }}
-          />
-          <div
-            className="absolute inset-0 md:hidden"
-            style={{
-              background:
-                "linear-gradient(to top, var(--background) 8%, color-mix(in oklch, var(--background) 55%, transparent))",
-            }}
-          />
-          <div
-            className="absolute inset-0 hidden md:block"
-            style={{
-              background:
-                "linear-gradient(to left, var(--background), color-mix(in oklch, var(--background) 55%, transparent) 35%, transparent 70%), linear-gradient(to top, var(--background), transparent 30%)",
-            }}
-          />
-          <p className="absolute bottom-3 left-4 hidden bg-background/60 px-1.5 py-0.5 text-xs text-sand-light md:block">
-            {DAWN.caption}
-          </p>
-        </div>
-        <div className="relative space-y-6 sm:space-y-8 md:max-w-xl lg:max-w-2xl">
-          <motion.header {...rise(0)} className="max-w-2xl">
-            <p className="font-mono text-sm tracking-wide text-sand">מוכנות לגיבוש</p>
-            <h1 className="mt-3 text-balance text-4xl font-black leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
-              {name ? `${name}, ` : ""}כמה אתם מוכנים ליום סיירות ולגיבושים?
-            </h1>
-            <p className="mt-4 text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
-              עוברים את יום הגיבוש רגע אחרי רגע, ועונים מה באמת המספרים שלכם ומה הייתם עושים.{" "}
-              <span className="hidden sm:inline">
-                בסוף היום: איפה הייתם נחתכים או שהגעתם עד הסוף, כרטיס לוחם, ותוכנית לשבועות שנשארו.
-              </span>
-            </p>
-          </motion.header>
+          <span className="font-mono font-bold text-sand">{content.day.stages.length} רגעים</span> ·{" "}
+          {content.day.subtitle}
+        </motion.p>
 
-          <motion.p
-            {...rise(0.08)}
-            className="border-r-2 border-sand bg-sand/5 px-4 py-3 text-base leading-7 text-foreground"
-          >
-            <span className="font-mono font-bold text-sand">{content.day.stages.length} רגעים</span>{" "}
-            · {content.day.subtitle}
-          </motion.p>
+        {!profileGender ? (
+          <motion.fieldset {...rise(0.08)}>
+            <legend className="mb-3 text-sm font-bold text-foreground">
+              בנים או בנות? <span className="font-normal text-dust">לכל אחד סולם יחידות אחר</span>
+            </legend>
+            <div className="flex gap-2">
+              {(
+                [
+                  ["male", "בנים"],
+                  ["female", "בנות"],
+                ] as const
+              ).map(([g, label]) => (
+                <button
+                  key={g}
+                  type="button"
+                  aria-pressed={gender === g}
+                  onClick={() => setGender(g)}
+                  className={`min-h-11 min-w-24 border px-4 text-sm font-bold transition ${
+                    gender === g
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-iron/40 text-dust"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </motion.fieldset>
+        ) : null}
 
-          {!profileGender ? (
-            <motion.fieldset {...rise(0.16)}>
-              <legend className="mb-3 text-sm font-bold text-foreground">
-                בנים או בנות? <span className="font-normal text-dust">לכל אחד סולם יחידות אחר</span>
-              </legend>
-              <div className="flex gap-2">
-                {(
-                  [
-                    ["male", "בנים"],
-                    ["female", "בנות"],
-                  ] as const
-                ).map(([g, label]) => (
-                  <button
-                    key={g}
-                    type="button"
-                    aria-pressed={gender === g}
-                    onClick={() => setGender(g)}
-                    className={`min-h-11 min-w-24 border px-4 text-sm font-bold transition ${
-                      gender === g
-                        ? "border-primary bg-primary/10 text-foreground"
-                        : "border-iron/40 text-dust"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </motion.fieldset>
-          ) : null}
-
-          <motion.div {...rise(0.24)} className="space-y-3">
-            {start}
-            <p className="text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
-            <p className="text-xs text-dust md:hidden">{DAWN.caption}</p>
-          </motion.div>
-        </div>
-      </div>
+        <motion.div {...rise(0.16)} className="space-y-3">
+          {start}
+          <p className="text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
+        </motion.div>
+      </IntroHero>
 
       <IntroLadder ladder={content.ladders[gender ?? "male"]} />
       <IntroOutcome />
@@ -384,8 +338,8 @@ function IntroLadder({ ladder }: { ladder: GibushContent["ladders"]["male"] }) {
   const rise = useRiseInView();
   return (
     <section aria-labelledby="intro-ladder-h">
-      {/* The dune, edge to edge, with the heading set on its lower part. */}
-      <div className="relative mx-[calc(50%-50vw)] flex h-72 items-end overflow-hidden sm:h-96">
+      {/* The dune, edge to edge: it fades in from the page above and out under the heading. */}
+      <div className="relative mx-[calc(50%-50vw)] flex h-72 items-end overflow-hidden sm:h-[26rem]">
         <img
           src={DUNE.src}
           srcSet={DUNE.srcSet}
@@ -394,13 +348,13 @@ function IntroLadder({ ladder }: { ladder: GibushContent["ladders"]["male"] }) {
           loading="lazy"
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover saturate-[.7]"
-          style={{ objectPosition: DUNE.position }}
+          style={{ objectPosition: "50% 85%" }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, var(--background), color-mix(in oklch, var(--background) 60%, transparent) 45%, color-mix(in oklch, var(--background) 15%, transparent))",
+              "linear-gradient(to bottom, var(--background), transparent 35%), linear-gradient(to top, var(--background), color-mix(in oklch, var(--background) 60%, transparent) 45%, color-mix(in oklch, var(--background) 15%, transparent))",
           }}
         />
         <div className="relative mx-auto w-full max-w-6xl px-4 pb-6 sm:px-6 sm:pb-9">
@@ -414,10 +368,8 @@ function IntroLadder({ ladder }: { ladder: GibushContent["ladders"]["male"] }) {
             בסוף היום מקבלים דרגה. לטיס ולחובלים יש דרך משלהם לשתי הרמות העליונות: חשיבה, תכנון
             וצוות במקום סחיבה.
           </p>
+          <p className="mt-3 text-xs text-sand-light/70">{DUNE.caption}</p>
         </div>
-        <p className="absolute left-4 top-3 bg-background/60 px-1.5 py-0.5 text-xs text-sand-light sm:left-6">
-          {DUNE.caption}
-        </p>
       </div>
       <ol className="mt-8 space-y-2">
         {tiers.reverse().map(({ l, i, tier }, row) => {
@@ -524,34 +476,59 @@ function IntroOutcome() {
   );
 }
 
-/** What the server sends (and search engines see): the headline, the promise, and the photo. */
-function StaticIntro() {
+/**
+ * The intro's first screen: first light behind the headline. The server, the loading moment and
+ * the live page all render this same hero, so nothing jumps while the day loads; `children` are
+ * the controls under it.
+ */
+function IntroHero({ name, children }: { name?: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] md:items-start lg:grid-cols-2 lg:gap-16">
-      <div className="space-y-5">
-        <p className="font-mono text-sm tracking-wide text-sand">מוכנות לגיבוש</p>
-        <h1 className="text-balance text-4xl font-black leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
-          כמה אתם מוכנים ליום סיירות ולגיבושים?
-        </h1>
-        <p className="max-w-xl text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
-          סימולציה של יום שלם, מהקליטה בבוקר ועד הראיון: ריצות, דיונה, שקים, אלונקה. בסוף מקבלים
-          כרטיס לוחם עם ציון, מפת מסלול עד הרמה שלכם, והפערים מול הרף עם תוכנית שבוע אחרי שבוע. אחר
-          הצהריים מגיע החלק של טיס וחובלים: תכנון, חידות ותחקיר.
-        </p>
-        <p className="text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
-      </div>
-      <figure className="md:sticky md:top-24">
+    <div className="relative">
+      {/* A band across the top on phones, the left of the screen on wider ones. */}
+      <div
+        className="pointer-events-none absolute -inset-x-4 -top-4 h-80 overflow-hidden sm:-inset-x-6 sm:-top-12 md:inset-y-0 md:-top-12 md:left-[calc(50%-50vw)] md:right-auto md:h-auto md:w-[55vw]"
+        aria-hidden
+      >
         <img
-          src={STRETCHER.src}
-          srcSet={STRETCHER.srcSet}
-          sizes="(min-width: 1024px) 50vw, (min-width: 768px) 24rem, 100vw"
-          alt={STRETCHER.alt}
+          src={DAWN.src}
+          srcSet={DAWN.srcSet}
+          sizes="(min-width: 768px) 55vw, 100vw"
+          alt=""
           decoding="async"
-          className="aspect-[4/5] w-full object-cover lg:aspect-auto lg:h-[36rem]"
-          style={{ objectPosition: STRETCHER.position }}
+          className="absolute inset-0 h-full w-full object-cover opacity-60 md:opacity-85"
+          style={{ objectPosition: DAWN.position }}
         />
-        <figcaption className="mt-2 text-xs text-dust">{STRETCHER.caption}</figcaption>
-      </figure>
+        <div
+          className="absolute inset-0 md:hidden"
+          style={{
+            background:
+              "linear-gradient(to top, var(--background) 8%, color-mix(in oklch, var(--background) 55%, transparent))",
+          }}
+        />
+        <div
+          className="absolute inset-0 hidden md:block"
+          style={{
+            background:
+              "linear-gradient(to left, var(--background), color-mix(in oklch, var(--background) 55%, transparent) 35%, transparent 70%), linear-gradient(to top, var(--background), transparent 30%)",
+          }}
+        />
+      </div>
+      <div className="relative space-y-6 sm:space-y-8 md:max-w-xl lg:max-w-2xl">
+        <header className="max-w-2xl">
+          <p className="font-mono text-sm tracking-wide text-sand">מוכנות לגיבוש</p>
+          <h1 className="mt-3 text-balance text-4xl font-black leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+            {name ? `${name}, ` : ""}כמה אתם מוכנים ליום סיירות ולגיבושים?
+          </h1>
+          <p className="mt-4 text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
+            עוברים את יום הגיבוש רגע אחרי רגע, ועונים מה באמת המספרים שלכם ומה הייתם עושים.{" "}
+            <span className="hidden sm:inline">
+              בסוף היום: איפה הייתם נחתכים או שהגעתם עד הסוף, כרטיס לוחם, ותוכנית לשבועות שנשארו.
+            </span>
+          </p>
+        </header>
+        {children}
+        <p className="text-xs text-dust">{DAWN.caption}</p>
+      </div>
     </div>
   );
 }

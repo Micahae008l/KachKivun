@@ -219,10 +219,11 @@ function Backdrop({ photo }: { photo: GibushPhoto }) {
           sizes="100vw"
           alt=""
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
+          // Soft and dim: a sense of place behind the question, never a picture competing with it.
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[2px] lg:blur-[5px]"
           style={{ objectPosition: photo.position }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.65 }}
+          animate={{ opacity: 0.5 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0 : 0.8 }}
         />
@@ -259,7 +260,7 @@ function Bib({ n }: { n: number }) {
             className={`absolute h-1 w-1 rounded-full bg-background lg:h-1.5 lg:w-1.5 ${p}`}
           />
         ))}
-        <span className="hidden text-xs font-bold lg:block">מועמד/ת</span>
+        <span className="hidden text-xs font-bold lg:block">המספר שלכם</span>
         <span
           className="font-mono text-[26px] font-black leading-none tracking-tighter lg:text-[46px]"
           dir="ltr"
@@ -371,10 +372,18 @@ function CandidateList({
   return (
     // The count above says this in words; the list is the picture of it.
     <div aria-hidden>
-      <div className="flex items-baseline justify-between gap-3 text-sm">
-        <p className="font-bold text-sand">הרשימה של המגבש</p>
+      {/* Said in words, so the row reads as people and not as the day's moments. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
+        <p className="font-bold text-sand">
+          {rank.length} המועמדים בגיבוש{" "}
+          <span className="font-normal text-dust">
+            · אתם מספר <span className="font-bold text-primary">{bib}</span>
+          </span>
+        </p>
         <p className="text-dust">
-          {!prev ? (
+          {left === rank.length ? (
+            "מי שיוצא נמחק מהרשימה"
+          ) : !prev ? (
             "כולם עוד כאן"
           ) : dropped ? (
             <>
