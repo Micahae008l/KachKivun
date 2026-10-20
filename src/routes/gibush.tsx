@@ -283,7 +283,7 @@ function GibushApp({
           <motion.header {...rise(0)} className="max-w-2xl">
             <p className="font-mono text-sm tracking-wide text-sand">מוכנות לגיבוש</p>
             <h1 className="mt-3 text-balance text-4xl font-black leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
-              {name ? `${name}, ` : ""}היום מתחיל עוד חושך
+              {name ? `${name}, ` : ""}כמה אתם מוכנים ליום סיירות ולגיבושים?
             </h1>
             <p className="mt-4 text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
               עוברים את יום הגיבוש רגע אחרי רגע, ועונים מה באמת המספרים שלכם ומה הייתם עושים.{" "}
