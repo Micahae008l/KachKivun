@@ -14,9 +14,6 @@ import {
   Quote,
   ShieldCheck,
   Target,
-  Layers,
-  Gauge,
-  Clock3,
 } from "lucide-react";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { StatStrip } from "@/components/StatStrip";
@@ -95,17 +92,11 @@ function AboutPage() {
           </motion.div>
 
           <StatStrip
-            className="mt-12 max-w-3xl grid-cols-1 sm:mt-14 sm:grid-cols-3"
+            className="mt-12 border-t border-iron/25 pt-8 sm:mt-14"
             stats={[
-              {
-                value: 300,
-                plus: true,
-                label: "תפקידים ומסלולים במאגר",
-                tone: "sand",
-                icon: Layers,
-              },
-              { value: 11, label: "ממדי מא״ה", tone: "steel", icon: Gauge },
-              { value: 8, label: "דקות שאלון, בערך", tone: "rust", icon: Clock3 },
+              { value: 300, plus: true, label: "תפקידים ומסלולים במאגר" },
+              { value: 11, label: "ממדי מא״ה" },
+              { value: 8, label: "דקות שאלון, בערך" },
             ]}
           />
         </div>

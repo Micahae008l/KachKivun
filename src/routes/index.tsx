@@ -14,9 +14,6 @@ import {
   Info,
   CreditCard,
   RotateCcw,
-  Layers,
-  Users,
-  Clock3,
 } from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { StatStrip } from "@/components/StatStrip";
@@ -215,15 +212,14 @@ function HomePage() {
               </p>
             </div>
 
-            <div className="animate-slide-up mt-10 sm:mt-12" style={{ animationDelay: "300ms" }}>
+            <div className="animate-slide-up mt-10 sm:mt-14" style={{ animationDelay: "300ms" }}>
               <StatStrip
-                className="grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
                 stats={[
-                  { value: 300, plus: true, label: "תפקידים", tone: "sand", icon: Layers },
-                  { value: 11, label: "ציוני מא״ה", tone: "steel", icon: Gauge },
+                  { value: 300, plus: true, label: "תפקידים ומסלולים" },
+                  { value: 11, label: "ציוני מא״ה" },
                   // ponytail: hand-set floor (253 users on 2026-10-17); bump it, or serve a live count if it should track
-                  { value: 250, plus: true, label: "משתמשים", tone: "olive", icon: Users },
-                  { value: 8, label: "דקות שאלון", tone: "rust", icon: Clock3 },
+                  { value: 250, plus: true, label: "משתמשים באתר" },
+                  { value: 8, label: "דקות שאלון" },
                 ]}
               />
             </div>
