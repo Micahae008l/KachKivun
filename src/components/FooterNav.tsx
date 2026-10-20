@@ -18,7 +18,7 @@ function FooterGroup({ title, children }: { title: string; children: ReactNode }
 
 export function SiteFooter({ authed }: { authed: boolean }) {
   return (
-    <footer className="mt-20 border-t border-iron/30" aria-label={ARIA.footer}>
+    <footer data-site-chrome className="mt-20 border-t border-iron/30" aria-label={ARIA.footer}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="col-span-2 md:col-span-1">

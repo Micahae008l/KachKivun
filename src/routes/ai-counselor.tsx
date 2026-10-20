@@ -184,7 +184,7 @@ function AiCounselorPage() {
         </div>
 
         <header className="border-b border-iron/30 pb-6 text-right">
-          <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">היועץ האישי</p>
+          <p className="mb-2 font-mono text-xs tracking-wide text-steel uppercase">היועץ האישי</p>
           <h1 className="text-2xl font-black text-foreground sm:text-3xl">
             חמש התאמות התפקיד שלכם
           </h1>
@@ -282,8 +282,8 @@ function AiCounselorPage() {
         {roles?.length && !retrying ? (
           <>
             {personalAnswer ? (
-              <section className="border border-primary/40 bg-primary/10 px-5 py-4 text-right">
-                <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
+              <section className="border border-steel/40 bg-steel/10 px-5 py-4 text-right">
+                <p className="font-mono text-[10px] tracking-wide text-steel uppercase">
                   תשובה לבקשה האישית
                 </p>
                 <p className="mt-2 text-sm leading-7 text-foreground whitespace-pre-line">
@@ -291,10 +291,10 @@ function AiCounselorPage() {
                 </p>
               </section>
             ) : personalAnswerLocked ? (
-              <section className="flex items-start gap-3 border border-primary/40 bg-primary/10 px-5 py-4 text-right">
-                <Lock className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              <section className="flex items-start gap-3 border border-sand/40 bg-sand/10 px-5 py-4 text-right">
+                <Lock className="mt-1 h-4 w-4 shrink-0 text-sand" aria-hidden />
                 <div>
-                  <p className="font-mono text-[10px] tracking-wide text-primary uppercase">
+                  <p className="font-mono text-[10px] tracking-wide text-sand uppercase">
                     תשובה לבקשה האישית
                   </p>
                   <p className="mt-2 text-sm leading-7 text-foreground">
@@ -383,7 +383,7 @@ function StateMessage({
   const Icon = icon === "error" ? AlertTriangle : CheckCircle2;
   return (
     <section className="border border-iron/30 bg-card p-5 text-right">
-      <Icon className="h-5 w-5 text-primary" aria-hidden />
+      <Icon className={`h-5 w-5 ${icon === "error" ? "text-rust" : "text-primary"}`} aria-hidden />
       <h2 className="mt-3 font-bold text-foreground">{title}</h2>
       <p className="mt-2 text-sm text-dust">{body}</p>
     </section>

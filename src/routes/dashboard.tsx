@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { TONES, matchTone, type Tone } from "@/lib/tones";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -99,11 +100,13 @@ function Card({
   icon: Icon,
   children,
   className = "",
+  tone = "olive",
 }: {
   title: string;
   icon: typeof Target;
   children: React.ReactNode;
   className?: string;
+  tone?: Tone;
 }) {
   return (
     <motion.section
@@ -111,7 +114,7 @@ function Card({
       className={`min-w-0 border border-iron/30 bg-card p-4 text-right sm:p-6 ${className}`}
     >
       <h2 className="mb-4 flex items-center gap-2 text-base font-black text-foreground">
-        <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <Icon className={`h-4 w-4 shrink-0 ${TONES[tone].text}`} aria-hidden />
         {title}
       </h2>
       {children}
@@ -327,9 +330,15 @@ function DashboardPage() {
         aria-label="פעולות מהירות"
         className="grid gap-2 sm:grid-cols-3"
       >
-        <QuickLink to="/post-signup" hash="edit" icon={PencilLine} label="עדכון ההערכה" />
-        <QuickLink to="/role-insights" icon={Compass} label="כל התפקידים בצה״ל" />
-        <QuickLink to="/ai-counselor" icon={Sparkles} label="התוצאות המלאות" />
+        <QuickLink
+          to="/post-signup"
+          hash="edit"
+          icon={PencilLine}
+          label="עדכון ההערכה"
+          tone="sand"
+        />
+        <QuickLink to="/role-insights" icon={Compass} label="כל התפקידים בצה״ל" tone="teal" />
+        <QuickLink to="/ai-counselor" icon={Sparkles} label="התוצאות המלאות" tone="olive" />
       </motion.nav>
 
       <motion.div variants={fadeUp}>
@@ -412,14 +421,16 @@ function ResultsCard({
               <Link
                 to="/ai-counselor"
                 className={`flex min-h-12 items-center gap-3 rounded-md border px-3 py-2 transition hover:border-primary/50 ${
-                  locked ? "border-primary/25 bg-primary/[0.06]" : "border-iron/25 bg-background/40"
+                  locked ? "border-sand/25 bg-sand/[0.06]" : "border-iron/25 bg-background/40"
                 }`}
               >
                 <span
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-black ${
-                    role.rank === 1
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-primary/15 text-primary"
+                    locked
+                      ? "bg-sand/15 text-sand"
+                      : role.rank === 1
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-foreground"
                   }`}
                 >
                   {role.rank}
@@ -427,14 +438,17 @@ function ResultsCard({
                 <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
                   {locked ? (
                     <span className="inline-flex items-center gap-1.5 text-dust">
-                      <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
+                      <Lock className="h-3.5 w-3.5 text-sand" aria-hidden />
                       נעול
                     </span>
                   ) : (
                     role.roleTitle
                   )}
                 </span>
-                <span className="shrink-0 font-mono text-sm font-bold text-foreground" dir="ltr">
+                <span
+                  className={`shrink-0 font-mono text-sm font-bold ${TONES[matchTone(role.matchPercentage)].text}`}
+                  dir="ltr"
+                >
                   {role.matchPercentage}%
                 </span>
               </Link>
@@ -468,18 +482,20 @@ function StrengthsCard({ answers }: { answers: ReturnType<typeof normalizeAssess
   const { rows, flat } = dimensionRows(answers);
   const top = rows.filter((r) => r.top);
   return (
-    <Card title="מפת החוזקות שלך" icon={Sparkles}>
+    <Card title="מפת החוזקות שלך" icon={Sparkles} tone="steel">
       <div className="mx-auto w-full max-w-[19rem]">
         <YomRadar answers={answers} />
       </div>
       {top.length && !flat ? (
         <ul className="mt-4 space-y-2">
-          {top.map((r) => (
+          {top.map((r, i) => (
             <li
               key={r.key}
-              className="flex items-center gap-3 rounded-md border border-primary/30 bg-primary/10 p-2.5"
+              className={`flex items-center gap-3 rounded-md border p-2.5 ${TONES[STRENGTH_TONES[i % 3]].soft} ${TONES[STRENGTH_TONES[i % 3]].bg}`}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary font-mono text-sm font-black text-primary-foreground">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded font-mono text-sm font-black ${TONES[STRENGTH_TONES[i % 3]].text}`}
+              >
                 {r.score}
               </span>
               <span className="min-w-0">
@@ -494,16 +510,21 @@ function StrengthsCard({ answers }: { answers: ReturnType<typeof normalizeAssess
   );
 }
 
+const STRENGTH_TONES: Tone[] = ["steel", "teal", "sand"];
+const STEP_TONES: Tone[] = ["olive", "steel", "sand", "rust"];
+
 function NextStepsCard({ steps }: { steps: string[] }) {
   return (
-    <Card title="מה עושים עכשיו" icon={CheckCircle2}>
+    <Card title="מה עושים עכשיו" icon={CheckCircle2} tone="sand">
       <ol className="space-y-2">
         {steps.map((step, i) => (
           <li
             key={step}
             className="flex items-start gap-3 rounded-md border border-iron/25 bg-background/40 px-3 py-2.5"
           >
-            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-xs font-bold text-primary">
+            <span
+              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border font-mono text-xs font-bold ${TONES[STEP_TONES[i % 4]].icon}`}
+            >
               {i + 1}
             </span>
             <span className="text-sm leading-6 text-foreground">{step}</span>
@@ -519,9 +540,9 @@ function GibushLink({ open }: { open: boolean }) {
   return (
     <Link
       to="/gibush"
-      className="group flex min-h-16 items-center gap-3 border border-primary/30 bg-primary/[0.05] px-4 py-3 transition hover:border-primary/60"
+      className="group flex min-h-16 items-center gap-3 border border-sand/30 bg-sand/[0.05] px-4 py-3 transition hover:border-sand/60"
     >
-      <Mountain className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+      <Mountain className="h-5 w-5 shrink-0 text-sand" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-black text-foreground">מוכנות לגיבוש</span>
         <span className="block text-xs leading-5 text-dust">
@@ -530,11 +551,11 @@ function GibushLink({ open }: { open: boolean }) {
       </span>
       {open ? (
         <ChevronLeft
-          className="h-4 w-4 shrink-0 text-dust transition group-hover:text-primary"
+          className="h-4 w-4 shrink-0 text-dust transition group-hover:text-sand"
           aria-hidden
         />
       ) : (
-        <Lock className="h-4 w-4 shrink-0 text-primary" aria-label="בתשלום" />
+        <Lock className="h-4 w-4 shrink-0 text-sand" aria-label="בתשלום" />
       )}
     </Link>
   );
@@ -545,11 +566,13 @@ function QuickLink({
   hash,
   icon: Icon,
   label,
+  tone,
 }: {
   to: "/post-signup" | "/role-insights" | "/ai-counselor";
   hash?: string;
   icon: typeof Target;
   label: string;
+  tone: Tone;
 }) {
   return (
     <Link
@@ -558,7 +581,7 @@ function QuickLink({
       className="flex min-h-12 items-center justify-between gap-3 border border-iron/30 bg-card px-4 text-sm font-bold text-foreground transition hover:border-primary/40"
     >
       <span className="flex items-center gap-2">
-        <Icon className="h-4 w-4 text-primary" aria-hidden />
+        <Icon className={`h-4 w-4 ${TONES[tone].text}`} aria-hidden />
         {label}
       </span>
       <ChevronLeft className="h-4 w-4 text-dust" aria-hidden />

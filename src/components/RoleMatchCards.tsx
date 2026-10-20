@@ -1,3 +1,4 @@
+import { TONES, matchTone, roleField } from "@/lib/tones";
 import {
   useCallback,
   useEffect,
@@ -94,7 +95,7 @@ function ScoreBreakdownPanel({
                 {...progressBarProps(value, `${label}: ${value}%`)}
               >
                 <div
-                  className="animate-progress h-full bg-primary"
+                  className={`animate-progress h-full ${TONES[matchTone(value)].dot}`}
                   style={{ width: `${value}%` }}
                   aria-hidden
                 />
@@ -121,6 +122,7 @@ function MatchRing({
   delayMs?: number;
 }) {
   const value = Math.min(100, Math.max(0, Math.round(percentage)));
+  const tone = TONES[matchTone(value)];
   const stroke = size >= 100 ? 8 : size >= 80 ? 6 : 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -148,14 +150,15 @@ function MatchRing({
           r={radius}
           fill="none"
           strokeWidth={stroke}
-          className="stroke-primary/15"
+          stroke={tone.stroke}
+          strokeOpacity={0.15}
         />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--primary)"
+          stroke={tone.stroke}
           strokeWidth={stroke}
           strokeLinecap="round"
           className="animate-ring"
@@ -176,7 +179,10 @@ function MatchRing({
           dir="ltr"
         >
           {value}
-          <span className="font-bold text-primary" style={{ fontSize: Math.round(numberPx * 0.5) }}>
+          <span
+            className={`font-bold ${tone.text}`}
+            style={{ fontSize: Math.round(numberPx * 0.5) }}
+          >
             %
           </span>
         </span>
@@ -202,8 +208,8 @@ function RankBadge({ rank, featured }: { rank: number; featured: boolean }) {
 
 const CHANCE_STYLE = {
   high: "border-primary/50 bg-primary/15 text-primary",
-  medium: "border-amber-500/40 bg-amber-500/10 text-amber-200",
-  low: "border-destructive/45 bg-destructive/10 text-red-200",
+  medium: "border-sand/40 bg-sand/10 text-sand",
+  low: "border-rust/45 bg-rust/10 text-rust",
   unknown: "border-iron/30 bg-secondary/60 text-dust",
 } as const;
 
@@ -228,7 +234,7 @@ function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
     >
       {chance ? (
         <div className="flex items-start gap-2.5">
-          <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-sand" aria-hidden />
           <div className="min-w-0">
             <h4 className="text-xs font-bold text-dust">הערכת סיכוי קבלה</h4>
             <p
@@ -244,7 +250,7 @@ function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
       ) : null}
       {role.requirements.length ? (
         <div className="flex items-start gap-2.5">
-          <ListChecks className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <ListChecks className="mt-0.5 h-4 w-4 shrink-0 text-steel" aria-hidden />
           <div className="min-w-0">
             <h4 className="text-xs font-bold text-dust">דרישות ותנאים</h4>
             <ul className="mt-1.5 flex flex-wrap gap-1.5">
@@ -262,7 +268,7 @@ function KeyFacts({ role }: { role: UnlockedRoleMatch }) {
       ) : null}
       {role.serviceLengthLabel ? (
         <div className="flex items-start gap-2.5">
-          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-rust" aria-hidden />
           <div>
             <h4 className="text-xs font-bold text-dust">משך שירות</h4>
             <p className="mt-0.5 text-foreground">{role.serviceLengthLabel}</p>
@@ -298,6 +304,9 @@ function UnlockedRoleCard({
   const headingId = useId();
   const detailsId = useId();
   const featured = role.rank === 1;
+  // Each card wears its field's color: combat rust, tech and cyber steel, intel sand.
+  const field = roleField(role);
+  const ft = TONES[field.tone];
   // The summary is usually the explanation's first sentence; show it once, not twice.
   const repeats = Boolean(role.summary && role.description?.startsWith(role.summary));
   const rest = repeats ? role.description.slice(role.summary.length).trim() : "";
@@ -316,7 +325,9 @@ function UnlockedRoleCard({
   return (
     <article
       className={`animate-slide-up overflow-hidden bg-card text-right ${
-        featured ? "animate-top-glow border border-primary/60" : "border border-iron/30"
+        featured
+          ? "animate-top-glow border border-primary/60"
+          : `border border-iron/30 border-t-2 ${ft.top}`
       }`}
       style={{ animationDelay: `${delayMs}ms` }}
       dir="rtl"
@@ -354,12 +365,16 @@ function UnlockedRoleCard({
               >
                 {role.roleTitle}
               </h3>
-              {role.category ? (
-                <p className="mt-1 text-xs text-dust">
-                  {role.category}
-                  {role.combat ? " · קרבי" : ""}
-                </p>
-              ) : null}
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-dust">
+                <span
+                  className={`inline-flex items-center gap-1.5 border px-2 py-0.5 font-bold ${ft.soft} ${ft.bg} ${ft.text}`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${ft.dot}`} aria-hidden />
+                  {field.label}
+                </span>
+                {role.category && role.category !== field.label ? role.category : null}
+                {role.combat && field.key !== "combat" ? " · קרבי" : null}
+              </p>
             </div>
             <MatchRing
               percentage={role.matchPercentage}
@@ -368,8 +383,8 @@ function UnlockedRoleCard({
             />
           </header>
 
-          <section aria-labelledby={`${detailsId}-why`} className="border-r-2 border-primary pr-4">
-            <h4 id={`${detailsId}-why`} className="text-sm font-black text-primary">
+          <section aria-labelledby={`${detailsId}-why`} className={`border-r-2 pr-4 ${ft.border}`}>
+            <h4 id={`${detailsId}-why`} className={`text-sm font-black ${ft.text}`}>
               למה זה מתאים לכם
             </h4>
             {showSummary ? (
@@ -399,7 +414,7 @@ function UnlockedRoleCard({
                       key={tag}
                       className="inline-flex items-center gap-1.5 border border-iron/25 bg-secondary/60 px-2.5 py-1 text-[11px] text-dust"
                     >
-                      <Icon className="h-3 w-3 shrink-0 text-primary/80" aria-hidden />
+                      <Icon className={`h-3 w-3 shrink-0 ${ft.text}`} aria-hidden />
                       {tag}
                     </li>
                   );
@@ -451,7 +466,7 @@ function UnlockedRoleCard({
 
                 <section aria-labelledby={`${detailsId}-questions`}>
                   <div className="mb-2 flex items-center gap-2">
-                    <CircleHelp className="h-4 w-4 text-primary" aria-hidden />
+                    <CircleHelp className="h-4 w-4 text-steel" aria-hidden />
                     <h4 id={`${detailsId}-questions`} className="text-sm font-bold text-foreground">
                       שאלות לשאול את מיטב (1111) על התפקיד
                     </h4>
@@ -538,7 +553,7 @@ function TopPlacesVault({
   return (
     <article className="vault-border rounded-xl p-[2px]" aria-labelledby={headingId} dir="rtl">
       <div className="rounded-[10px] bg-card p-5 text-right sm:p-7">
-        <p className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary">
+        <p className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-sand">
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           {places}
         </p>
@@ -561,21 +576,21 @@ function TopPlacesVault({
                   key={role.rank}
                   className={`animate-slide-up flex items-center gap-4 rounded-lg border p-4 ${
                     featured
-                      ? "animate-top-glow border-primary/60 bg-primary/10"
+                      ? "animate-top-glow border-sand/60 bg-sand/10"
                       : "border-iron/30 bg-background/40"
                   }`}
                   style={{ animationDelay: `${120 + i * 140}ms` }}
                 >
                   <span
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-mono text-lg font-black ${
-                      featured ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
+                      featured ? "bg-sand text-background" : "bg-sand/15 text-sand"
                     }`}
                   >
                     {role.rank}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1.5 text-sm font-black text-foreground">
-                      <Lock className="h-3.5 w-3.5 text-primary" aria-hidden />
+                      <Lock className="h-3.5 w-3.5 text-sand" aria-hidden />
                       {LOCKED_TITLE[role.rank] ?? "התאמה חזקה"}
                     </p>
                     <div
@@ -624,9 +639,9 @@ function TopPlacesVault({
             })}
         </ul>
 
-        <section className="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
+        <section className="mt-5 rounded-lg border border-sand/30 bg-sand/5 p-4">
           <h4 className="flex items-center gap-1.5 text-sm font-black text-foreground">
-            <ListChecks className="h-4 w-4 text-primary" aria-hidden />
+            <ListChecks className="h-4 w-4 text-sand" aria-hidden />
             למה זה חשוב לשאלון ההעדפות
           </h4>
           <p className="mt-1.5 text-sm leading-6 text-dust">
@@ -643,7 +658,7 @@ function TopPlacesVault({
             <ul className="mt-2 grid gap-2 sm:grid-cols-2">
               {VAULT_PERKS.map((perk) => (
                 <li key={perk} className="flex items-start gap-2 text-sm leading-6 text-foreground">
-                  <Check className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-sand" aria-hidden />
                   {perk}
                 </li>
               ))}
@@ -671,15 +686,15 @@ function TopPlacesVault({
             </div>
             <ul className="mt-4 grid gap-2 text-xs leading-5 text-dust sm:grid-cols-2">
               <li className="flex items-start gap-2">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-steel" aria-hidden />
                 תשלום מאובטח בעמוד של Grow. פרטי האשראי לא עוברים אלינו.
               </li>
               <li className="flex items-start gap-2">
-                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sand" aria-hidden />
                 הפתיחה אוטומטית, בדרך כלל תוך דקה מאישור התשלום.
               </li>
               <li className="flex items-start gap-2">
-                <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rust" aria-hidden />
                 <span>
                   אפשר לבקש ביטול והחזר דרך{" "}
                   <Link to="/cancellation" className="font-semibold text-primary hover:underline">
@@ -689,7 +704,7 @@ function TopPlacesVault({
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <Users className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                <Users className="mt-0.5 h-3.5 w-3.5 shrink-0 text-steel" aria-hidden />
                 מתחת לגיל 18? בקופה אפשר לשלוח להורה קישור תשלום.
               </li>
             </ul>

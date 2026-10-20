@@ -183,6 +183,7 @@ const PUBLIC_PATHS = new Set([
   "/terms",
   "/accessibility",
   "/cancellation",
+  "/gibush",
 ]);
 
 function RootLayoutInner() {
@@ -247,7 +248,12 @@ function RootLayoutInner() {
 
   // Marketing and legal pages never depend on the session; only gated pages wait for the refresh.
   // The quiz (bare shell) waits for it itself, so its first question is in the server HTML.
-  if (!authReady && !isBareShell && !PUBLIC_PATHS.has(pathname) && !/^\/(roles|blog)\//.test(pathname)) {
+  if (
+    !authReady &&
+    !isBareShell &&
+    !PUBLIC_PATHS.has(pathname) &&
+    !/^\/(roles|blog)\//.test(pathname)
+  ) {
     return (
       <>
         <main
@@ -299,7 +305,7 @@ function primaryCta(authed: boolean) {
 }
 
 const PRIMARY_BTN =
-  "inline-flex items-center justify-center rounded-md bg-primary font-bold text-primary-foreground shadow-[0_0_0_1px_oklch(1_0_0/0.06)] transition hover:brightness-110 active:brightness-95";
+  "inline-flex items-center justify-center gap-1 rounded-md border border-primary/45 font-semibold text-primary transition hover:border-primary hover:bg-primary/10";
 
 function SiteHeader({
   authed,
@@ -339,6 +345,7 @@ function SiteHeader({
 
   return (
     <header
+      data-site-chrome
       aria-label={ARIA.siteHeader}
       className={`sticky top-0 z-50 transition-all duration-200 ${
         scrolled || mobileOpen
@@ -373,7 +380,7 @@ function SiteHeader({
               התחברו
             </Link>
           )}
-          <Link to={cta.to} className={`${PRIMARY_BTN} h-10 px-5 text-sm`}>
+          <Link to={cta.to} className={`${PRIMARY_BTN} h-9 px-3.5 text-sm`}>
             {cta.label}
           </Link>
         </div>
@@ -399,81 +406,79 @@ function SiteHeader({
 
       {/* Mobile dropdown: primary on top, then the grouped secondary items */}
       {mobileOpen && (
-          <div
-            className="animate-fade-in max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden"
+        <div className="animate-fade-in max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-iron/20 bg-background/98 backdrop-blur-sm lg:hidden">
+          <nav
+            id={MOBILE_NAV_ID}
+            className="mx-auto flex max-w-7xl flex-col px-4 pt-4 pb-5"
+            aria-label={ARIA.navMobile}
           >
-            <nav
-              id={MOBILE_NAV_ID}
-              className="mx-auto flex max-w-7xl flex-col px-4 pt-4 pb-5"
-              aria-label={ARIA.navMobile}
+            <Link
+              to={cta.to}
+              className="flex min-h-12 items-center gap-3 border-b border-iron/15 px-2 py-2 text-base font-bold text-primary transition-colors hover:text-primary/80"
             >
-              <Link
-                to={cta.to}
-                className="flex min-h-12 items-center gap-3 border-b border-iron/15 px-2 py-2 text-base font-bold text-primary transition-colors hover:text-primary/80"
-              >
-                <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
-                <span className="flex-1">{cta.label}</span>
-                <ChevronLeft className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
-              </Link>
-              {!authed && (
-                <p className="mt-2 px-2 text-xs text-dust">
-                  בסוף השאלון: 5 תפקידים שמתאימים לכם, 2 מהם בחינם
-                </p>
-              )}
-
-              <p className="mt-5 px-2 pb-1 font-mono text-[11px] tracking-wide text-dust/70">
-                {FREE_TOOLS_LABEL}
+              <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="flex-1">{cta.label}</span>
+              <ChevronLeft className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+            </Link>
+            {!authed && (
+              <p className="mt-2 px-2 text-xs text-dust">
+                בסוף השאלון: 5 תפקידים שמתאימים לכם, 2 מהם בחינם
               </p>
-              {FREE_TOOLS.map(({ to, label, desc, Icon }) => (
-                <MobileNavLink key={to} to={to}>
-                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                  <span className="min-w-0">
-                    <span className="block">{label}</span>
-                    <span className="block text-xs font-normal text-dust">{desc}</span>
-                  </span>
-                </MobileNavLink>
-              ))}
-              <MobileNavLink to={PAID_TOOL.to}>
-                <PAID_TOOL.Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+            )}
+
+            <p className="mt-5 px-2 pb-1 font-mono text-[11px] tracking-wide text-dust/70">
+              {FREE_TOOLS_LABEL}
+            </p>
+            {FREE_TOOLS.map(({ to, label, desc, Icon, tone }) => (
+              <MobileNavLink key={to} to={to}>
+                <Icon className={`h-4 w-4 shrink-0 ${tone}`} aria-hidden />
                 <span className="min-w-0">
-                  <span className="flex items-center gap-2">
-                    {PAID_TOOL.label}
-                    <PaidBadge />
-                  </span>
-                  <span className="block text-xs font-normal text-dust">{PAID_TOOL.desc}</span>
+                  <span className="block">{label}</span>
+                  <span className="block text-xs font-normal text-dust">{desc}</span>
                 </span>
               </MobileNavLink>
+            ))}
+            <MobileNavLink to={PAID_TOOL.to}>
+              <PAID_TOOL.Icon className={`h-4 w-4 shrink-0 ${PAID_TOOL.tone}`} aria-hidden />
+              <span className="min-w-0">
+                <span className="flex items-center gap-2">
+                  {PAID_TOOL.label}
+                  <PaidBadge />
+                </span>
+                <span className="block text-xs font-normal text-dust">{PAID_TOOL.desc}</span>
+              </span>
+            </MobileNavLink>
 
-              <div className="mt-3">
-                {NAV_SECONDARY.map((item) => (
-                  <MobileNavLink key={item.to} to={item.to}>
-                    {item.label}
-                  </MobileNavLink>
-                ))}
-              </div>
+            <div className="mt-3">
+              {NAV_SECONDARY.map((item) => (
+                <MobileNavLink key={item.to} to={item.to}>
+                  {item.label}
+                </MobileNavLink>
+              ))}
+            </div>
 
-              {authed ? (
-                <ProfileMenu
-                  variant="list"
-                  displayName={profileName}
-                  isAdmin={isAdmin}
-                  onLogout={onLogout}
-                  onNavigate={() => setMobileOpen(false)}
-                />
-              ) : (
-                <p className="mt-4 px-2 text-sm text-dust">
-                  כבר נרשמתם?{" "}
-                  <Link
-                    to="/post-signup"
-                    hash="login"
-                    className="inline-flex min-h-11 items-center font-semibold text-foreground underline underline-offset-4"
-                  >
-                    התחברו
-                  </Link>
-                </p>
-              )}
-            </nav>
-          </div>
+            {authed ? (
+              <ProfileMenu
+                variant="list"
+                displayName={profileName}
+                isAdmin={isAdmin}
+                onLogout={onLogout}
+                onNavigate={() => setMobileOpen(false)}
+              />
+            ) : (
+              <p className="mt-4 px-2 text-sm text-dust">
+                כבר נרשמתם?{" "}
+                <Link
+                  to="/post-signup"
+                  hash="login"
+                  className="inline-flex min-h-11 items-center font-semibold text-foreground underline underline-offset-4"
+                >
+                  התחברו
+                </Link>
+              </p>
+            )}
+          </nav>
+        </div>
       )}
     </header>
   );
@@ -521,9 +526,7 @@ function NavLink({ to, exact, children }: { to: string; exact?: boolean; childre
       {({ isActive }) => (
         <>
           {children}
-          {isActive && (
-            <span className="absolute inset-x-3 bottom-0 h-[2px] bg-primary" />
-          )}
+          {isActive && <span className="absolute inset-x-3 bottom-0 h-[2px] bg-primary" />}
         </>
       )}
     </Link>

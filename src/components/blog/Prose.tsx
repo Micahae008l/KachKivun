@@ -38,7 +38,7 @@ export function OL({ items }: { items: ReactNode[] }) {
   return (
     <ol className="space-y-2 pr-5 text-base leading-[1.8] text-foreground/85">
       {items.map((item, i) => (
-        <li key={i} className="list-decimal marker:font-mono marker:text-primary">
+        <li key={i} className="list-decimal marker:font-mono marker:text-steel">
           {item}
         </li>
       ))}
@@ -49,8 +49,8 @@ export function OL({ items }: { items: ReactNode[] }) {
 /** The one fact worth remembering from a section. */
 export function Callout({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <aside className="border-r-2 border-primary bg-primary/5 p-4 sm:p-5">
-      <p className="text-sm font-black text-primary">{title}</p>
+    <aside className="border-r-2 border-sand bg-sand/5 p-4 sm:p-5">
+      <p className="text-sm font-black text-sand">{title}</p>
       <div className="mt-1.5 text-sm leading-7 text-foreground/90">{children}</div>
     </aside>
   );

@@ -36,6 +36,11 @@
   --color-iron: var(--iron);
   --color-dust: var(--dust);
   --color-sand-light: var(--sand-light);
+  --color-sand: var(--sand);
+  --color-steel: var(--steel);
+  --color-rust: var(--rust);
+  --color-maroon: var(--maroon);
+  --color-teal: var(--teal);
   --font-sans: 'Heebo', system-ui, sans-serif;
   /* Hebrew has no glyphs in JetBrains Mono: let it fall to Heebo, not Courier New's typewriter look. */
   --font-mono: 'JetBrains Mono', 'Heebo', monospace;
@@ -70,6 +75,13 @@
   --iron: oklch(0.37 0.008 255);
   --dust: oklch(0.64 0.012 255);
   --sand-light: oklch(0.83 0.015 255);
+  /* Secondary accents (desert sand, steel blue, rust): data tiles, step numbers, icons. Never buttons. */
+  --sand: oklch(0.80 0.11 80);
+  --steel: oklch(0.73 0.09 245);
+  --rust: oklch(0.68 0.14 45);
+  /* Beret colors for role fields: combat maroon (paratroopers), tech and cyber teal (artillery). */
+  --maroon: oklch(0.64 0.15 10);
+  --teal: oklch(0.74 0.1 190);
 }
 
 .dark {}
@@ -343,3 +355,5 @@ html.a11y-reduce-motion *::after {
 
 /* Set by CONSENT_BOOT_SCRIPT before paint, so a returning visitor never sees the notice flash. */
 html.kk-consent-set .cookie-consent { display: none; }
+/* Gibush run: focus mode, like the quiz, so the header never slides over the moment. */
+html[data-run] [data-site-chrome] { display: none; }

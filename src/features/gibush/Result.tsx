@@ -1,16 +1,9 @@
 import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Flag, RefreshCw } from "lucide-react";
+import { Mountain, RefreshCw, Star } from "lucide-react";
 import { ShareButtons } from "@/components/ShareButtons";
-import {
-  BENCHMARK_NOTE,
-  SHARE_LEVELS,
-  TRACK_CARD_LABEL,
-  type Gender,
-  type GibushContent,
-  type Level,
-  type Track,
-} from "./types";
+import { QuizCta } from "@/components/QuizCta";
+import { BENCHMARK_NOTE, SHARE_LEVELS, type Gender, type GibushContent, type Level } from "./types";
 import { evaluate, type Answers } from "./scoring";
 
 export const SHARE_URL = "https://kachkivun.com/gibush";
@@ -18,7 +11,6 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 export function Result({
   content,
-  track,
   gender,
   answers,
   name,
@@ -26,28 +18,20 @@ export function Result({
   onRestart,
 }: {
   content: GibushContent;
-  track: Track;
   gender: Gender;
   answers: Answers;
   name?: string;
   draftDate?: string;
   onRestart: () => void;
 }) {
-  const r = useMemo(
-    () => evaluate(content, track, gender, answers),
-    [content, track, gender, answers],
-  );
+  const r = useMemo(() => evaluate(content, gender, answers), [content, gender, answers]);
   const reduce = useReducedMotion();
   const current = r.ladder[r.level];
-  const shareIndex = SHARE_LEVELS.findIndex((x) => x.track === track && x.name === current.name);
-  const { status, next, clock, place } = r.outcome;
+  const shareIndex = SHARE_LEVELS.indexOf(current.name);
+  const { status, next, place } = r.outcome;
   // The level reached comes first; "נחתכתם" only when no screening level was reached at all.
-  const headline =
-    status === "top"
-      ? `הגעתם לרמת ${current.name}`
-      : status === "stopped"
-        ? `הגעתם לרמת ${current.name}. לרמת ${next} נעצרתם ב${place}`
-        : `נחתכתם ב־${clock}, ב${place}`;
+  // Where the climb stopped, as its own line under the headline.
+  const stoppedAt = status === "stopped" ? `לרמת ${next} נעצרתם ב${place}` : "";
   const draftLabel = draftDate
     ? new Date(draftDate).toLocaleDateString("he-IL", { month: "long", year: "numeric" })
     : undefined;
@@ -61,108 +45,113 @@ export function Result({
         };
 
   return (
-    <div className="space-y-10">
-      {/* How the day ended */}
-      <motion.header {...reveal(0)} className="border-b border-iron/30 pb-6">
-        <p className="font-mono text-xs tracking-wide text-primary">
-          {content.tracks[track].title} · סוף היום
-        </p>
-        <p
-          className="mt-3 text-right font-mono text-5xl font-black leading-none text-foreground"
-          dir="ltr"
-        >
-          {r.outcome.clock}
-        </p>
-        <h1 className="mt-3 text-2xl font-black leading-tight text-foreground sm:text-3xl">
-          {headline}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-dust">{r.outcome.reason}</p>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground">
-          {status === "cut" && track === "combat"
-            ? `${r.ladder[0].units}: פתוחים לכם גם בלי גיבוש. `
-            : ""}
-          {status === "top"
-            ? "זה בדיוק השלב שבו שומרים על מה שבניתם ולא מתרסקים בשבוע האחרון."
-            : `זו תמונת מצב של היום, לא גזר דין. יש לכם ${r.weeks === 1 ? "שבוע" : `${r.weeks} שבועות`}, והתוכנית למטה בנויה בדיוק עליהם.`}
-        </p>
-      </motion.header>
-
-      {/* Card + share */}
-      <motion.section {...reveal(0.1)} className="grid items-center gap-6 md:grid-cols-[auto_1fr]">
-        <FighterCard
-          overall={r.overall}
-          levelName={current.name}
-          trackLabel={TRACK_CARD_LABEL[track]}
-          ratings={r.ratings}
-          name={name}
-          draftLabel={draftLabel}
-        />
-        <div className="space-y-4">
-          <h2 className="text-lg font-black text-foreground">כרטיס הלוחם שלכם</h2>
-          <p className="text-sm leading-6 text-dust">
-            {current.units}. {current.screening}. בקישור ששולחים רואים רק את הציון והרמה, בלי שם
-            ובלי תשובות.
+    <div className="space-y-14 sm:space-y-20">
+      {/* How the day ended, with the card beside it */}
+      {/* Phones: text, card, then sharing. Desktop: the card beside both. */}
+      <motion.header
+        {...reveal(0)}
+        className="grid items-center gap-8 md:grid-cols-[1fr_auto] md:gap-x-16 md:gap-y-8"
+      >
+        <div className="min-w-0 md:col-start-1">
+          <p className="font-mono text-sm text-sand">{content.day.title}</p>
+          {status === "cut" ? (
+            <h1 className="mt-4 text-3xl font-black leading-[1.15] text-foreground sm:text-5xl">
+              נחתכתם ב{place}
+            </h1>
+          ) : (
+            <RankReveal name={current.name} units={r.units} animate={!reduce} />
+          )}
+          {stoppedAt ? (
+            <p className="mt-3 text-xl font-bold text-rust sm:text-2xl">{stoppedAt}</p>
+          ) : null}
+          <p className="mt-5 max-w-xl text-base leading-7 text-dust sm:text-lg sm:leading-8">
+            {r.outcome.reason}
           </p>
+          <p className="mt-3 max-w-xl text-base leading-7 text-foreground/90">
+            {status === "cut" ? `${r.ladder[0].units}: פתוחים לכם גם בלי גיבוש. ` : ""}
+            {status === "top"
+              ? "זה בדיוק השלב שבו שומרים על מה שבניתם ולא מתרסקים בשבוע האחרון."
+              : `זו תמונת מצב של היום, לא גזר דין. יש לכם ${r.weeks === 1 ? "שבוע" : `${r.weeks} שבועות`}, והתוכנית למטה בנויה בדיוק עליהם.`}
+          </p>
+        </div>
+        <div className="md:col-start-2 md:row-span-2 md:row-start-1">
+          <FighterCard
+            overall={r.overall}
+            levelName={current.name}
+            ratings={r.ratings}
+            name={name}
+            draftLabel={draftLabel}
+          />
+        </div>
+        <div className="space-y-3 md:col-start-1 md:self-start">
+          <p className="text-sm font-bold text-foreground">שתפו את הכרטיס</p>
           <ShareButtons
             text={`קיבלתי ${r.overall} בכרטיס הלוחם של קח כיוון. כמה אתם מקבלים?`}
             url={shareIndex < 0 ? SHARE_URL : `${SHARE_URL}?s=${r.overall}&u=${shareIndex}`}
           />
+          <p className="text-sm text-dust">בקישור רואים רק את הציון והרמה, בלי שם ובלי תשובות.</p>
         </div>
-      </motion.section>
+      </motion.header>
 
-      {/* Route */}
-      <motion.section {...reveal(0.2)} aria-labelledby="route-h">
-        <h2 id="route-h" className="text-lg font-black text-foreground">
-          {track === "pilot" ? "סולם המוכנות" : "המסלול למעלה"}
-        </h2>
-        <p className="mt-1 text-sm text-dust">
-          {track === "pilot"
-            ? "בגיבוש טיס וחובלים הכושר הוא רק סף. מה שמטפס כאן הוא חשיבה, צוות וקור רוח."
-            : "כל נקודה היא רמת גיבוש. קו מלא עד איפה שאתם היום, מקווקו מה שנשאר."}
+      {/* The ladder */}
+      <motion.section {...reveal(0.15)} aria-labelledby="ladder-h">
+        <SectionTitle id="ladder-h">עד איפה הגעתם בסולם</SectionTitle>
+        <p className="mt-2 max-w-2xl text-base leading-7 text-dust">
+          כל עמודה היא רמה. הצבועות כבר בידיים שלכם. לטיס ולחובלים יש דרך משלהם לשתי הרמות העליונות:
+          חשיבה, תכנון וצוות במקום סחיבה.
         </p>
-        <RouteMap ladder={r.ladder} level={r.level} />
+        <LadderBars ladder={r.ladder} level={r.level} />
       </motion.section>
 
-      {/* Gaps and plan */}
-      <motion.section {...reveal(0.3)} className="grid gap-6 lg:grid-cols-2">
-        <div>
-          <h2 className="text-lg font-black text-foreground">איפה הפער</h2>
-          {r.gaps.length ? (
-            <ul className="mt-3 divide-y divide-iron/20 border-y border-iron/20">
-              {r.gaps.map((g) => (
-                <li key={g.stage.id} className="py-3">
-                  <p className="text-sm font-bold text-foreground">
-                    {g.stage.bar?.topic ?? g.stage.place}
-                  </p>
-                  <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">
-                    <dt className="text-dust">שלכם</dt>
-                    <dd className="text-foreground">{g.yours}</dd>
-                    <dt className="text-dust">הרף המקובל</dt>
-                    <dd className="font-semibold text-primary">{g.stage.bar?.label}</dd>
-                  </dl>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-dust">
-              אין פער בולט במספרים. מה שנשאר הוא להחזיק את הרמה ולהגיע רעננים.
-            </p>
-          )}
-        </div>
-        <div>
-          <h2 className="text-lg font-black text-foreground">
-            תוכנית ל־{r.weeks === 1 ? "שבוע" : `${r.weeks} שבועות`}
-          </h2>
-          <ol className="mt-3 space-y-3">
-            {r.plan.map((b) => (
-              <li key={b.range} className="border border-iron/30 bg-card p-4">
-                <p className="font-mono text-[11px] tracking-wide text-primary">{b.range}</p>
-                <p className="mt-1 text-sm font-black text-foreground">{b.title}</p>
-                <ul className="mt-2 space-y-1.5">
+      {/* Gaps */}
+      <motion.section {...reveal(0.25)} aria-labelledby="gaps-h">
+        <SectionTitle id="gaps-h">מה חסר לשלב הבא</SectionTitle>
+        {r.gaps.length ? (
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            {r.gaps.map((g) => (
+              <li key={g.stage.id} className="border border-iron/30 bg-card p-5">
+                <p className="text-lg font-black text-foreground">
+                  {g.stage.bar?.topic ?? g.stage.place}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="border-t-2 border-rust bg-rust/10 p-3">
+                    <p className="text-sm text-dust">שלכם היום</p>
+                    <p className="mt-1 text-base font-bold text-foreground">{g.yours}</p>
+                  </div>
+                  <div className="border-t-2 border-primary bg-primary/10 p-3">
+                    <p className="text-sm text-dust">
+                      {g.stage.bar ? "הרף המקובל" : "מה שהמגבשים מחפשים"}
+                    </p>
+                    <p className="mt-1 text-base font-bold text-primary">{g.target}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-6 max-w-2xl border-t-2 border-primary bg-primary/10 p-5 text-base leading-7 text-foreground">
+            אין פער בולט במספרים. מה שנשאר הוא להחזיק את הרמה ולהגיע רעננים.
+          </p>
+        )}
+      </motion.section>
+
+      {/* Plan */}
+      <motion.section {...reveal(0.35)} aria-labelledby="plan-h">
+        <SectionTitle id="plan-h">
+          {r.weeks === 1 ? "התוכנית לשבוע שנשאר" : `התוכנית ל־${r.weeks} השבועות שנשארו`}
+        </SectionTitle>
+        <ol className="mt-6 grid gap-3 lg:grid-cols-3">
+          {r.plan.map((b, i) => {
+            const tone = PLAN_TONES[i % PLAN_TONES.length];
+            return (
+              <li key={b.range} className={`border-t-2 bg-card p-5 ${tone.border}`}>
+                <p className={`font-mono text-sm ${tone.text}`}>{b.range}</p>
+                <p className="mt-2 text-xl font-black text-foreground">{b.title}</p>
+                <ul className="mt-4 space-y-2.5">
                   {b.items.map((it) => (
-                    <li key={it} className="flex gap-2 text-sm leading-6 text-foreground/90">
+                    <li key={it} className="flex gap-2.5 text-base leading-7 text-foreground/90">
                       <span
-                        className="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-primary"
+                        className={`mt-3 h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`}
                         aria-hidden
                       />
                       {it}
@@ -170,17 +159,19 @@ export function Result({
                   ))}
                 </ul>
               </li>
-            ))}
-          </ol>
-        </div>
+            );
+          })}
+        </ol>
       </motion.section>
 
-      <footer className="space-y-4 border-t border-iron/30 pt-5">
-        <p className="text-xs leading-5 text-dust">{BENCHMARK_NOTE}</p>
+      <QuizCta title="מעבר לגיבוש: איזה תפקיד בצה״ל הכי מתאים לכם?" />
+
+      <footer className="flex flex-col-reverse items-start gap-5 border-t border-iron/30 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-xl text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
         <button
           type="button"
           onClick={onRestart}
-          className="inline-flex min-h-11 items-center gap-2 border border-iron/40 px-4 text-sm font-bold text-foreground transition hover:border-primary/50"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 border border-iron/40 px-4 text-sm font-bold text-foreground transition hover:border-primary/50"
         >
           <RefreshCw className="h-4 w-4" aria-hidden />
           לעבור את היום מחדש
@@ -190,71 +181,167 @@ export function Result({
   );
 }
 
-/** FIFA-style card. `silhouette` hides every number for the locked teaser. */
+const PLAN_TONES = [
+  { border: "border-steel", text: "text-steel", dot: "bg-steel" },
+  { border: "border-sand", text: "text-sand", dot: "bg-sand" },
+  { border: "border-rust", text: "text-rust", dot: "bg-rust" },
+] as const;
+
+function SectionTitle({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <h2
+      id={id}
+      className="text-balance text-3xl font-black leading-tight text-foreground sm:text-4xl"
+    >
+      {children}
+    </h2>
+  );
+}
+
+const CARD_CLIP = "polygon(12% 0, 88% 0, 100% 7%, 100% 93%, 50% 100%, 0 93%, 0 7%)";
+
+/**
+ * Rank badges for the levels few reach. A plain "3 of 5" made units like שייטת 13 look average,
+ * so the top units carry their own title instead of a count.
+ */
+export const LEVEL_BADGE: Record<string, string> = {
+  "קומנדו ומיוחדות": "יחידה מיוחדת",
+  "סיירות עילית": "עילית",
+};
+
+/** The level as a game rank: the name large, and a badge when it is one few reach. */
+function RankReveal({ name, units, animate }: { name: string; units: string; animate: boolean }) {
+  const badge = LEVEL_BADGE[name];
+  return (
+    <div className="mt-5">
+      <p className="text-sm font-bold text-dust">הדרגה שלכם</p>
+      <motion.h1
+        initial={animate ? { opacity: 0, scale: 0.92 } : false}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.15, ease }}
+        className="mt-2 origin-right text-4xl font-black leading-none text-foreground sm:text-6xl"
+      >
+        {name}
+      </motion.h1>
+      <p className="mt-3 max-w-xl text-base leading-7 text-foreground/90">{units}</p>
+      {badge ? (
+        <motion.p
+          initial={animate ? { opacity: 0, y: 6 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.45, ease }}
+          className="mt-4 flex flex-wrap items-center gap-3"
+        >
+          <span className="inline-flex items-center gap-1.5 border border-sand/50 bg-sand/10 px-3 py-1 text-sm font-black text-sand">
+            <Star className="h-4 w-4 fill-current" aria-hidden />
+            {badge}
+          </span>
+          <span className="text-base font-bold text-foreground">
+            {badge === "עילית"
+              ? "מעטים מאוד מגיעים לרמה הזאת."
+              : "רוב המועמדים לא מגיעים לרמה הזאת."}
+          </span>
+        </motion.p>
+      ) : null}
+    </div>
+  );
+}
+
+/** FIFA-proportioned card (5:7). `locked` hides every number for the teasers. */
 export function FighterCard({
   overall,
   levelName,
-  trackLabel,
+  locked = false,
   ratings,
   name,
   draftLabel,
-  silhouette = false,
 }: {
   overall: number | null;
   levelName: string;
-  trackLabel: string;
+  locked?: boolean;
   ratings: { key: string; label: string; value: number | null }[];
   name?: string;
   draftLabel?: string;
-  silhouette?: boolean;
 }) {
-  const hidden = (v: number | null) => (silhouette || v == null ? "??" : String(v));
+  const show = (v: number | null) => (locked || v == null ? "??" : String(v));
+  const half = Math.ceil(ratings.length / 2);
   return (
     <div
-      className="relative mx-auto w-[17.5rem] shrink-0 overflow-hidden border border-primary/40 p-5 text-foreground shadow-[0_20px_60px_-25px] shadow-primary/40"
+      className="mx-auto w-[17.5rem] shrink-0"
       style={{
-        clipPath: "polygon(12% 0, 88% 0, 100% 7%, 100% 93%, 50% 100%, 0 93%, 0 7%)",
-        background:
-          "radial-gradient(120% 70% at 50% 0%, color-mix(in oklch, var(--primary) 28%, transparent), transparent 70%), linear-gradient(160deg, color-mix(in oklch, var(--primary) 14%, var(--card)), var(--card) 60%)",
+        filter: "drop-shadow(0 18px 28px color-mix(in oklch, var(--primary) 30%, transparent))",
       }}
-      aria-label={silhouette ? "כרטיס לוחם נעול" : `כרטיס לוחם: ${overall}, ${levelName}`}
     >
-      <TopoBg />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="font-mono text-6xl font-black leading-none" dir="ltr">
-            {hidden(overall)}
-          </p>
-          <p className="mt-1 text-xs font-bold text-primary">
-            {silhouette ? "רמה נעולה" : levelName}
-          </p>
-        </div>
-        <span className="border border-primary/40 px-2 py-0.5 font-mono text-[10px] text-dust">
-          {trackLabel}
-        </span>
-      </div>
-      <div className="relative mt-6 border-b border-primary/25 pb-3 text-center">
-        <p className="truncate text-xl font-black">{name || "לוחם/ת"}</p>
-        {draftLabel ? (
-          <p className="mt-0.5 font-mono text-[11px] text-dust">גיוס: {draftLabel}</p>
-        ) : null}
-      </div>
-      <dl className="relative mt-3 grid grid-cols-2 gap-x-5 gap-y-2">
-        {ratings.map((x) => (
-          <div key={x.key} className="flex items-baseline justify-between gap-2">
-            <dt className="truncate text-xs text-dust">{x.label}</dt>
-            <dd
-              className={`font-mono text-lg font-black ${silhouette ? "blur-[3px]" : ""}`}
-              dir="ltr"
-            >
-              {hidden(x.value)}
-            </dd>
+      <div
+        className="relative flex aspect-[5/7] flex-col px-5 pb-9 pt-7 text-foreground"
+        style={{
+          clipPath: CARD_CLIP,
+          background:
+            "radial-gradient(120% 70% at 50% 0%, color-mix(in oklch, var(--primary) 28%, transparent), transparent 70%), linear-gradient(160deg, color-mix(in oklch, var(--primary) 14%, var(--card)), var(--card) 60%)",
+        }}
+        aria-label={locked ? "כרטיס לוחם נעול" : `כרטיס לוחם: ${overall}, ${levelName}`}
+      >
+        <TopoBg />
+        {/* The outline follows the clipped shape; a CSS border stops at the cut corners. */}
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          <polygon
+            points="12,0 88,0 100,7 100,93 50,100 0,93 0,7"
+            fill="none"
+            stroke="var(--primary)"
+            strokeOpacity={0.55}
+            strokeWidth={2.5}
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <div className="relative flex min-h-0 flex-1 gap-1">
+          <div className="flex w-[5.5rem] shrink-0 flex-col items-center text-center">
+            <p className="font-mono text-[3.5rem] font-black leading-none" dir="ltr">
+              {show(overall)}
+            </p>
+            <p className="mt-1 text-sm font-black leading-tight text-primary">
+              {locked ? "רמה נעולה" : levelName}
+            </p>
+            <span className="my-2 h-px w-10 bg-primary/40" aria-hidden />
+            <Mountain className="h-6 w-6 text-primary" aria-hidden />
+            <p className="mt-1 text-xs font-bold text-dust">גיבוש</p>
           </div>
-        ))}
-      </dl>
-      <p className="relative mt-5 pb-3 text-center font-mono text-[10px] tracking-widest text-dust">
-        kachkivun.com
-      </p>
+          <svg
+            viewBox="0 0 100 110"
+            className="min-w-0 flex-1 self-end text-primary opacity-30"
+            aria-hidden
+          >
+            <circle cx="50" cy="38" r="21" fill="currentColor" />
+            <path d="M6 110c0-27 19-44 44-44s44 17 44 44z" fill="currentColor" />
+          </svg>
+        </div>
+        <div className="relative border-b border-primary/30 pb-1 text-center">
+          <p className="truncate text-2xl font-black leading-tight">{name || "לוחם/ת"}</p>
+          {draftLabel ? <p className="text-xs text-dust">גיוס: {draftLabel}</p> : null}
+        </div>
+        <dl className="relative mt-2 grid grid-flow-col grid-cols-2 grid-rows-3 gap-y-0.5">
+          {ratings.map((x, i) => (
+            <div
+              key={x.key}
+              className={`flex items-baseline gap-1.5 ${i >= half ? "border-s border-primary/30 ps-2.5" : "pe-2.5"}`}
+            >
+              <dt className="order-2 truncate text-sm text-dust">{x.label}</dt>
+              <dd
+                className={`order-1 w-7 shrink-0 font-mono text-lg font-black ${locked ? "blur-[3px]" : ""}`}
+                dir="ltr"
+              >
+                {show(x.value)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="relative mt-1.5 text-center font-mono text-xs tracking-widest text-dust">
+          kachkivun.com
+        </p>
+      </div>
     </div>
   );
 }
@@ -285,116 +372,42 @@ function contours(cx: number, cy: number, rings: number, step: number) {
   });
 }
 
-/** The ladder as a climb: checkpoints bottom to top, solid to the reached level, dashed beyond. */
-export function RouteMap({ ladder, level }: { ladder: Level[]; level: number }) {
+/** The ladder as rising columns, easiest at the start (right in RTL). Reached ones are filled. */
+function LadderBars({ ladder, level }: { ladder: Level[]; level: number }) {
   const n = ladder.length;
-  const H = 96 * n + 40;
-  const pts = ladder.map((_, i) => ({
-    x: i % 2 ? 210 : 150,
-    y: H - 40 - (i * (H - 90)) / Math.max(1, n - 1),
-  }));
-  const pathOf = (from: number, to: number) =>
-    pts
-      .slice(from, to + 1)
-      .map((p, i, a) => {
-        if (!i) return `M${p.x},${p.y}`;
-        const prev = a[i - 1];
-        const my = (prev.y + p.y) / 2;
-        return `C${prev.x},${my} ${p.x},${my} ${p.x},${p.y}`;
-      })
-      .join(" ");
-
   return (
-    <svg
-      viewBox={`0 0 360 ${H}`}
-      direction="ltr"
-      className="mt-4 w-full max-w-xl border border-iron/30 bg-card"
-      role="img"
-      aria-label={`המסלול: ${ladder.map((l) => l.name).join(", ")}. אתם ב${ladder[level].name}.`}
+    <ol
+      className="mt-14 flex h-72 items-end gap-1.5 sm:h-80 sm:gap-3"
+      aria-label={`הסולם: ${ladder.map((l) => l.name).join(", ")}. אתם ב${ladder[level].name}.`}
     >
-      {contours(180, 50, 9, 28).map((d, i) => (
-        <path
-          key={i}
-          d={d}
-          fill="none"
-          stroke="var(--iron)"
-          strokeOpacity={0.55}
-          strokeWidth="0.8"
-        />
-      ))}
-      {level < n - 1 ? (
-        <path
-          d={pathOf(level, n - 1)}
-          fill="none"
-          stroke="var(--dust)"
-          strokeWidth="2"
-          strokeDasharray="5 6"
-          strokeOpacity={0.6}
-        />
-      ) : null}
-      {level > 0 ? (
-        <path
-          d={pathOf(0, level)}
-          fill="none"
-          stroke="var(--primary)"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-      ) : null}
-      {pts.map((p, i) => {
-        const left = i % 2 === 0;
+      {ladder.map((l, i) => {
         const reached = i <= level;
-        const tx = left ? p.x - 16 : p.x + 16;
+        const here = i === level;
+        const height = 34 + (66 * i) / Math.max(1, n - 1);
         return (
-          <g key={i}>
-            {i === level ? (
-              <circle cx={p.x} cy={p.y} r="13" fill="var(--primary)" opacity="0.18" />
-            ) : null}
-            <circle
-              cx={p.x}
-              cy={p.y}
-              r="6"
-              fill={reached ? "var(--primary)" : "var(--card)"}
-              stroke={reached ? "var(--primary)" : "var(--dust)"}
-              strokeWidth="2"
-            />
-            <text
-              x={tx}
-              y={p.y - 2}
-              textAnchor={left ? "end" : "start"}
-              fontSize="13"
-              fontWeight="800"
-              fill={reached ? "var(--foreground)" : "var(--dust)"}
-            >
-              {ladder[i].name}
-            </text>
-            <text
-              x={tx}
-              y={p.y + 14}
-              textAnchor={left ? "end" : "start"}
-              fontSize="10.5"
-              fill="var(--dust)"
-            >
-              {ladder[i].screening}
-            </text>
-            {i === level ? (
-              <text
-                x={tx}
-                y={p.y - 19}
-                textAnchor={left ? "end" : "start"}
-                fontSize="10"
-                fontFamily="var(--font-mono)"
-                fill="var(--primary)"
-              >
+          <li
+            key={l.name}
+            style={{ height: `${height}%` }}
+            className={`relative flex min-w-0 flex-1 flex-col justify-end p-2 sm:p-3 ${
+              reached ? "border-t-[3px] border-primary bg-primary/15" : "bg-iron/15"
+            } ${here ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+          >
+            {here ? (
+              <span className="absolute inset-x-0 -top-10 mx-auto w-fit whitespace-nowrap bg-primary px-2 py-1 text-xs font-black text-primary-foreground">
                 אתם כאן
-              </text>
+              </span>
             ) : null}
-          </g>
+            <span
+              className={`text-xs font-black leading-tight sm:text-base ${reached ? "text-foreground" : "text-dust"}`}
+            >
+              {l.name}
+            </span>
+            <span className="mt-1 hidden text-sm leading-snug text-dust sm:block">
+              {l.screening}
+            </span>
+          </li>
         );
       })}
-      <g transform={`translate(${pts[n - 1].x - 6}, ${pts[n - 1].y - 40})`} aria-hidden>
-        <Flag width="14" height="14" color="var(--primary)" />
-      </g>
-    </svg>
+    </ol>
   );
 }

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { tagTone } from "@/lib/tones";
 import { ChevronLeft } from "lucide-react";
 import { QuizCta } from "@/components/QuizCta";
 import { BLOG_POSTS, blogUrl, formatPostDate } from "@/lib/blog";
@@ -61,6 +62,7 @@ const TAG_ORDER = [...new Set(BLOG_POSTS.map((p) => p.tag))];
 
 function BlogIndexPage() {
   const [lead, ...rest] = BLOG_POSTS;
+  const leadTone = tagTone(lead.tag);
 
   return (
     <div className="topo-lines" dir="rtl">
@@ -81,9 +83,9 @@ function BlogIndexPage() {
         <Link
           to="/blog/$slug"
           params={{ slug: lead.slug }}
-          className="group block border border-primary/40 bg-primary/5 p-5 transition hover:border-primary sm:p-8"
+          className={`group block border border-t-2 border-iron/30 bg-card p-5 transition hover:bg-secondary/40 sm:p-8 ${leadTone.top}`}
         >
-          <p className="font-mono text-xs text-primary">{lead.tag}</p>
+          <p className={`font-mono text-xs ${leadTone.text}`}>{lead.tag}</p>
           <h2 className="mt-2 text-2xl font-black leading-tight text-foreground sm:text-3xl">
             {lead.title}
           </h2>
@@ -104,8 +106,9 @@ function BlogIndexPage() {
             <section key={tag} aria-labelledby={`tag-${tag}`}>
               <h2
                 id={`tag-${tag}`}
-                className="mb-4 scroll-mt-20 text-xl font-black text-foreground"
+                className="mb-4 flex scroll-mt-20 items-center gap-2.5 text-xl font-black text-foreground"
               >
+                <span className={`h-2.5 w-2.5 rounded-full ${tagTone(tag).dot}`} aria-hidden />
                 {tag}
               </h2>
               <ul className="grid gap-4 sm:grid-cols-2">
@@ -114,7 +117,7 @@ function BlogIndexPage() {
                     <Link
                       to="/blog/$slug"
                       params={{ slug: p.slug }}
-                      className="flex h-full flex-col border border-iron/30 bg-card p-5 transition hover:border-primary/50"
+                      className={`flex h-full flex-col border border-t-2 border-iron/30 bg-card p-5 transition hover:bg-secondary/40 ${tagTone(tag).top}`}
                     >
                       <h3 className="text-lg font-black leading-snug text-foreground">{p.title}</h3>
                       <p className="mt-2 flex-1 text-sm leading-6 text-dust">{p.description}</p>

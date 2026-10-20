@@ -7,6 +7,7 @@ import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
 import type { RoleInsightDetail, RolePageContent } from "@/lib/api";
 import { getBlogPost } from "@/lib/blog";
 import { fetchRoleCatalog, fetchRoleDetail, roleUrl, SITE_URL } from "@/lib/roles-public";
+import { TONES, roleField, type Tone } from "@/lib/tones";
 
 /** One indexable page per role: what the role is, its thresholds, and a path into the assessment. */
 export const Route = createFileRoute("/roles/$slug")({
@@ -89,11 +90,13 @@ export const Route = createFileRoute("/roles/$slug")({
   notFoundComponent: RoleNotFound,
 });
 
-function Fact({ label, value }: { label: string; value: string }) {
+const FACT_TONES: Tone[] = ["sand", "steel", "rust", "olive"];
+
+function Fact({ label, value, tone }: { label: string; value: string; tone: Tone }) {
   return (
-    <div className="border border-iron/25 bg-background/40 p-3 text-right">
+    <div className={`border-t-2 p-3 text-right ${TONES[tone].tile}`}>
       <dt className="text-[11px] text-dust">{label}</dt>
-      <dd className="mt-1 text-base font-black text-foreground">{value}</dd>
+      <dd className={`mt-1 text-base font-black ${TONES[tone].text}`}>{value}</dd>
     </div>
   );
 }
@@ -130,6 +133,7 @@ function pickGuides(role: RoleInsightDetail, page: RolePageContent) {
 
 function RolePage() {
   const { role, related } = Route.useLoaderData();
+  const field = roleField(role);
   // An older API has no `page`: show its raw fields, nothing derived.
   const page: RolePageContent = role.page ?? {
     profileFloor: role.medicalFloor,
@@ -147,7 +151,9 @@ function RolePage() {
   const gender = role.genderEligibility ? GENDER_LABEL[role.genderEligibility] : null;
   const facts = [
     role.daparFloor != null ? { label: "דפ״ר מינימלי", value: String(role.daparFloor) } : null,
-    page.profileFloor != null ? { label: "פרופיל מינימלי", value: String(page.profileFloor) } : null,
+    page.profileFloor != null
+      ? { label: "פרופיל מינימלי", value: String(page.profileFloor) }
+      : null,
     gender ? { label: "פתוח ל", value: gender } : null,
     role.selective ? { label: "קבלה", value: "סלקטיבית" } : null,
   ].filter((f): f is { label: string; value: string } => f !== null);
@@ -177,11 +183,19 @@ function RolePage() {
       </nav>
 
       <header>
-        <p className="font-mono text-xs tracking-wide text-primary">{role.category}</p>
+        <p className="flex flex-wrap items-center gap-2 text-xs text-dust">
+          <span
+            className={`inline-flex items-center gap-1.5 border px-2 py-0.5 font-bold ${TONES[field.tone].soft} ${TONES[field.tone].bg} ${TONES[field.tone].text}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${TONES[field.tone].dot}`} aria-hidden />
+            {field.label}
+          </span>
+          {role.category && role.category !== field.label ? role.category : null}
+        </p>
         <h1 className="mt-2 flex flex-wrap items-center gap-3 text-3xl font-black leading-tight text-foreground sm:text-4xl">
           {role.roleTitle}
           {role.combat ? (
-            <span className="inline-flex items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+            <span className="inline-flex items-center gap-1 rounded-sm border border-maroon/30 bg-maroon/10 px-2 py-0.5 text-xs font-bold text-maroon">
               <Shield className="h-3.5 w-3.5" aria-hidden />
               קרבי
             </span>
@@ -212,8 +226,13 @@ function RolePage() {
           <h2 className="text-lg font-black text-foreground">דרישות ותנאי קבלה</h2>
           {facts.length ? (
             <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {facts.map((f) => (
-                <Fact key={f.label} label={f.label} value={f.value} />
+              {facts.map((f, i) => (
+                <Fact
+                  key={f.label}
+                  label={f.label}
+                  value={f.value}
+                  tone={FACT_TONES[i % FACT_TONES.length]}
+                />
               ))}
             </dl>
           ) : null}
@@ -223,9 +242,9 @@ function RolePage() {
 
       {role.intensityFromData ? (
         <div className="grid gap-3 sm:grid-cols-3">
-          <IntensityBar label="עומס פיזי" value={role.physicalDemand} />
-          <IntensityBar label="טכנולוגיה" value={role.techIntensity} />
-          <IntensityBar label="עבודה עם אנשים" value={role.peopleIntensity} />
+          <IntensityBar label="עומס פיזי" value={role.physicalDemand} tone="rust" />
+          <IntensityBar label="טכנולוגיה" value={role.techIntensity} tone="steel" />
+          <IntensityBar label="עבודה עם אנשים" value={role.peopleIntensity} tone="sand" />
         </div>
       ) : null}
 
@@ -302,7 +321,7 @@ function RolePage() {
                   <Link
                     to="/roles/$slug"
                     params={{ slug: r.slug }}
-                    className="flex min-h-11 items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
+                    className={`flex min-h-11 items-center justify-between gap-3 border border-r-2 border-iron/30 bg-card p-3 text-sm transition hover:bg-secondary/40 ${TONES[roleField(r).tone].edge}`}
                   >
                     <span>
                       <span className="block font-bold text-foreground">{r.roleTitle}</span>

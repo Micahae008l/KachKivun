@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { TONES } from "@/lib/tones";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, RefreshCw, Swords, X } from "lucide-react";
 import { QuizCta } from "@/components/QuizCta";
@@ -316,7 +317,7 @@ function AttentionTestPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 text-right sm:px-6 sm:py-12" dir="rtl">
       <header>
-        <p className="font-mono text-xs tracking-widest text-primary uppercase">תרגול חינם</p>
+        <p className="font-mono text-xs tracking-widest text-steel uppercase">תרגול חינם</p>
         <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
           מבחן הקשב: לוחצים רק על עיגול ירוק
         </h1>
@@ -425,10 +426,13 @@ function AttentionTestPage() {
         ) : null}
 
         {phase === "done" && result ? (
+          // The grade in its own color: 4-5 green, 3 sand, 1-2 rust.
           <div className="bg-card p-6 sm:p-8">
             <p className="font-mono text-xs tracking-widest text-primary uppercase">הציון שלכם</p>
             <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
-              <p className="font-mono text-8xl font-black tabular-nums leading-none text-primary">
+              <p
+                className={`font-mono text-8xl font-black tabular-nums leading-none ${TONES[result.grade >= 4 ? "olive" : result.grade === 3 ? "sand" : "rust"].text}`}
+              >
                 {result.grade}
               </p>
               <div className="min-w-0 flex-1 pb-1">
@@ -437,7 +441,11 @@ function AttentionTestPage() {
                     <span
                       key={step}
                       className={`animate-slide-up h-2.5 flex-1 ${
-                        step <= result.grade ? "bg-primary" : "bg-iron/30"
+                        step <= result.grade
+                          ? TONES[
+                              result.grade >= 4 ? "olive" : result.grade === 3 ? "sand" : "rust"
+                            ].dot
+                          : "bg-iron/30"
                       }`}
                       style={{ animationDelay: `${step * 70}ms` }}
                     />
@@ -449,25 +457,25 @@ function AttentionTestPage() {
               </div>
             </div>
             <dl className="mt-6 grid grid-cols-3 gap-2 text-center sm:gap-3">
-              <div className="border border-iron/25 bg-background/40 p-3">
-                <dd className="font-mono text-2xl font-black text-foreground">
+              <div className="border-t-2 border-primary bg-primary/10 p-3">
+                <dd className="font-mono text-2xl font-black text-primary">
                   {result.hits}
                   <span className="text-sm text-dust">/{result.targets}</span>
                 </dd>
                 <dt className="mt-1 text-[11px] leading-4 text-dust">עיגולים ירוקים שתפסתם</dt>
               </div>
-              <div className="border border-iron/25 bg-background/40 p-3">
+              <div className="border-t-2 border-rust bg-rust/10 p-3">
                 <dd
                   className={`font-mono text-2xl font-black ${
-                    result.falseTaps ? "text-destructive" : "text-foreground"
+                    result.falseTaps ? "text-rust" : "text-foreground"
                   }`}
                 >
                   {result.falseTaps}
                 </dd>
                 <dt className="mt-1 text-[11px] leading-4 text-dust">לחיצות בטעות</dt>
               </div>
-              <div className="border border-iron/25 bg-background/40 p-3">
-                <dd className="font-mono text-2xl font-black text-foreground" dir="ltr">
+              <div className="border-t-2 border-steel bg-steel/10 p-3">
+                <dd className="font-mono text-2xl font-black text-steel" dir="ltr">
                   {result.avgMs != null ? result.avgMs : "–"}
                   {result.avgMs != null ? <span className="text-sm text-dust">ms</span> : null}
                 </dd>
@@ -530,7 +538,7 @@ function AttentionTestPage() {
             לשים את הטלפון במצב שקט ולשבת בחדר בלי מסך אחר.
           </li>
         </ul>
-        <p className="border-r-2 border-primary bg-primary/5 p-4 text-sm leading-7">
+        <p className="border-r-2 border-steel bg-steel/5 p-4 text-sm leading-7">
           זה תרגול ולא המבחן הרשמי. הוא בנוי לפי תיאור של מי שעבר את המבחן, והציון כאן אינו ציון
           צבאי ואינו מנבא את מדד הקשב שתקבלו, גם אם הוא על אותו סולם של 1 עד 5. כל מה שקורה בצו
           הראשון, במדריך{" "}

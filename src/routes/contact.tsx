@@ -73,7 +73,7 @@ function ContactPage() {
   return (
     <div className="topo-lines min-h-[65vh]" dir="rtl">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
-        <p className="font-mono text-xs tracking-wide text-primary uppercase">שירות לקוחות</p>
+        <p className="font-mono text-xs tracking-wide text-steel uppercase">שירות לקוחות</p>
         <h1 className="mt-2 text-3xl font-black text-foreground">צור קשר</h1>
         <p className="mt-3 text-sm leading-7 text-dust">
           פונים בכתב ומקבלים תשובה למייל, בדרך כלל תוך יום עסקים. לביטול רכישה אפשר גם ישירות דרך{" "}

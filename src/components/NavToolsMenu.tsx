@@ -9,18 +9,21 @@ export const FREE_TOOLS = [
     label: "מחשבון תפקידים",
     desc: "מה פתוח לכם לפי דפ״ר ופרופיל",
     Icon: Calculator,
+    tone: "text-steel",
   },
   {
     to: "/attention-test",
     label: "מבחן קשב",
     desc: "תרגול למבחן הקשב של צו ראשון",
     Icon: Crosshair,
+    tone: "text-rust",
   },
   {
     to: "/role-insights",
     label: "תפקידים בצה״ל",
     desc: "דרישות, דפ״ר ופרופיל לכל תפקיד",
     Icon: LayoutGrid,
+    tone: "text-teal",
   },
 ] as const;
 
@@ -32,11 +35,12 @@ export const PAID_TOOL = {
   label: "מוכנות לגיבוש",
   desc: "סימולציה של יום הגיבוש ותוכנית אימון",
   Icon: Mountain,
+  tone: "text-sand",
 } as const;
 
 export function PaidBadge() {
   return (
-    <span className="inline-flex items-center gap-1 border border-primary/40 px-1.5 py-px font-mono text-[10px] font-normal text-primary">
+    <span className="inline-flex items-center gap-1 border border-sand/40 px-1.5 py-px font-mono text-[10px] font-normal text-sand">
       <Lock className="h-2.5 w-2.5" aria-hidden />
       בתשלום
     </span>
@@ -105,13 +109,13 @@ export function NavToolsMenu({ authed }: { authed: boolean }) {
           className="absolute start-0 top-full z-50 w-72 overflow-hidden rounded-md border border-iron/30 bg-background shadow-lg"
         >
           <ul className="py-1">
-            {FREE_TOOLS.map(({ to, label, desc, Icon }) => (
+            {FREE_TOOLS.map(({ to, label, desc, Icon, tone }) => (
               <li key={to}>
                 <Link
                   to={to}
                   className="flex items-start gap-3 px-4 py-2.5 transition hover:bg-iron/10 focus-visible:bg-iron/10"
                 >
-                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} aria-hidden />
                   <span>
                     <span className="block text-sm font-semibold text-foreground">{label}</span>
                     <span className="block text-xs text-dust">{desc}</span>
@@ -124,7 +128,10 @@ export function NavToolsMenu({ authed }: { authed: boolean }) {
                 to={PAID_TOOL.to}
                 className="flex items-start gap-3 px-4 py-2.5 transition hover:bg-iron/10 focus-visible:bg-iron/10"
               >
-                <PAID_TOOL.Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <PAID_TOOL.Icon
+                  className={`mt-0.5 h-4 w-4 shrink-0 ${PAID_TOOL.tone}`}
+                  aria-hidden
+                />
                 <span>
                   <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     {PAID_TOOL.label}

@@ -1,17 +1,10 @@
-import {
-  ladderFor,
-  stageFor,
-  type Gender,
-  type GibushContent,
-  type Level,
-  type Stage,
-  type Track,
-} from "./types.ts";
+import { stageFor, type Gender, type GibushContent, type Level, type Stage } from "./types.ts";
 
 /** Stage id to chosen option index. */
 export type Answers = Record<string, number>;
 
-export type Gap = { stage: Stage; yours: string; deficit: number };
+/** target: the bar for measured moments, the answer the screeners look for on judgment ones. */
+export type Gap = { stage: Stage; yours: string; target: string; deficit: number };
 export type PlanBlock = { range: string; title: string; items: string[] };
 
 /**
@@ -32,6 +25,8 @@ export type GibushResult = {
   overall: number;
   ladder: Level[];
   level: number;
+  /** The units the level opens: the flight or navy course when it was reached that way. */
+  units: string;
   outcome: Outcome;
   gaps: Gap[];
   weeks: number;
@@ -46,34 +41,18 @@ export function scoreOf(stage: Stage, answers: Answers): number {
 /** 0 to 3 averaged onto a card scale of 40 to 99, so nobody gets a humiliating single digit. */
 const toCard = (avg: number) => Math.round(40 + (59 * avg) / 3);
 
-/** Running readiness 0 to 100 over the stages answered so far. */
-export function readiness(stages: Stage[], answers: Answers): number {
-  const done = stages.filter((s) => answers[s.id] != null);
-  if (!done.length) return 0;
-  return Math.round(
-    (done.reduce((sum, s) => sum + scoreOf(s, answers), 0) / (done.length * 3)) * 100,
-  );
-}
-
 /** Candidates still in after the stage at `index` (inclusive). */
 export function candidatesLeft(start: number, stages: Stage[], index: number): number {
   return start - stages.slice(0, index + 1).reduce((sum, s) => sum + s.drop, 0);
 }
 
-function meets(level: Level, stages: Stage[], answers: Answers, overall: number) {
-  return (
-    overall >= level.minOverall &&
-    stages.every((s) => scoreOf(s, answers) >= (level.need[s.id] ?? 0))
-  );
-}
+type Route = { units: string; need: Record<string, number>; minOverall: number };
 
-export function evaluate(
-  content: GibushContent,
-  track: Track,
-  gender: Gender,
-  answers: Answers,
-): GibushResult {
-  const def = content.tracks[track];
+/** The ways into a level: its main bar, and the flight/navy one when it has it. */
+const routes = (l: Level): Route[] => (l.alt ? [l, l.alt] : [l]);
+
+export function evaluate(content: GibushContent, gender: Gender, answers: Answers): GibushResult {
+  const def = content.day;
   const stages = def.stages.map((s) => stageFor(s, gender));
 
   const ratings = def.ratings.map(({ key, label }) => {
@@ -85,54 +64,89 @@ export function evaluate(
     ratings.reduce((sum, r, i) => sum + r.value * def.ratings[i].weight, 0),
   );
 
-  const ladder = ladderFor(content, track, gender);
+  const unmet = (r: Route) => stages.filter((s) => scoreOf(s, answers) < (r.need[s.id] ?? 0));
+  const meets = (r: Route) => overall >= r.minOverall && unmet(r).length === 0;
+
+  const ladder = content.ladders[gender];
   let level = 0;
   ladder.forEach((l, i) => {
-    if (meets(l, stages, answers, overall)) level = i;
+    if (routes(l).some(meets)) level = i;
   });
+  const via = routes(ladder[level]).find(meets) ?? ladder[level];
+  const units = via.units;
 
   const last = stages[stages.length - 1];
+  // Toward the next level, the way that is closer: the main bar or the flight/navy one.
+  const next = ladder[level + 1];
+  const toward = next
+    ? routes(next).reduce((a, b) => (unmet(b).length < unmet(a).length ? b : a))
+    : undefined;
   let outcome: Outcome;
   if (level === ladder.length - 1) {
     outcome = {
       status: "top",
       clock: last.clock,
       place: def.passTitle,
-      reason: "עמדתם בכל הספים של היום. מכאן מחליטים הצוות והראיון.",
+      reason:
+        via === ladder[level]
+          ? "עמדתם בכל הספים של היום. מכאן מחליטים הצוות והראיון."
+          : `עמדתם בספים של ${units}. לשאר היחידות ברמה הזאת צריך גם את הכושר והסחיבה שלמטה.`,
     };
   } else {
-    const next = ladder[level + 1];
     // The first moment of the day, in clock order, that falls under the next level's bar.
-    const stop = stages.find((s) => scoreOf(s, answers) < (next.need[s.id] ?? 0));
+    const stop = unmet(toward!)[0];
     outcome = {
       status: level === 0 ? "cut" : "stopped",
       next: next.name,
       clock: stop?.clock ?? last.clock,
       place: stop?.place ?? "סיכום המגבשים",
+      // The chosen answer's own reason first: a stage-wide reason can describe a different answer.
       reason: stop
-        ? (stop.cutReason ?? `כאן המספרים שלכם עוד מתחת לרף של ${next.name}.`)
+        ? (stop.options[answers[stop.id]]?.why ??
+          stop.cutReason ??
+          `כאן המספרים שלכם עוד מתחת לרף של ${next.name}.`)
         : "עמדתם בכל ספי הכושר, אבל לא בלטתם באף אחד מהם. המגבשים מחפשים מי שנותן יותר כשקשה.",
     };
   }
 
+  // Measured moments against their bar; judgment moments (no bar) against the next level's need,
+  // so a day that stopped on one never reads "no gap".
   const gaps = stages
-    .filter((s) => s.bar && scoreOf(s, answers) < s.bar.score)
-    .map((s) => ({
-      stage: s,
-      yours: s.options[answers[s.id]]?.label ?? "לא ענית",
-      deficit: (s.bar?.score ?? 0) - scoreOf(s, answers),
-    }))
+    .map((s) => {
+      const need = s.bar ? s.bar.score : (toward?.need[s.id] ?? 0);
+      const best = s.options.reduce((a, o) => (o.score > a.score ? o : a), s.options[0]);
+      return {
+        stage: s,
+        yours: s.options[answers[s.id]]?.label ?? "לא ענית",
+        target: s.bar?.label ?? best.label,
+        deficit: need - scoreOf(s, answers),
+      };
+    })
+    .filter((g) => g.deficit > 0)
     .sort((a, b) => b.deficit - a.deficit);
 
   const weeksStage = stages.find((s) => s.id === "weeks");
   const weeks = (weeksStage && weeksStage.options[answers.weeks]?.weeks) || 4;
 
-  return { ratings, overall, ladder, level, outcome, gaps, weeks, plan: buildPlan(weeks, gaps) };
+  return {
+    ratings,
+    overall,
+    ladder,
+    level,
+    units,
+    outcome,
+    gaps,
+    weeks,
+    plan: buildPlan(weeks, gaps),
+  };
 }
 
 /** Base volume first, then intensity in screening conditions, then a lighter last week. */
 export function buildPlan(weeks: number, gaps: Gap[]): PlanBlock[] {
-  const drills = gaps.slice(0, 3).map((g) => g.stage.bar!.drill);
+  const drills = gaps
+    .filter((g) => g.stage.bar)
+    .slice(0, 3)
+    .map((g) => g.stage.bar!.drill);
   if (!drills.length) {
     drills.push([
       "לשמור על 4 אימונים בשבוע, בלי להוסיף עומס",
@@ -164,3 +178,16 @@ export function buildPlan(weeks: number, gaps: Gap[]): PlanBlock[] {
 }
 
 const span = (a: number, b: number) => (a === b ? `שבוע ${a}` : `שבועות ${a} עד ${b}`);
+
+/** Display order of a moment's answers: shuffled for judgment moments, the same on every visit. */
+export function answerOrder(stage: Pick<Stage, "id" | "shuffle" | "options">): number[] {
+  const order = stage.options.map((_, i) => i);
+  if (!stage.shuffle) return order;
+  let h = [...stage.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  for (let i = order.length - 1; i > 0; i--) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const j = (h >>> 16) % (i + 1);
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}

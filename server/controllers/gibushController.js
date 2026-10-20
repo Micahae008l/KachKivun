@@ -17,8 +17,9 @@ function loadContent() {
 export function createGibushContentHandler({ getAccess = getRecommendationAccessForUser } = {}) {
   return async function getGibushContent(req, res) {
     try {
-      const access = await getAccess(req.userId);
-      if (access.paywallEnabled && !access.topTwoUnlocked) {
+      // GIBUSH_FREE=1 (local server/.env only) opens it for testing; production never sets it.
+      const access = process.env.GIBUSH_FREE === "1" ? null : await getAccess(req.userId);
+      if (access?.paywallEnabled && !access.topTwoUnlocked) {
         return res.status(403).json({ error: "התוכן נפתח אחרי הרכישה", code: "GIBUSH_LOCKED" });
       }
       res.set("Cache-Control", "private, no-store");

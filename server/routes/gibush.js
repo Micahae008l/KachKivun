@@ -4,6 +4,8 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/content", authenticateToken, getGibushContent);
+// GIBUSH_FREE=1 (local server/.env only): open to guests too, for testing.
+const auth = process.env.GIBUSH_FREE === "1" ? (_req, _res, next) => next() : authenticateToken;
+router.get("/content", auth, getGibushContent);
 
 export default router;

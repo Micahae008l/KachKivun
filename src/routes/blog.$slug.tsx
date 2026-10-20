@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { tagTone } from "@/lib/tones";
 import { ChevronLeft } from "lucide-react";
 import { Sources } from "@/components/blog/Prose";
 import { QuizCta } from "@/components/QuizCta";
@@ -109,7 +110,7 @@ function BlogPostPage() {
       </nav>
 
       <header className="mt-6 border-b border-iron/30 pb-6">
-        <p className="font-mono text-xs tracking-wide text-primary">{post.tag}</p>
+        <p className={`font-mono text-xs tracking-wide ${tagTone(post.tag).text}`}>{post.tag}</p>
         <h1 className="mt-2 text-3xl font-black leading-[1.15] tracking-tight text-foreground sm:text-[2.6rem]">
           {post.title}
         </h1>
@@ -162,7 +163,7 @@ function BlogPostPage() {
               <Link
                 to="/blog/$slug"
                 params={{ slug: p.slug }}
-                className="flex items-center justify-between gap-3 border border-iron/30 bg-card p-3 text-sm transition hover:border-primary/40"
+                className={`flex items-center justify-between gap-3 border border-r-2 border-iron/30 bg-card p-3 text-sm transition hover:bg-secondary/40 ${tagTone(p.tag).edge}`}
               >
                 <span className="font-bold text-foreground">{p.title}</span>
                 <ChevronLeft className="h-4 w-4 shrink-0 text-dust" aria-hidden />

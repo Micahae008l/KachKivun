@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { TONES, type Tone } from "@/lib/tones";
+
+/** Cards and stats take the site accents in turn, so the page is not all olive. */
+const ABOUT_TONES: Tone[] = ["steel", "sand", "teal", "rust"];
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -11,10 +14,15 @@ import {
   Quote,
   ShieldCheck,
   Target,
+  Layers,
+  Gauge,
+  Clock3,
 } from "lucide-react";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
+import { StatStrip } from "@/components/StatStrip";
 import { QuizCta } from "@/components/QuizCta";
 import { getIdfPhoto, IDF_PHOTO_CATALOG } from "@/lib/idf-images";
+import { GIBUSH_PHOTOS } from "@/features/gibush/photos";
 import { SITE_NAME_EN, SITE_NAME_HE, SUPPORT_EMAIL } from "@/lib/brand";
 import { MATCH_TOOL_NAME } from "@/lib/voice";
 
@@ -71,7 +79,7 @@ function AboutPage() {
               <ChevronRight className="h-4 w-4" aria-hidden />
               חזרה לאתר
             </Link>
-            <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">
+            <p className="mb-3 font-mono text-xs tracking-wide text-steel uppercase">
               הסיפור מאחורי המוצר
             </p>
             <h1 className="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem]">
@@ -86,19 +94,20 @@ function AboutPage() {
             </p>
           </motion.div>
 
-          <motion.div
-            variants={{
-              hidden: {},
-              show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
-            }}
-            initial="hidden"
-            animate="show"
-            className="mt-12 flex flex-wrap gap-x-10 gap-y-6 border-t border-iron/25 pt-8 sm:mt-14"
-          >
-            <Stat value="+300" label="תפקידים ומסלולים במאגר" />
-            <Stat value="11" label="ממדי מא״ה" />
-            <Stat value="כ־8 דק׳" label="זמן השאלון" />
-          </motion.div>
+          <StatStrip
+            className="mt-12 max-w-3xl grid-cols-1 sm:mt-14 sm:grid-cols-3"
+            stats={[
+              {
+                value: 300,
+                plus: true,
+                label: "תפקידים ומסלולים במאגר",
+                tone: "sand",
+                icon: Layers,
+              },
+              { value: 11, label: "ממדי מא״ה", tone: "steel", icon: Gauge },
+              { value: 8, label: "דקות שאלון, בערך", tone: "rust", icon: Clock3 },
+            ]}
+          />
         </div>
       </section>
 
@@ -121,10 +130,9 @@ function AboutPage() {
                 נבנה למי שעומד לפני גיוס
               </h2>
               <p className="mt-5 max-w-xl text-base leading-[1.85] text-dust">
-                {SITE_NAME_HE} ({SITE_NAME_EN}) נבנה מתוך צורך אמיתי: לעזור
-                למתגייסים להבין מה הפרופיל שלהם אומר, בשפה פשוטה, בממשק נקי, ובלי לחץ מכירות. במקום
-                מידע מפוזר בין קבוצות וואטסאפ וטבלאות, הכל מרוכז בכלי דיגיטלי אחד שמרגיש כמו מוצר
-                אמיתי.
+                {SITE_NAME_HE} ({SITE_NAME_EN}) נבנה מתוך צורך אמיתי: לעזור למתגייסים להבין מה
+                הפרופיל שלהם אומר, בשפה פשוטה, בממשק נקי, ובלי לחץ מכירות. במקום מידע מפוזר בין
+                קבוצות וואטסאפ וטבלאות, הכל מרוכז בכלי דיגיטלי אחד שמרגיש כמו מוצר אמיתי.
               </p>
               <p className="mt-4 max-w-xl text-sm leading-7 text-dust">
                 ההמלצות אינן רשמיות ואינן מבטיחות זכאות, זימון למיון או שיבוץ. תנאי הסף וההחלטות
@@ -171,7 +179,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-14 max-w-xl text-right"
           >
-            <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">
+            <p className="mb-3 font-mono text-xs tracking-wide text-sand uppercase">
               מה מנחה אותנו
             </p>
             <h2 id="pillars-heading" className="text-3xl font-bold leading-tight sm:text-4xl">
@@ -290,7 +298,7 @@ function AboutPage() {
             viewport={{ once: true, margin: "-80px" }}
             className="mb-10 text-right"
           >
-            <p className="mb-2 font-mono text-xs tracking-wide text-primary uppercase">יצירת קשר</p>
+            <p className="mb-2 font-mono text-xs tracking-wide text-teal uppercase">יצירת קשר</p>
             <h2 id="contact-heading" className="text-3xl font-bold text-foreground sm:text-4xl">
               דברו איתנו
             </h2>
@@ -356,10 +364,11 @@ function AboutPage() {
             קרדיט צילומים
           </h2>
           <p className="mt-2 text-xs leading-5 text-dust">
-            הצילומים באתר הם של דובר צה״ל ו־U.S. Air Force, ברישיונות פתוחים מ־Wikimedia Commons.
+            הצילומים באתר הם של דובר צה״ל, U.S. Air Force וצלמים נוספים, ברישיונות פתוחים
+            מ־Wikimedia Commons.
           </p>
           <ul className="mt-4 space-y-1.5 text-xs leading-5 text-dust" dir="rtl">
-            {IDF_PHOTO_CATALOG.map((photo) => (
+            {[...IDF_PHOTO_CATALOG, ...GIBUSH_PHOTOS].map((photo) => (
               <li key={photo.id}>
                 {photo.alt}:{" "}
                 <a
@@ -381,49 +390,6 @@ function AboutPage() {
 
 /* ── Sub-components ── */
 
-function Stat({ value, label }: { value: string; label: string }) {
-  const num = parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
-  const prefix = value.trim().startsWith("+") ? "+" : "";
-  const suffix = value.replace(/^\+/, "").replace(/[0-9]/g, "").trim();
-  const [display, setDisplay] = useState(0);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (hasAnimated || !ref.current) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setHasAnimated(true);
-        obs.disconnect();
-        const duration = 900;
-        const start = performance.now();
-        function tick(now: number) {
-          const t = Math.min((now - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - t, 3);
-          setDisplay(Math.round(eased * num));
-          if (t < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
-      },
-      { threshold: 0.5 },
-    );
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [hasAnimated, num]);
-
-  return (
-    <motion.div variants={fadeUp} className="text-right" ref={ref}>
-      <p className="font-mono text-2xl font-bold tabular-nums text-foreground sm:text-3xl">
-        {prefix}
-        {display}
-        {suffix ? <span className="text-primary"> {suffix}</span> : null}
-      </p>
-      <p className="mt-1 text-xs text-dust sm:text-sm">{label}</p>
-    </motion.div>
-  );
-}
-
 function Pillar({
   icon,
   title,
@@ -441,9 +407,11 @@ function Pillar({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, delay: idx * 0.1, ease }}
-      className="group border border-iron/20 border-r-primary/40 bg-card p-6 text-right transition-colors hover:border-primary/30 sm:p-8"
+      className={`group border border-r-2 border-iron/20 bg-card p-6 text-right transition-colors hover:bg-secondary/40 sm:p-8 ${TONES[ABOUT_TONES[idx % 4]].edge}`}
     >
-      <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+      <div
+        className={`mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border ${TONES[ABOUT_TONES[idx % 4]].icon}`}
+      >
         {icon}
       </div>
       <h3 className="mb-2 text-base font-bold text-foreground">{title}</h3>
@@ -471,15 +439,14 @@ function ContactCard({
 }) {
   const inner = (
     <>
-      <div className="mb-4 text-primary opacity-80">{icon}</div>
+      <div className={`mb-4 ${TONES[ABOUT_TONES[idx % 4]].text}`}>{icon}</div>
       <h3 className="mb-2 text-base font-bold text-foreground">{title}</h3>
       <p className="text-sm leading-[1.7] text-dust group-hover:text-foreground">{body}</p>
       <p className="mt-2 text-xs text-dust/70">{note}</p>
     </>
   );
 
-  const className =
-    "group block border border-iron/20 border-r-primary/40 bg-card p-6 text-right transition-colors hover:border-r-primary/70 sm:p-8";
+  const className = `group block border border-r-2 border-iron/20 bg-card p-6 text-right transition-colors hover:bg-secondary/40 sm:p-8 ${TONES[ABOUT_TONES[idx % 4]].edge}`;
 
   return (
     <motion.div
@@ -497,7 +464,7 @@ function ContactCard({
           {inner}
         </a>
       ) : (
-        <div className={className.replace("hover:border-r-primary/70", "")}>{inner}</div>
+        <div className={className}>{inner}</div>
       )}
     </motion.div>
   );

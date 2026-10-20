@@ -4,16 +4,57 @@
     {
       "name": "dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:web"],
+      "runtimeArgs": [
+        "run",
+        "dev:web"
+      ],
       "port": 8080,
-      "autoPort": false
+      "autoPort": false,
+      "env": {
+        "API_PORT": "3101"
+      }
     },
     {
       "name": "api",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "server"],
-      "port": 3001,
-      "autoPort": false
+      "runtimeArgs": [
+        "run",
+        "server"
+      ],
+      "port": 3101,
+      "autoPort": false,
+      "env": {
+        "PORT": "3101"
+      }
+    },
+    {
+      "name": "dev-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:web",
+        "--",
+        "--port",
+        "8081"
+      ],
+      "port": 8081,
+      "autoPort": false,
+      "env": {
+        "API_PORT": "3102"
+      }
+    },
+    {
+      "name": "api-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "server"
+      ],
+      "port": 3102,
+      "autoPort": false,
+      "env": {
+        "PORT": "3102"
+      }
     }
   ]
 }

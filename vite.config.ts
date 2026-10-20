@@ -11,7 +11,7 @@ export default defineConfig({
     server: {
       proxy: {
         "/api": {
-          target: "http://localhost:3001",
+          target: `http://localhost:${process.env.API_PORT || 3001}`,
           changeOrigin: true,
           timeout: 120_000,
           proxyTimeout: 120_000,

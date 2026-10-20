@@ -8,6 +8,7 @@ import { fetchRoleCatalog } from "@/lib/roles-public";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { QuizCta } from "@/components/QuizCta";
 import { getIdfPhoto } from "@/lib/idf-images";
+import { ROLE_FIELDS, TONES, roleField } from "@/lib/tones";
 
 type Search = {
   role?: string;
@@ -52,29 +53,6 @@ export const Route = createFileRoute("/role-insights")({
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-/**
- * The catalog has ~190 fine-grained categories ("דוברות ותקשורת / וידאו"); the filter offers a dozen
- * fields instead. First match wins, so the order matters (סייבר before מודיעין, רפואה before הדרכה).
- */
-const ROLE_FIELDS = [
-  { key: "combat", label: "לחימה", re: /לחימה|קומנדו|סיירות/ },
-  { key: "cyber", label: "סייבר ומחשבים", re: /סייבר|מקצועות המחשב|תוכנה|דאטה|אבטחת מידע|ביטחון מידע|תקשוב/ },
-  { key: "intel", label: "מודיעין", re: /מודיעין|שב"כ|מוסד|סיווג/ },
-  { key: "air", label: "חיל האוויר", re: /אוויר|כטמ/ },
-  { key: "navy", label: "חיל הים", re: /חיל הים|ימי/ },
-  { key: "medical", label: "רפואה", re: /רפוא|שיניים/ },
-  { key: "tech", label: "טכנולוגיה והנדסה", re: /טכנולוג|הנדס|מערך טכני|אלקטרוניק|בינוי|תשתיות/ },
-  { key: "academic", label: "עתודה ומסלולי מצוינות", re: /עתודה|עילית|מצטיינים|הנדסאים/ },
-  { key: "instruction", label: "הדרכה, חינוך ופיקוד", re: /הדרכה|חינוך|פיקוד|כושר/ },
-  { key: "media", label: "תקשורת, דוברות ואמנות", re: /דוברות|תקשורת|אמנות|מוזיקה/ },
-  { key: "logistics", label: "לוגיסטיקה, מנהלה ושירות", re: /לוגיסטיקה|תובלה|מנהלה|מטה|כספים|משאבי אנוש|שירות|גיוס|רבנות|משפטים|משטרה|אבחון|פסיכולוג|מבצעים|חירום|תיאום/ },
-] as const;
-
-function roleField(r: { category: string; combat?: boolean }): string {
-  if (r.combat) return "combat";
-  return ROLE_FIELDS.find((f) => f.re.test(r.category))?.key ?? "logistics";
-}
-
 function RoleInsightsPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
@@ -92,7 +70,9 @@ function RoleInsightsPage() {
   });
 
   const field = ROLE_FIELDS.find((f) => f.key === search.category);
-  const roles = (listQuery.data?.roles ?? []).filter((r) => !field || roleField(r) === field.key);
+  const roles = (listQuery.data?.roles ?? []).filter(
+    (r) => !field || roleField(r).key === field.key,
+  );
 
   function setCategory(category?: string) {
     void navigate({
@@ -204,34 +184,45 @@ function RoleInsightsPage() {
 
       {/* Phones: a compact list (name, field, combat) you can scan; the summary shows from sm up. */}
       <div className="grid border-t border-iron/20 sm:grid-cols-2 sm:gap-3 sm:border-t-0" dir="rtl">
-        {roles.map((r) => (
-          <Link
-            key={r.slug}
-            to="/roles/$slug"
-            params={{ slug: r.slug }}
-            className="flex items-center gap-3 border-b border-iron/20 px-1 py-3 text-right transition hover:border-primary/40 sm:block sm:border sm:border-iron/30 sm:bg-card sm:p-4"
-          >
-            <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <h2 className="text-[15px] font-bold leading-snug text-foreground sm:text-base">{r.roleTitle}</h2>
-                <p className="mt-0.5 truncate text-xs text-dust sm:mt-1 sm:font-mono sm:text-[10px] sm:tracking-wide">
-                  {r.category}
-                </p>
+        {roles.map((r) => {
+          const f = roleField(r);
+          const t = TONES[f.tone];
+          return (
+            <Link
+              key={r.slug}
+              to="/roles/$slug"
+              params={{ slug: r.slug }}
+              className={`flex items-center gap-3 border-b border-r-2 border-iron/20 px-3 py-3 text-right transition hover:bg-card sm:block sm:border sm:bg-card sm:p-4 ${t.edge}`}
+            >
+              <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[15px] font-bold leading-snug text-foreground sm:text-base">
+                    {r.roleTitle}
+                  </h2>
+                  <p className="mt-0.5 truncate text-xs text-dust sm:mt-1">
+                    <span className={`font-bold ${t.text}`}>{f.label}</span>
+                    {r.category && r.category !== f.label ? ` · ${r.category}` : null}
+                  </p>
+                </div>
+                {r.combat ? (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-maroon/30 bg-maroon/10 px-2 py-0.5 text-[10px] text-maroon">
+                    <Shield className="h-3 w-3" aria-hidden />
+                    קרבי
+                  </span>
+                ) : null}
               </div>
-              {r.combat ? (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
-                  <Shield className="h-3 w-3" aria-hidden />
-                  קרבי
-                </span>
+              <ChevronLeft className="h-4 w-4 shrink-0 text-dust/60 sm:hidden" aria-hidden />
+              <p className="mt-2 hidden line-clamp-2 text-xs leading-relaxed text-dust sm:block">
+                {r.summary}
+              </p>
+              {r.signals.length ? (
+                <p className="mt-2 hidden text-[11px] text-dust/80 sm:block">
+                  {r.signals.slice(0, 3).join(" · ")}
+                </p>
               ) : null}
-            </div>
-            <ChevronLeft className="h-4 w-4 shrink-0 text-dust/60 sm:hidden" aria-hidden />
-            <p className="mt-2 hidden line-clamp-2 text-xs leading-relaxed text-dust sm:block">{r.summary}</p>
-            {r.signals.length ? (
-              <p className="mt-2 hidden text-[11px] text-dust/80 sm:block">{r.signals.slice(0, 3).join(" · ")}</p>
-            ) : null}
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {!listQuery.isLoading && !listQuery.isError && roles.length === 0 ? (

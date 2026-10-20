@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { TONES, roleField } from "@/lib/tones";
 import { useMemo, useState } from "react";
 import { ArrowUp, ChevronLeft } from "lucide-react";
 import catalog from "@/content/blog/role-calculator.json";
@@ -68,23 +69,42 @@ const countOpen = (dapar: number, profile: number) =>
 
 const broadField = (category: string) => category.split("/")[0].trim() || "כללי";
 
+/** דפ״ר in steel blue, profile in sand, so the two dials never read as one. */
+const STEPPER_STYLE = {
+  steel: {
+    value: "text-steel",
+    on: "border-steel bg-steel text-background",
+    under: "border-steel/30 bg-steel/10 text-foreground hover:border-steel/60",
+    over: "border-iron/40 text-dust hover:border-steel/50 hover:text-foreground",
+  },
+  sand: {
+    value: "text-sand",
+    on: "border-sand bg-sand text-background",
+    under: "border-sand/30 bg-sand/10 text-foreground hover:border-sand/60",
+    over: "border-iron/40 text-dust hover:border-sand/50 hover:text-foreground",
+  },
+} as const;
+
 /** A row of values to pick from, with the chosen one shown large beside the label. */
 function Stepper({
   label,
   steps,
   value,
   onChange,
+  tone,
 }: {
   label: string;
   steps: number[];
   value: number;
   onChange: (next: number) => void;
+  tone: keyof typeof STEPPER_STYLE;
 }) {
+  const st = STEPPER_STYLE[tone];
   return (
     <fieldset>
       <legend className="flex w-full items-baseline justify-between gap-3">
         <span className="text-sm font-bold text-foreground">{label}</span>
-        <span className="font-mono text-3xl font-black tabular-nums leading-none text-primary">
+        <span className={`font-mono text-3xl font-black tabular-nums leading-none ${st.value}`}>
           {value}
         </span>
       </legend>
@@ -100,11 +120,7 @@ function Stepper({
             aria-label={`${label} ${step}`}
             onClick={() => onChange(step)}
             className={`min-h-11 border font-mono text-sm font-bold tabular-nums transition active:scale-[0.95] ${
-              step === value
-                ? "border-primary bg-primary text-primary-foreground"
-                : step < value
-                  ? "border-primary/30 bg-primary/10 text-foreground hover:border-primary/60"
-                  : "border-iron/40 text-dust hover:border-primary/50 hover:text-foreground"
+              step === value ? st.on : step < value ? st.under : st.over
             }`}
           >
             {step}
@@ -118,8 +134,9 @@ function Stepper({
 const TOP_FIELDS = 8;
 
 function FieldGroup({ field, roles, open }: { field: string; roles: Threshold[]; open: boolean }) {
+  const t = TONES[roleField({ category: field }).tone];
   return (
-    <details open={open} className="group border border-iron/30 bg-card">
+    <details open={open} className={`group border border-r-2 border-iron/30 bg-card ${t.edge}`}>
       <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-base font-black text-foreground transition hover:text-primary">
         <span className="flex items-center gap-2">
           <ChevronLeft
@@ -128,7 +145,7 @@ function FieldGroup({ field, roles, open }: { field: string; roles: Threshold[];
           />
           {field}
         </span>
-        <span className="font-mono text-sm font-normal text-dust">{roles.length}</span>
+        <span className={`font-mono text-sm font-bold ${t.text}`}>{roles.length}</span>
       </summary>
       <ul className="flex flex-wrap gap-2 border-t border-iron/25 p-4">
         {roles.map((role) => (
@@ -180,6 +197,7 @@ function RoleCalculatorPage() {
     nextDapar
       ? {
           label: `דפ״ר ${nextDapar}`,
+          tone: STEPPER_STYLE.steel,
           gain: countOpen(nextDapar, profile) - open.length,
           apply: () => setDapar(nextDapar),
         }
@@ -187,6 +205,7 @@ function RoleCalculatorPage() {
     nextProfile
       ? {
           label: `פרופיל ${nextProfile}`,
+          tone: STEPPER_STYLE.sand,
           gain: countOpen(dapar, nextProfile) - open.length,
           apply: () => setProfile(nextProfile),
         }
@@ -212,8 +231,15 @@ function RoleCalculatorPage() {
 
       <div className="mt-6 border border-iron/30 bg-card">
         <section className="grid gap-6 p-5 sm:grid-cols-[3fr_2fr] sm:p-6">
-          <Stepper label="דפ״ר" steps={DAPAR_STEPS} value={dapar} onChange={setDapar} />
           <Stepper
+            tone="steel"
+            label="דפ״ר"
+            steps={DAPAR_STEPS}
+            value={dapar}
+            onChange={setDapar}
+          />
+          <Stepper
+            tone="sand"
             label="פרופיל רפואי"
             steps={PROFILE_STEPS}
             value={profile}
@@ -239,11 +265,11 @@ function RoleCalculatorPage() {
                     key={step.label}
                     type="button"
                     onClick={step.apply}
-                    className="inline-flex min-h-11 items-center gap-2 border border-primary/50 px-3 text-sm font-bold text-foreground transition hover:bg-primary/10 active:scale-[0.97]"
+                    className={`inline-flex min-h-11 items-center gap-2 border px-3 text-sm font-bold text-foreground transition active:scale-[0.97] ${step.tone.under}`}
                   >
-                    <ArrowUp className="h-4 w-4 text-primary" aria-hidden />
+                    <ArrowUp className={`h-4 w-4 ${step.tone.value}`} aria-hidden />
                     {step.label}
-                    <span className="font-mono text-primary">+{step.gain}</span>
+                    <span className={`font-mono ${step.tone.value}`}>+{step.gain}</span>
                   </button>
                 ))}
               </div>

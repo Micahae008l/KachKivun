@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { TONES, type Tone } from "@/lib/tones";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   ChevronDown,
@@ -13,8 +14,12 @@ import {
   Info,
   CreditCard,
   RotateCcw,
+  Layers,
+  Users,
+  Clock3,
 } from "lucide-react";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
+import { StatStrip } from "@/components/StatStrip";
 import { Reveal } from "@/components/Reveal";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { getIdfPhoto } from "@/lib/idf-images";
@@ -210,13 +215,17 @@ function HomePage() {
               </p>
             </div>
 
-            <div
-              className="animate-slide-up mt-10 flex gap-6 sm:mt-14 sm:gap-10"
-              style={{ animationDelay: "300ms" }}
-            >
-              <DataPoint value="+300" label="תפקידים ומסלולים" />
-              <DataPoint value="11" label="ציוני מא״ה" />
-              <DataPoint value="5" label="התאמות אישיות" />
+            <div className="animate-slide-up mt-10 sm:mt-12" style={{ animationDelay: "300ms" }}>
+              <StatStrip
+                className="grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
+                stats={[
+                  { value: 300, plus: true, label: "תפקידים", tone: "sand", icon: Layers },
+                  { value: 11, label: "ציוני מא״ה", tone: "steel", icon: Gauge },
+                  // ponytail: hand-set floor (253 users on 2026-10-17); bump it, or serve a live count if it should track
+                  { value: 250, plus: true, label: "משתמשים", tone: "olive", icon: Users },
+                  { value: 8, label: "דקות שאלון", tone: "rust", icon: Clock3 },
+                ]}
+              />
             </div>
           </div>
 
@@ -238,7 +247,12 @@ function HomePage() {
       <section className="py-14 sm:py-24" aria-labelledby="get-heading">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[3fr_2fr] lg:gap-20">
           <div className="text-right">
-            <SectionHead eyebrow="מה מקבלים" id="get-heading" title="5 תפקידים, מדורגים בשבילכם" />
+            <SectionHead
+              tone="steel"
+              eyebrow="מה מקבלים"
+              id="get-heading"
+              title="5 תפקידים, מדורגים בשבילכם"
+            />
             <ul className="mt-8 grid gap-px bg-iron/20 sm:grid-cols-3 lg:grid-cols-1">
               <Feature
                 icon={<Target className="h-5 w-5" />}
@@ -246,11 +260,13 @@ function HomePage() {
                 desc="חמישה תפקידים מתוך יותר מ־300, מדורגים ממקום 5 עד מקום 1 לפי הנתונים וההעדפות שלכם."
               />
               <Feature
+                tone="steel"
                 icon={<MessageSquareText className="h-5 w-5" />}
                 title="הסבר לכל התאמה"
                 desc="למה התפקיד מתאים דווקא לכם, ומה עושים בו ביום־יום."
               />
               <Feature
+                tone="sand"
                 icon={<Gauge className="h-5 w-5" />}
                 title="סיכויי קבלה"
                 desc="הערכה של הסיכוי להתקבל לכל תפקיד, עם הסיבה."
@@ -280,15 +296,27 @@ function HomePage() {
       {/* ── 3. How it works ── */}
       <section id="how" className="scroll-mt-16 py-14 sm:py-24" aria-labelledby="how-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <SectionHead eyebrow="איך זה עובד" id="how-heading" title="שלושה צעדים, תשובה אישית" />
+          <SectionHead
+            tone="olive"
+            eyebrow="איך זה עובד"
+            id="how-heading"
+            title="שלושה צעדים, תשובה אישית"
+          />
           <ol className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
-            <Step num="01" title="מתחילים בשאלון" desc="בלי הרשמה, ישר לשאלון האישי. כ־8 דקות." />
             <Step
+              tone="olive"
+              num="01"
+              title="מתחילים בשאלון"
+              desc="בלי הרשמה, ישר לשאלון האישי. כ־8 דקות."
+            />
+            <Step
+              tone="steel"
               num="02"
               title="ממלאים את הנתונים"
               desc="דפ״ר, פרופיל רפואי, ציוני מא״ה ומה חשוב לכם בשירות."
             />
             <Step
+              tone="rust"
               num="03"
               title="מאמתים אימייל ומקבלים 5 התאמות"
               desc="קוד חד־פעמי לאימייל שומר את התוצאות. ההתאמות מדורגות, עם הסבר וסיכויי קבלה לכל תפקיד."
@@ -303,6 +331,7 @@ function HomePage() {
       <section className="py-14 sm:py-24" aria-labelledby="price-heading">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <SectionHead
+            tone="rust"
             eyebrow="מה בחינם ומה בתשלום"
             id="price-heading"
             title={betaOpen ? "בתקופת הבטא הכול פתוח" : "2 התאמות בחינם, 3 החזקות בתשלום חד־פעמי"}
@@ -341,15 +370,22 @@ function HomePage() {
       {/* ── 5. Trust ── */}
       <section className="py-14 sm:py-24" aria-labelledby="trust-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <SectionHead eyebrow="שקיפות" id="trust-heading" title="כדאי לדעת לפני שמתחילים" />
+          <SectionHead
+            tone="steel"
+            eyebrow="שקיפות"
+            id="trust-heading"
+            title="כדאי לדעת לפני שמתחילים"
+          />
           <ul className="mt-8 grid gap-px bg-iron/20 sm:grid-cols-2">
             <Feature
+              tone="sand"
               icon={<Info className="h-5 w-5" />}
               title="לא רשמי, ולא מטעם צה״ל"
               desc={`${SITE_NAME_HE} הוא כלי עזר לא רשמי ואינו קשור לצה״ל. ההתאמה אינה אישור זכאות או הבטחת שיבוץ.`}
             />
             {!betaOpen && (
               <Feature
+                tone="steel"
                 icon={<CreditCard className="h-5 w-5" />}
                 title="תשלום מאובטח"
                 desc="התשלום מתבצע בעמוד המאובטח של Grow. פרטי האשראי לא עוברים אלינו."
@@ -357,6 +393,7 @@ function HomePage() {
             )}
             {!betaOpen && (
               <Feature
+                tone="rust"
                 icon={<RotateCcw className="h-5 w-5" />}
                 title="ביטול והחזר"
                 desc={
@@ -384,7 +421,12 @@ function HomePage() {
       {/* ── 5b. FAQ (same text as the FAQPage JSON-LD in head) ── */}
       <section className="py-14 sm:py-24" aria-labelledby="faq-heading">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <SectionHead eyebrow="שאלות נפוצות" id="faq-heading" title="מה שואלים לפני שמתחילים" />
+          <SectionHead
+            tone="sand"
+            eyebrow="שאלות נפוצות"
+            id="faq-heading"
+            title="מה שואלים לפני שמתחילים"
+          />
           <div className="mt-8 border border-iron/30 bg-card">
             {FAQ.map(({ q, a }, i) => (
               <details key={q} className="group border-b border-iron/25 last:border-b-0">
@@ -419,9 +461,7 @@ function HomePage() {
 
       {/* ── 6. Closing CTA ── */}
       <section className="py-14 sm:py-24">
-        <Reveal
-          className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12"
-        >
+        <Reveal className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12">
           <div className="order-2 hidden overflow-hidden rounded-sm border border-iron/30 sm:block lg:order-1">
             <IdfPhotoPanel
               photo={getIdfPhoto("s4")}
@@ -484,13 +524,22 @@ function SampleResult() {
   return (
     <section className="py-14 sm:py-24" aria-labelledby="sample-heading">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <SectionHead eyebrow="דוגמה להמחשה" id="sample-heading" title="ככה נראית התאמה" />
+        <SectionHead
+          tone="sand"
+          eyebrow="דוגמה להמחשה"
+          id="sample-heading"
+          title="ככה נראית התאמה"
+        />
         <article className="mt-8 border border-iron/30 bg-card text-right">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-iron/25 p-4 sm:p-5">
             <div>
-              <p className="font-mono text-xs text-primary">מקום 4 · סייבר</p>
+              <p className="font-mono text-xs text-steel">מקום 4 · סייבר</p>
               <h3 className="mt-1 text-xl font-bold text-foreground">
-                <Link to="/roles/$slug" params={{ slug: "מגן-ת-סייבר" }} className="hover:text-primary">
+                <Link
+                  to="/roles/$slug"
+                  params={{ slug: "מגן-ת-סייבר" }}
+                  className="hover:text-primary"
+                >
                   מגן/ת סייבר
                 </Link>
               </h3>
@@ -531,10 +580,22 @@ function SampleField({ label, children }: { label: string; children: React.React
   );
 }
 
-function SectionHead({ eyebrow, id, title }: { eyebrow: string; id: string; title: string }) {
+function SectionHead({
+  eyebrow,
+  id,
+  title,
+  tone,
+}: {
+  eyebrow: string;
+  id: string;
+  title: string;
+  tone: Tone;
+}) {
   return (
     <Reveal margin="-60px" className="max-w-xl text-right">
-      <p className="mb-3 font-mono text-xs tracking-wide text-primary uppercase">{eyebrow}</p>
+      <p className={`mb-3 font-mono text-xs tracking-wide uppercase ${TONES[tone].text}`}>
+        {eyebrow}
+      </p>
       <h2 id={id} className="text-3xl font-bold leading-tight sm:text-4xl">
         {title}
       </h2>
@@ -542,62 +603,22 @@ function SectionHead({ eyebrow, id, title }: { eyebrow: string; id: string; titl
   );
 }
 
-function DataPoint({ value, label }: { value: string; label: string }) {
-  const num = parseInt(value.replace(/[^0-9]/g, ""), 10);
-  const prefix = value.startsWith("+") ? "+" : "";
-  const suffix = value.replace(/[+0-9]/g, "");
-  // Real number in the server HTML (a pre-hydration "+0" looked broken); the count-up runs after.
-  const [display, setDisplay] = useState(num);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (hasAnimated || !ref.current) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setHasAnimated(true);
-        obs.disconnect();
-        const duration = 800;
-        const start = performance.now();
-        function tick(now: number) {
-          const t = Math.min((now - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - t, 3);
-          setDisplay(Math.round(eased * num));
-          if (t < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
-      },
-      { threshold: 0.5 },
-    );
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [hasAnimated, num]);
-
-  return (
-    <div className="text-right" ref={ref}>
-      <p className="font-mono text-2xl font-bold tabular-nums text-foreground">
-        {prefix}
-        {display}
-        {suffix}
-      </p>
-      <p className="mt-0.5 text-xs text-dust">{label}</p>
-    </div>
-  );
-}
-
 function Feature({
   icon,
   title,
   desc,
+  tone = "olive",
 }: {
   icon: React.ReactNode;
   title: string;
   desc: React.ReactNode;
+  tone?: Tone;
 }) {
   return (
     <li className="flex gap-4 bg-card p-5 text-right sm:p-6">
-      <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+      <div
+        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${TONES[tone].icon}`}
+      >
         {icon}
       </div>
       <div>
@@ -608,10 +629,20 @@ function Feature({
   );
 }
 
-function Step({ num, title, desc }: { num: string; title: string; desc: string }) {
+function Step({
+  num,
+  title,
+  desc,
+  tone,
+}: {
+  num: string;
+  title: string;
+  desc: string;
+  tone: Tone;
+}) {
   return (
-    <li className="border-t-2 border-primary/60 pt-4 text-right">
-      <p className="mb-1 font-mono text-xs font-bold text-primary">{num}</p>
+    <li className={`border-t-2 pt-4 text-right ${TONES[tone].soft}`}>
+      <p className={`mb-1 font-mono text-3xl font-black ${TONES[tone].text}`}>{num}</p>
       <h3 className="text-base font-bold text-foreground">{title}</h3>
       <p className="mt-1 text-sm leading-relaxed text-dust">{desc}</p>
     </li>

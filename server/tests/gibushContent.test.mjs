@@ -38,13 +38,13 @@ test("gibush content: 403 with a code when not unlocked, and no content", async 
   assert.equal(res.status, 403);
   const body = await res.json();
   assert.equal(body.code, "GIBUSH_LOCKED");
-  assert.equal(body.tracks, undefined);
+  assert.equal(body.day, undefined);
 });
 
 test("gibush content: 200 with the content when unlocked", async () => {
   const res = await fetch(base, { headers: { Authorization: `Bearer ${tokenFor("paid")}` } });
   assert.equal(res.status, 200);
   const body = await res.json();
-  assert.ok(body.tracks.combat.stages.length > 10);
-  assert.ok(body.ladders.combatFemale.length > 0);
+  assert.ok(body.day.stages.length > 10);
+  assert.ok(body.ladders.female.length > 0);
 });
