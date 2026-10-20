@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, X } from "lucide-react";
-import { progressBarProps } from "@/lib/a11y";
 import { stageFor, type Gender, type GibushContent, type Stage } from "./types";
 import { answerOrder, candidatesLeft, type Answers } from "./scoring";
 import { backdropFor, partOfDay, type GibushPhoto } from "./photos";
@@ -18,18 +17,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 /** `bib`: the number on the chest, kept with the run so a reload shows the same one. */
 export type RunState = { step: number; answers: Answers; bib?: number };
 
-/**
- * Each candidate's place in a fixed line to leave (0 stays longest). Scattered, so the
- * evaluator's list empties unevenly instead of from one end.
- */
-function leaveRanks(n: number): number[] {
-  const line = [...Array(n).keys()].sort((a, b) => Math.sin(a + 1) - Math.sin(b + 1));
-  const rank: number[] = [];
-  line.forEach((who, k) => (rank[who] = k));
-  return rank;
-}
-
-/** The screening day, one moment at a time. The light behind it and the evaluator's list move with it. */
+/** The screening day, one moment at a time. The light behind it and the questions below move with it. */
 export function Simulation({
   content,
   gender,
@@ -51,24 +39,15 @@ export function Simulation({
     [content, gender],
   );
   const start = content.startCandidates;
-  const rank = useMemo(() => leaveRanks(start), [start]);
   const [step, setStep] = useState(() => Math.min(initial?.step ?? 0, stages.length - 1));
   const [answers, setAnswers] = useState<Answers>(initial?.answers ?? {});
-  // Picked from the ones still standing at the end of the day, so your number is never crossed out.
-  const [bib] = useState(() => {
-    if (initial?.bib) return initial.bib;
-    const lasting = Math.max(1, candidatesLeft(start, stages, stages.length - 1));
-    const keepers = rank.flatMap((k, i) => (k < lasting ? [i + 1] : []));
-    return keepers[Math.floor(Math.random() * keepers.length)] ?? 1;
-  });
+  const [bib] = useState(() => initial?.bib ?? 1 + Math.floor(Math.random() * start));
   const reduce = useReducedMotion();
   const advancing = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const stage = stages[step];
   const prev = stages[step - 1];
   const left = step === 0 ? start : candidatesLeft(start, stages, step - 1);
-  // Plain progress: a running score bar jumped to 100% after one good answer and read as a bug.
-  const progress = Math.round((step / stages.length) * 100);
   const order = useMemo(() => answerOrder(stage), [stage]);
   // Morning, midday, afternoon: the run says where in the day you are instead of a clock.
   const parts = useMemo(() => {
@@ -130,24 +109,18 @@ export function Simulation({
     <div className="relative">
       <Backdrop photo={photo} />
 
-      {/* Wide screens: a slim bar on top, the question alone in the middle, the evaluator's list
-          along the bottom. The fighter card is the reward at the end, so it stays off screen. */}
+      {/* A slim bar on top, the question alone in the middle, the day's questions along the
+          bottom. The fighter card is the reward at the end, so it stays off screen. */}
       <div className="relative flex flex-col gap-5 lg:min-h-[calc(100dvh-5rem)] lg:gap-8">
-        <header className="grid gap-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)_minmax(0,16rem)] lg:items-center lg:gap-12">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3 lg:gap-5">
-              <Bib n={bib} />
-              <div className="min-w-0">
-                <p className="truncate text-lg font-black text-sand lg:text-2xl">{stage.place}</p>
-                <p className="text-sm text-sand-light lg:text-dust">
-                  רגע {step + 1} מתוך {stages.length}
-                </p>
-              </div>
+        <header className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-5">
+            <Bib n={bib} />
+            <div className="min-w-0">
+              <p className="truncate text-lg font-black text-sand lg:text-2xl">{stage.place}</p>
+              <p className="text-sm text-sand-light lg:text-dust">{partOfDay(stage.clock)}</p>
             </div>
-            <Count left={left} start={start} className="lg:hidden" />
           </div>
-          <DayProgress parts={parts} step={step} progress={progress} />
-          <Count left={left} start={start} className="hidden text-left lg:block" />
+          <Count left={left} start={start} prev={prev} />
         </header>
 
         {/* Enter-only: an exit animation can strand the screen blank on fast taps. */}
@@ -173,7 +146,13 @@ export function Simulation({
         </motion.section>
 
         <footer className="space-y-3">
-          <CandidateList rank={rank} left={left} prev={prev} bib={bib} />
+          <QuestionStrip
+            stages={stages}
+            parts={parts}
+            step={step}
+            answers={answers}
+            onJump={setStep}
+          />
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
@@ -272,168 +251,107 @@ function Bib({ n }: { n: number }) {
   );
 }
 
-function Count({ left, start, className }: { left: number; start: number; className: string }) {
+/** Who is still in, and who just left. */
+function Count({ left, start, prev }: { left: number; start: number; prev?: Stage }) {
   const reduce = useReducedMotion();
   return (
-    <p className={`shrink-0 text-sm text-dust lg:text-[15px] ${className}`} aria-live="polite">
-      <span className="sr-only">מועמדים שנשארו: </span>
-      <motion.span
-        key={left}
-        initial={reduce ? false : { opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="inline-block font-mono text-xl font-black text-primary lg:text-3xl"
-        dir="ltr"
-      >
-        {left}
-      </motion.span>{" "}
-      מתוך {start}
-      <span className="hidden lg:inline"> נשארו</span>
-    </p>
+    <div className="shrink-0 text-left">
+      <p className="text-sm text-dust lg:text-[15px]" aria-live="polite">
+        <span className="sr-only">מועמדים שנשארו: </span>
+        <motion.span
+          key={left}
+          initial={reduce ? false : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-block font-mono text-xl font-black text-primary lg:text-3xl"
+          dir="ltr"
+        >
+          {left}
+        </motion.span>{" "}
+        מתוך {start}
+        <span className="hidden lg:inline"> נשארו</span>
+      </p>
+      {prev?.drop ? (
+        <p className="text-xs text-dust lg:text-sm">
+          <span className="font-bold text-rust">{prev.drop}</span> יצאו ב{prev.place}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
-/** Progress in the day's own parts, one segment per moment. */
-function DayProgress({
+/**
+ * The day's questions in order: the one you're on, the ones already answered (tap one to go back
+ * to it), and the ones still ahead.
+ */
+function QuestionStrip({
+  stages,
   parts,
   step,
-  progress,
+  answers,
+  onJump,
 }: {
+  stages: Stage[];
   parts: { name: string; from: number; to: number }[];
   step: number;
-  progress: number;
+  answers: Answers;
+  onJump: (index: number) => void;
 }) {
+  const cell = (i: number) => {
+    const s = stages[i];
+    const now = i === step;
+    const done = answers[s.id] != null;
+    return (
+      <li key={s.id} className="min-w-0 flex-1">
+        <button
+          type="button"
+          disabled={!now && !done}
+          onClick={() => onJump(i)}
+          aria-current={now ? "step" : undefined}
+          aria-label={`רגע ${i + 1}: ${s.place}${done && !now ? ", נענה" : ""}`}
+          title={s.place}
+          className={`flex h-10 w-full items-center justify-center border font-mono text-sm transition lg:h-11 ${
+            now
+              ? "border-2 border-sand bg-sand/15 font-black text-foreground"
+              : done
+                ? "border-primary/40 bg-primary/10 text-primary hover:border-primary"
+                : "cursor-default border-iron/25 text-dust/50"
+          }`}
+          dir="ltr"
+        >
+          {i + 1}
+        </button>
+      </li>
+    );
+  };
   return (
-    <div
-      className="grid gap-2 lg:gap-3"
-      style={{ gridTemplateColumns: parts.map((p) => `${p.to - p.from}fr`).join(" ") }}
-      {...progressBarProps(progress, "התקדמות ביום")}
-    >
-      {parts.map((p) => {
-        const here = step >= p.from && step < p.to;
-        return (
-          <div key={p.name} className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex gap-0.5 lg:gap-[3px]">
-              {Array.from({ length: p.to - p.from }, (_, j) => {
-                const i = p.from + j;
-                return (
-                  <span
-                    key={i}
-                    className={`h-[5px] flex-1 transition-colors duration-500 motion-reduce:transition-none lg:h-1.5 ${
-                      i < step ? "bg-primary" : i === step ? "bg-sand" : "bg-foreground/15"
-                    }`}
-                  />
-                );
-              })}
-            </div>
-            <span
-              className={`truncate text-xs lg:text-sm ${here ? "font-bold text-foreground" : "text-dust"}`}
+    <nav aria-label="השאלות של היום">
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <p className="font-bold text-sand">השאלות של היום</p>
+        <p className="text-dust">
+          אתם בשאלה <span className="font-bold text-foreground">{step + 1}</span> מתוך{" "}
+          {stages.length}
+        </p>
+      </div>
+      {/* Phones: all of them in two rows, so the current one is always in sight. */}
+      <ol className="mt-2 grid grid-cols-10 gap-1.5 lg:hidden">{stages.map((_, i) => cell(i))}</ol>
+      {/* Wide screens: one row, in the day's parts. */}
+      <div className="mt-2 hidden gap-4 lg:flex">
+        {parts.map((p) => (
+          <div key={p.name} className="min-w-0" style={{ flexGrow: p.to - p.from, flexBasis: 0 }}>
+            <p
+              className={`mb-1.5 text-sm ${
+                step >= p.from && step < p.to ? "font-bold text-foreground" : "text-dust"
+              }`}
             >
               {p.name}
-            </span>
+            </p>
+            <ol className="flex gap-1.5">
+              {Array.from({ length: p.to - p.from }, (_, j) => cell(p.from + j))}
+            </ol>
           </div>
-        );
-      })}
-    </div>
-  );
-}
-
-const TONE = {
-  in: "text-foreground/85",
-  just: "text-rust line-through decoration-2",
-  out: "text-iron line-through decoration-2",
-};
-const CHIP = {
-  in: "border-iron/45 bg-card/80",
-  just: "border-rust/50 bg-rust/[0.08]",
-  out: "border-iron/15",
-};
-
-/** The evaluator's list: every number, crossed out as they leave. Yours is circled. */
-function CandidateList({
-  rank,
-  left,
-  prev,
-  bib,
-}: {
-  rank: number[];
-  left: number;
-  prev?: Stage;
-  bib: number;
-}) {
-  const dropped = prev?.drop ?? 0;
-  const state = (i: number) =>
-    rank[i] < left || i + 1 === bib ? "in" : rank[i] < left + dropped ? "just" : "out";
-  const all = rank.map((_, i) => i);
-  // Phones: who just left first, then everyone in order; your own number is pinned outside the row.
-  const row = [
-    ...all.filter((i) => state(i) === "just"),
-    ...all.filter((i) => state(i) !== "just" && i + 1 !== bib),
-  ];
-  return (
-    // The count above says this in words; the list is the picture of it.
-    <div aria-hidden>
-      {/* Said in words, so the row reads as people and not as the day's moments. */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
-        <p className="font-bold text-sand">
-          {rank.length} המועמדים בגיבוש{" "}
-          <span className="font-normal text-dust">
-            · אתם מספר <span className="font-bold text-primary">{bib}</span>
-          </span>
-        </p>
-        <p className="text-dust">
-          {left === rank.length ? (
-            "מי שיוצא נמחק מהרשימה"
-          ) : !prev ? (
-            "כולם עוד כאן"
-          ) : dropped ? (
-            <>
-              <span className="font-bold text-rust">{dropped}</span> נמחקו ב{prev.place}
-            </>
-          ) : (
-            `אף אחד לא נמחק ב${prev.place}`
-          )}
-        </p>
-      </div>
-      <ol
-        className="mt-2 hidden gap-y-1.5 bg-card/70 py-2.5 font-mono text-[13px] lg:grid lg:grid-cols-[repeat(30,minmax(0,1fr))] 2xl:grid-cols-[repeat(60,minmax(0,1fr))]"
-        dir="ltr"
-      >
-        {all.map((i) => (
-          <li
-            key={i}
-            className={`text-center transition-colors duration-500 motion-reduce:transition-none ${
-              i + 1 === bib
-                ? "font-black text-primary outline-2 outline-offset-2 outline-primary"
-                : TONE[state(i)]
-            }`}
-          >
-            {i + 1}
-          </li>
         ))}
-      </ol>
-      <div className="mt-2 flex items-center gap-2 lg:hidden">
-        <div className="flex h-[50px] w-[50px] shrink-0 flex-col items-center justify-center gap-0.5 border-2 border-primary bg-primary/10">
-          <span className="font-mono text-[17px] font-black leading-none text-primary" dir="ltr">
-            {bib}
-          </span>
-          <span className="text-[11px] leading-none text-sand-light">אתם</span>
-        </div>
-        <div className="relative min-w-0 flex-1">
-          <ol className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
-            {row.map((i) => (
-              <li
-                key={i}
-                className={`flex h-11 w-11 shrink-0 items-center justify-center border font-mono text-[15px] ${CHIP[state(i)]} ${TONE[state(i)]}`}
-                dir="ltr"
-              >
-                {i + 1}
-              </li>
-            ))}
-          </ol>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-11 bg-gradient-to-r from-background to-transparent" />
-        </div>
       </div>
-    </div>
+    </nav>
   );
 }
 
