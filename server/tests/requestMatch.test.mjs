@@ -188,18 +188,59 @@ test("rolesForAi marks the candidate's own avoidances each role hits", async () 
   assert.ok(rolesForAi(roles, { ...profile, assessmentSignals: {} }).every((r) => r.clashes.length === 0));
 });
 
+test("rolesForAi drops what the candidate ruled out, except the note's roles and an interest's only route", async () => {
+  const { rolesForAi } = await import("../utils/roleScoring.js");
+  const { getIdfRoleCatalogV3 } = await import("../utils/roleCatalogV3.js");
+  const roles = getIdfRoleCatalogV3().roles;
+  const signals = (rolesAvoided, rolesInterested) => ({ rolesAvoided, rolesInterested, environment: "field" });
+  const field = { daparScore: 80, medicalProfile: 97, gender: "female", combatPreference: "FieldCombat", focus: "Physical" };
+
+  // Field-side and "no office": no desk role, unless it is the only way to an interest.
+  const officeOut = rolesForAi(roles, { ...field, assessmentSignals: signals(["office_only"], ["combat", "intelligence"]) });
+  assert.ok(officeOut.every((r) => !(r.avoidanceSignals || []).includes("office_only")));
+  const cyberKid = rolesForAi(roles, { ...field, assessmentSignals: signals(["office_only"], ["combat", "cyber"]) });
+  assert.ok(cyberKid.some((r) => (r.interestAreas || []).includes("cyber")), "cyber desks stay when nothing else covers cyber");
+  // A note that names the role keeps it.
+  const asked = rolesForAi(roles, { ...field, personalRequest: "שחקים", assessmentSignals: signals(["office_only"], ["combat"]) });
+  assert.ok(asked.some((r) => r.requestMatch && r.roleTitle.includes("שחקים")));
+  // A tech focus or an office environment keeps desk work.
+  assert.ok(rolesForAi(roles, { ...field, focus: "Tech", assessmentSignals: signals(["office_only"], ["combat"]) }).some((r) => (r.avoidanceSignals || []).includes("office_only")));
+
+  // "Too physical" without a combat interest: no combat role; with one, combat stays.
+  const mixed = { daparScore: 70, medicalProfile: 72, gender: "male", combatPreference: "Mixed", focus: "Research" };
+  assert.ok(rolesForAi(roles, { ...mixed, assessmentSignals: signals(["too_physical"], ["cyber", "medical"]) }).every((r) => !r.combat));
+  assert.ok(rolesForAi(roles, { ...mixed, assessmentSignals: signals(["too_physical"], ["combat", "medical"]) }).some((r) => r.combat));
+});
+
 test("a note that names a field lists the open roles that answer it; a religious-environment wish does not", async () => {
   const { rolesForAi, requestTopicRoles } = await import("../utils/roleScoring.js");
   const { getIdfRoleCatalogV3 } = await import("../utils/roleCatalogV3.js");
   const roles = getIdfRoleCatalogV3().roles;
   const profile = { daparScore: 60, medicalProfile: 97, gender: "male", combatPreference: "TechTrack" };
-  const note = "תפקיד קצונה זה חשוב לי";
+  const note = "אני רוצה חיל הים";
   const topics = requestTopicRoles(rolesForAi(roles, { ...profile, personalRequest: note }), note);
   assert.ok(topics.length >= 1);
-  assert.ok(topics.flat().some((t) => /קצונה|קצין|ארז|אדרים/.test(t)), topics.flat().join(", "));
   const religious = "חשוב לי שיהיו עוד אנשים דתיים סביבי";
   assert.deepEqual(requestTopicRoles(rolesForAi(roles, { ...profile, personalRequest: religious }), religious), []);
   assert.deepEqual(requestTopicRoles(rolesForAi(roles, profile), ""), []);
+});
+
+test("an officer or command wish is an ambition: no forced roles, no keyword flags", async () => {
+  const { rolesForAi, requestTopicRoles, officerAmbition } = await import("../utils/roleScoring.js");
+  const { getIdfRoleCatalogV3 } = await import("../utils/roleCatalogV3.js");
+  const roles = getIdfRoleCatalogV3().roles;
+  const profile = { daparScore: 80, medicalProfile: 97, gender: "female", combatPreference: "FieldCombat" };
+  for (const note of ["אני רוצה לצאת קצונה ולעשות פיקוד", "תפקיד קצונה זה חשוב לי", "רוצה להיות מפקדת", "יודעת לפקד"]) {
+    assert.ok(officerAmbition(note), note);
+    const pool = rolesForAi(roles, { ...profile, personalRequest: note });
+    assert.deepEqual(requestTopicRoles(pool, note), [], note);
+    assert.ok(!pool.some((r) => r.requestMatch), `${note}: no role is flagged by the officer words alone`);
+  }
+  // The Home Front Command corps is a field, and a plain note is no ambition.
+  assert.ok(!officerAmbition("מעניין אותי פיקוד העורף"));
+  assert.ok(!officerAmbition("אני רוצה תפקיד טכנולוגי"));
+  // A named track still matches by its own words.
+  assert.ok(rolesForAi(roles, { ...profile, combatPreference: "TechTrack", personalRequest: "מסלול אדרים" }).some((r) => r.requestMatch && r.roleTitle.includes("אדרים")));
 });
 
 test("note topics come in the order the note names them", async () => {

@@ -724,7 +724,6 @@ const REQUEST_SYNONYMS = [
   ["עיתונאות", "עיתונאי", "דובר", "דוברות", "דוברת", "כתב"],
   ["כתיב", "בלשנות", "שפות", "לשון", "תרגום", "writing", "languages"],
   ["מובחר", "עילית", "קומנדו", "סיירת", "סיירות"],
-  ["קצונה", "קצין"],
   ["כושר", "מדאג", "fitness"],
   ["הגנא", "כיפת", "אווירית"],
   ["פיזיק", "חלל", "physics"],
@@ -768,8 +767,18 @@ const REQUEST_STOPWORDS = new Set(
     "בגלל", "עכשיו", "יודע", "יודעת", "בעיקר", "איזה", "יהיה", "בשביל", "משנה", "אכפת", "בטוח", "בטוחה", "ארצה",
     // "ימי חופש" in a note is not the navy; a role's "ימי" still matches the navy group.
     "ימי",
+    // An officer or command wish is an ambition, not a field: see officerAmbition.
+    "קצונה", "קצין", "קצינה", "פיקוד", "לפקד", "מפקד", "מפקדת",
   ].map(regularLetters),
 );
+
+/**
+ * A note that wants קצונה or פיקוד. Almost any role can lead there, so this is a soft preference the
+ * prompt states, not a field whose roles must fill the five ("פיקוד העורף" is the corps, not this).
+ */
+export function officerAmbition(personalRequest) {
+  return /קצונ|קצינ|פקד|פיקוד(?!\s+ה?עורפ)/.test(regularLetters(String(personalRequest || "")));
+}
 const NEGATIONS = new Set(["לא", "ולא", "שלא", "בלי", "אין", "ללא"].map(regularLetters));
 // "לא משנה לי X", "לא רק X" and "אם לא X אז Y" ask for X; "אז", "או", "אלא" start a new ask.
 const NOT_NEGATING_NEXT = new Set(["משנה", "אכפת", "יודע", "יודעת", "בטוח", "בטוחה", "רק"].map(regularLetters));
@@ -862,8 +871,7 @@ const CONTEXT_TOPIC = regularLetters("דתי");
 
 /**
  * For each field the note asks for (a curated synonym topic, not a loose word): the open roles in
- * the pool that answer it, best first. The prompt names them so the ask is not lost to the general
- * rules (an officer ask once got five non-officer roles while six officer tracks sat in the pool).
+ * the pool that answer it, best first. The prompt names them so the ask is not lost to the general rules.
  */
 export function requestTopicRoles(pool, personalRequest, perTopic = 3, maxTopics = 3) {
   const flagged = (pool || []).filter((role) => role.requestMatch);
@@ -1099,9 +1107,26 @@ export function rolesForAi(roles, profile, { detailed = 80 } = {}) {
   scored.sort((a, b) => b._score - a._score || compareStableText(a.roleTitle, b.roleTitle));
   const requested = requestMatchedRoles(scored, profile.personalRequest, 40);
   const requestedTitles = new Set(requested.map((r) => r.roleTitle));
-  const ordered = [...requested, ...scored.filter((r) => !requestedTitles.has(r.roleTitle))];
+  const all = [...requested, ...scored.filter((r) => !requestedTitles.has(r.roleTitle))];
   // Someone who chose an office environment and also ticked "only office" did not mean the office clashes.
-  const { rolesAvoided, environment } = normalizeAssessmentSignals(profile);
+  const { rolesAvoided, environment, rolesInterested } = normalizeAssessmentSignals(profile);
+  // What the candidate ruled out leaves the list, so no place in the five can hold it: desk work for a
+  // field-side direction, and combat for "too physical" without a combat interest. A role the note asks
+  // for stays, and so does the only route to a stated interest (a field-side kid who wants cyber keeps the cyber desks).
+  const direction = profile.combatPreference;
+  const officeOut =
+    (direction === "Mixed" || direction === "FieldCombat") && profile.focus !== "Tech" &&
+    rolesAvoided.includes("office_only") && environment !== "office";
+  const combatOut = rolesAvoided.includes("too_physical") && direction !== "FieldCombat" && !rolesInterested.includes("combat");
+  const ruledOut = (r) =>
+    !requestedTitles.has(r.roleTitle) &&
+    ((officeOut && (r.avoidanceSignals || []).includes("office_only")) || (combatOut && r.combat));
+  const open = all.filter((r) => !ruledOut(r));
+  const onlyRoute = (r) =>
+    (r.interestAreas || []).some((i) => rolesInterested.includes(i) && !open.some((o) => (o.interestAreas || []).includes(i)));
+  const filtered = all.filter((r) => !ruledOut(r) || onlyRoute(r));
+  // ponytail: 10 is a guess at "enough to pick five well"; below it the full list is safer than a thin one.
+  const ordered = filtered.length >= 10 ? filtered : all;
   return ordered.map((r, i) => {
     // The controller copies these onto the prompt and the cards: only the candidate's gender's clauses.
     const requirements = requirementsForGender(r.requirements, profile.gender);
