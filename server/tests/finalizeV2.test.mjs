@@ -280,16 +280,38 @@ test("round 4: a Mixed office-avoider gets a concrete checklist; other candidate
       assessmentSignals: { ...base.assessmentSignals, rolesAvoided, environment },
     });
   const mixed = prompt("Mixed", ["office_only", "too_physical"], "field");
+  const office = "לא נכנס לחמישייה בכלל, גם לא למקומות 4-5";
   assert.ok(mixed.includes("8. בדיקה לפני שליחה"));
   assert.ok(mixed.includes("תפקיד שטח לא קרבי"));
-  assert.ok(mixed.includes("לא נכנס למקומות 1-3"));
+  assert.ok(mixed.includes(office));
   assert.ok(prompt("Mixed", [], "field").includes("לפחות תפקיד קרבי אחד"));
-  assert.ok(!prompt("Mixed", ["office_only"], "office").includes("לא נכנס למקומות 1-3"), "chose an office environment");
+  assert.ok(!prompt("Mixed", ["office_only"], "office").includes(office), "chose an office environment");
   assert.ok(!prompt("TechTrack", [], "office").includes("8. בדיקה לפני שליחה"));
   // A cyber kid who ticked "avoid office" still wants the cyber tracks, which are desk work.
-  assert.ok(!prompt("TechTrack", ["office_only"], "mixed").includes("לא נכנס למקומות 1-3"));
-  assert.ok(!prompt("SupportHQ", ["office_only"], "field").includes("לא נכנס למקומות 1-3"));
+  assert.ok(!prompt("TechTrack", ["office_only"], "mixed").includes(office));
+  assert.ok(!prompt("SupportHQ", ["office_only"], "field").includes(office));
   assert.ok(!mixed.includes("—"));
+});
+
+test("too physical without a combat interest: no combat role in any of the five", () => {
+  const prompt = (combatPreference, rolesInterested) =>
+    buildMatchUserPrompt({
+      ...base,
+      preferences: { ...base.preferences, combatPreference, focus: "Research" },
+      assessmentSignals: { ...base.assessmentSignals, rolesAvoided: ["too_physical"], rolesInterested, environment: "mixed" },
+    });
+  assert.ok(prompt("Mixed", ["cyber", "medical"]).includes("ובלי תפקיד קרבי"));
+  assert.ok(prompt("TechTrack", ["cyber"]).includes("אף תפקיד קרבי לא נכנס לחמישייה"));
+  // Combat among the interests, or a combat direction, keeps combat roles open.
+  assert.ok(!prompt("Mixed", ["combat", "medical"]).includes("ובלי תפקיד קרבי"));
+  assert.ok(!prompt("FieldCombat", ["intelligence"]).includes("אף תפקיד קרבי"));
+});
+
+test("an officer wish adds a soft line that names no role", () => {
+  const prompt = buildMatchUserPrompt({ ...base, personalRequest: "רוצה לצאת קצונה" });
+  assert.ok(prompt.includes("שאיפה לקצונה או לפיקוד"));
+  assert.ok(!buildMatchUserPrompt(base).includes("שאיפה לקצונה"));
+  assert.ok(!/טייס|חובל|אדרים/.test(prompt.split("שאיפה לקצונה")[1].split("\n")[0]), "no hardcoded role");
 });
 
 test("round 5: the note's field roles are spelled out in the checklist", () => {

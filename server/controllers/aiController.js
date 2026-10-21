@@ -21,6 +21,7 @@ import {
   rolesForAi,
   requestedButBlocked,
   requestTopicRoles,
+  officerAmbition,
   blendPercent,
   seedFromString,
   computeProfileHash,
@@ -69,7 +70,7 @@ export function buildSystemPromptV2(pool) {
 
 ## כל התפקידים שהמועמד/ת עומד/ת בתנאי הסף שלהם (JSON, בחרו מתוכם בלבד)
 
-להלן ${pool.length} תפקידים: כל מה שנשאר מהמאגר אחרי סינון לפי דפ"ר, פרופיל ומין. הם ממוינים כך: קודם תפקידים שעונים על הבקשה האישית (requestMatch), ואחריהם לפי basePercent. ל-${pool.filter((r) => r.detailed !== false).length} הראשונים מצורף פירוט, והשאר בשורה מקוצרת. בחרו את 5 הטובים ביותר (כל אחד חייב להתאים לכיוון, לאחד מתחומי העניין או לבקשה האישית), החזירו adjustment (מ-8- עד 8+) לכל אחד, ואל תמציאו תפקידים שאינם ברשימה.
+להלן ${pool.length} תפקידים: כל מה שנשאר מהמאגר אחרי סינון לפי דפ"ר, פרופיל, מין ומה שהמועמד/ת ביקש/ה להימנע ממנו. הם ממוינים כך: קודם תפקידים שעונים על הבקשה האישית (requestMatch), ואחריהם לפי basePercent. ל-${pool.filter((r) => r.detailed !== false).length} הראשונים מצורף פירוט, והשאר בשורה מקוצרת. בחרו את 5 הטובים ביותר (כל אחד חייב להתאים לכיוון, לאחד מתחומי העניין או לבקשה האישית), החזירו adjustment (מ-8- עד 8+) לכל אחד, ואל תמציאו תפקידים שאינם ברשימה.
 
 ${JSON.stringify(
   pool.map((r) => {
@@ -644,20 +645,33 @@ function assessmentLinesHe(signals) {
  * The general direction and avoidance rules, spelled out for this one candidate. Mixed users who
  * avoid office work kept getting five desk roles from the general wording alone.
  */
-function checklistLines(direction, signals, focus, noteTopicRoles = []) {
+function checklistLines(direction, signals, focus, noteTopicRoles = [], officer = false) {
   const avoided = signals?.rolesAvoided || [];
   const lines = [];
   // For a tech or support direction, desk work is the field itself; the clash is flagged on the card instead.
   const fieldSideWanted = (direction === "Mixed" || direction === "FieldCombat") && focus !== "Tech";
+  // "Too physical" without combat among the interests means no combat role, even for a Mixed direction.
+  const noCombat =
+    avoided.includes("too_physical") &&
+    direction !== "FieldCombat" &&
+    !(signals?.rolesInterested || []).includes("combat");
   if (direction === "Mixed") {
     lines.push(
-      avoided.includes("too_physical")
-        ? "- בחמישייה: לפחות 2 תפקידים לא קרביים ולפחות תפקיד שטח אחד (קרבי, או תפקיד שטח לא קרבי כי ביקש/ה להימנע ממאמץ גופני רב)."
-        : "- בחמישייה: לפחות תפקיד קרבי אחד ולפחות 2 תפקידים לא קרביים.",
+      noCombat
+        ? "- בחמישייה: לפחות 2 תפקידים לא קרביים ולפחות תפקיד שטח לא קרבי אחד, ובלי תפקיד קרבי: ביקש/ה להימנע ממאמץ גופני רב ולא בחר/ה לחימה בתחומי העניין."
+        : avoided.includes("too_physical")
+          ? "- בחמישייה: לפחות 2 תפקידים לא קרביים ולפחות תפקיד שטח אחד (קרבי, או תפקיד שטח לא קרבי כי ביקש/ה להימנע ממאמץ גופני רב)."
+          : "- בחמישייה: לפחות תפקיד קרבי אחד ולפחות 2 תפקידים לא קרביים.",
     );
+  } else if (noCombat) {
+    lines.push("- ביקש/ה להימנע ממאמץ גופני רב ולא בחר/ה לחימה: אף תפקיד קרבי לא נכנס לחמישייה, אלא אם הבקשה האישית מבקשת אותו במפורש.");
   }
   if (fieldSideWanted && avoided.includes("office_only") && signals?.environment !== "office") {
-    lines.push("- ביקש/ה להימנע מעבודה משרדית: תפקיד שה-clashes שלו כולל עבודה משרדית לא נכנס למקומות 1-3, אלא אם הבקשה האישית מבקשת אותו במפורש.");
+    lines.push("- ביקש/ה להימנע מעבודה משרדית: תפקיד שה-clashes שלו כולל עבודה משרדית לא נכנס לחמישייה בכלל, גם לא למקומות 4-5, אלא אם הבקשה האישית מבקשת אותו במפורש. רק אם בלעדיו אין חמישייה שמתאימה לכיוון ולתחומי העניין: לכל היותר אחד, במקום 5, ובתיאור כתוב בכנות שזו עבודה משרדית.");
+  }
+  // No role list here: which roles build command depends on this candidate's direction and the roles' own data.
+  if (officer) {
+    lines.push("- בבקשה האישית יש שאיפה לקצונה או לפיקוד. זו שאיפה ולא תחום: אל תכניס תפקיד רק כי שמו או תיאורו מזכירים קצונה, ואל תציג מסלול אחד כ\"הדרך לקצונה\". בחר לפי הכיוון ותחומי העניין, ובין תפקידים שמתאימים בערך באותה מידה העדף את אלה שבונים פיקוד (command ב-keyDimensions, או מסלול קצונה שמתאים לכיוון, לכושר ולסיכויי הקבלה). לפחות תפקיד אחד כזה בחמישייה, אם יש כזה שמתאים לכיוון ולתחומי העניין. בתיאור שלו כתוב איך הוא מקדם את השאיפה, בלי להמציא שלבים או מועדים.");
   }
   // The note named a field; spelling out the open roles that answer it keeps it from being lost.
   // In the order the note names them: the first ask leads.
@@ -799,9 +813,9 @@ ${requestLine}${blockedLine}
 3. requestMatch: true הוא רמז לפי מילות מפתח מהבקשה האישית, ולפעמים הוא שגוי. כלול תפקיד כזה רק אם הוא באמת עונה על הבקשה, והסבר בתיאור איך. אם הבקשה נוקבת במפורש בתפקיד, ביחידה או בתחום שפתוחים בפני המועמד/ת, לפחות תפקיד אחד שעונה עליה צריך להיות במקומות #1 עד #3.
 4. כשהמועמד/ת מציין/ת שני כיוונים (למשל קרבי וגם טכנולוגיה), העדף תפקידים שמחברים ביניהם על פני תפקידים שעונים רק על אחד.
 5. admissionChance הוא הערכת סיכוי הקבלה. תפקיד עם סיכוי נמוך יכול להיכנס לחמישייה אם הוא עונה על הבקשה, אבל אל תמלא את כל החמישייה בתפקידים כאלה, וציין בכנות בתיאור שהסיכוי נמוך ולמה.
-6. הימנעויות (rolesAvoided) והעדפת בסיס (basePreference): בין תפקידים שמתאימים בערך באותה מידה, העדף את זה שמכבד אותן, וכשבחירה סותרת אחת מהן כתוב זאת בכנות בתיאור שלה. Write "בסיס סגור" or "בסיס פתוח" only for an entry that has base; otherwise say nothing about the base. הן העדפה רכה, לא חסימה. אם התפקיד שהמועמד/ת הכי רוצה (לפי הבקשה או תחומי העניין) כולל משהו שביקש/ה להימנע ממנו, למשל שמירות ולילות בתפקיד קרבי, מותר להמליץ עליו. במקרה כזה כתוב בתיאור בכנות שזה חלק מהתפקיד ולמה בכל זאת כדאי.
+6. הימנעויות (rolesAvoided) והעדפת בסיס (basePreference): בין תפקידים שמתאימים בערך באותה מידה, העדף את זה שמכבד אותן, וכשבחירה סותרת אחת מהן כתוב זאת בכנות בתיאור שלה. Write "בסיס סגור" or "בסיס פתוח" only for an entry that has base; otherwise say nothing about the base. הן העדפה רכה, לא חסימה, אבל בכל חמשת המקומות: תפקיד עם clashes נכנס לחמישייה רק כשהוא מה שהמועמד/ת הכי רוצה (נקוב בבקשה האישית, או הדרך העיקרית לתחום עניין שבחר/ה), או כשאין תפקיד בלי clashes שמתאים לכיוון ולתחומי העניין בערך באותה מידה (למשל שמירות ולילות, שהם חלק מכמעט כל תפקיד קרבי). במקרה כזה כתוב בתיאור בכנות שזה חלק מהתפקיד ולמה בכל זאת כדאי.
 7. רק אחר כך העדפות כלליות וציוני מא"ה. focusExtra הם תחומי עניין נוספים ביום־יום, מעבר למיקוד העיקרי.
-${checklistLines(preferences?.combatPreference, assessmentSignals, preferences?.focus, noteTopicRoles)}
+${checklistLines(preferences?.combatPreference, assessmentSignals, preferences?.focus, noteTopicRoles, officerAmbition(personalRequest))}
 
 בחר 5 תפקידים מהמאגר בלבד. שמות מדויקים כפי שמופיעים במאגר, תיאורים בעברית בלבד.` : `ענה לפי כללי המערכת (JSON בלבד, טקסטים בעברית).
 
@@ -856,7 +870,7 @@ ${yomLines}${legacyQ}
 
 ## סבב חדש
 המועמד/ת ביקש/ה חמישייה חדשה. התפקידים האלה כבר הוצגו: ${avoidTitles.join(" | ")}.
-הצע חמישייה שונה באמת מאותו מאגר ולפי אותם כללים: לכל היותר 2 מהם יכולים לחזור, ורק אם הם עדיין ההתאמה החזקה ביותר.`
+הצע חמישייה שונה באמת מאותו מאגר ולפי אותם כללים: לכל היותר 2 מהם יכולים לחזור, ורק אם הם עדיין ההתאמה החזקה ביותר. תפקיד שעונה במפורש על הבקשה האישית, או התפקיד היחיד שענה על תחום עניין שבחר/ה, נשאר (ונספר בין ה-2). גם החמישייה החדשה חייבת לעמוד בכל הכללים (כיוון, תחומי עניין, הימנעויות, סיכויי קבלה): עדיף לחזור על תפקיד חזק מאשר להציע תפקיד חלש רק כדי לגוון.`
         : "";
     return userPrompt + retryLine;
 }
@@ -1049,7 +1063,12 @@ export async function matchRoles(req, res) {
       assessmentSignals,
       filteredRoleCount: filteredRoles.length,
       personalRequest: profileForMatch.personalRequest,
-      avoidTitles: retry ? await recentRoleTitles(userId, profileHash, durableMatch) : [],
+      // A role the note asks for is never steered away from: "try again" varies the rest.
+      avoidTitles: retry
+        ? (await recentRoleTitles(userId, profileHash, durableMatch)).filter(
+            (title) => !candidatePool?.some((r) => r.requestMatch && r.roleTitle === title),
+          )
+        : [],
       blockedRequested,
       noteTopicRoles,
     });
