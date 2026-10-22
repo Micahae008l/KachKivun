@@ -985,6 +985,7 @@ export type AdminUserRow = {
   id: string;
   /** Where they came from; estimated when guessed from an old session's browser. */
   source?: { source: string; estimated: boolean };
+  gender?: "male" | "female" | null;
   email: string;
   preferredName: string;
   phone: string;
