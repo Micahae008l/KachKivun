@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   MessageSquare,
   Users,
@@ -299,8 +299,8 @@ function AdminPage() {
       ) : busy ? (
         <AdminSkeleton />
       ) : (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
-          <motion.div
+        <m.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
+          <m.div
             variants={fadeUp}
             className="flex flex-col-reverse gap-4 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
           >
@@ -339,9 +339,9 @@ function AdminPage() {
                 חזרה לדשבורד
               </Link>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.nav
+          <m.nav
             variants={fadeUp}
             aria-label="אזורי הפאנל"
             className="sticky top-0 z-20 -mx-4 flex gap-1 overflow-x-auto border-b border-iron/30 bg-background/95 px-4 py-2 backdrop-blur-sm sm:mx-0 sm:px-0"
@@ -380,12 +380,12 @@ function AdminPage() {
                 </button>
               );
             })}
-          </motion.nav>
+          </m.nav>
 
           {tab === "overview" ? (
-            <motion.div variants={fadeUp}>
+            <m.div variants={fadeUp}>
               <AdminInsights />
-            </motion.div>
+            </m.div>
           ) : null}
 
           {tab !== "ai" ? null : overview.isError ? (
@@ -394,7 +394,7 @@ function AdminPage() {
             </div>
           ) : ov ? (
             <>
-              <motion.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <m.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <MetricCard
                   icon={Users}
                   label="משתמשים"
@@ -419,9 +419,9 @@ function AdminPage() {
                   value={formatTokens(ov.openai.totalTokens)}
                   hint={`קלט ${formatTokens(ov.openai.promptTokens)} · פלט ${formatTokens(ov.openai.completionTokens)}`}
                 />
-              </motion.div>
+              </m.div>
 
-              <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+              <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
                 <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                   פעילות AI אחרונה
                 </p>
@@ -464,12 +464,12 @@ function AdminPage() {
                   </div>
                 )}
                 <p className="mt-4 text-[11px] text-dust/70">{ov.openai.pricing.note}</p>
-              </motion.div>
+              </m.div>
             </>
           ) : null}
 
           {tab === "users" ? (
-            <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+            <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
               <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="font-mono text-xs tracking-wide text-dust uppercase">ניהול משתמשים</p>
                 <div className="relative max-w-md flex-1">
@@ -588,15 +588,11 @@ function AdminPage() {
                   ) : null}
                 </>
               )}
-            </motion.div>
+            </m.div>
           ) : null}
 
           {tab === "reviews" ? (
-            <motion.div
-              variants={fadeUp}
-              className="border border-iron/30 bg-card p-5 sm:p-6"
-              dir="rtl"
-            >
+            <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6" dir="rtl">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-mono text-xs tracking-wide text-dust uppercase">
@@ -684,9 +680,9 @@ function AdminPage() {
                   ))}
                 </ul>
               )}
-            </motion.div>
+            </m.div>
           ) : null}
-        </motion.div>
+        </m.div>
       )}
 
       {deleteTarget && (

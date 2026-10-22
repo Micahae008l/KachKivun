@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { ChevronLeft, Plane, Star } from "lucide-react";
 import { getGibushContent, getLatestAssessment } from "@/lib/api";
 import { getToken, hasSessionHint, subscribeAuth } from "@/lib/auth";
@@ -10,12 +10,13 @@ import {
   BENCHMARK_NOTE,
   RATING_LABELS,
   SHARE_LEVELS,
+  SHARE_URL,
   type Gender,
   type GibushContent,
 } from "@/features/gibush/types";
 import type { Answers } from "@/features/gibush/scoring";
 import { Simulation, type RunState } from "@/features/gibush/Simulation";
-import { FighterCard, LEVEL_BADGE, Result, SHARE_URL } from "@/features/gibush/Result";
+import { FighterCard, LEVEL_BADGE, Result } from "@/features/gibush/Result";
 import { DAWN, DUNE } from "@/features/gibush/photos";
 
 const TITLE = "מוכנות לגיבוש: סימולציה של יום הגיבוש | קח כיוון";
@@ -231,16 +232,16 @@ function GibushApp({
   return (
     <div className="space-y-20 sm:space-y-32">
       <IntroHero name={name}>
-        <motion.p
+        <m.p
           {...rise(0)}
           className="border-r-2 border-sand bg-sand/5 px-4 py-3 text-base leading-7 text-foreground"
         >
           <span className="font-mono font-bold text-sand">{content.day.stages.length} רגעים</span> ·{" "}
           {content.day.subtitle}
-        </motion.p>
+        </m.p>
 
         {!profileGender ? (
-          <motion.fieldset {...rise(0.08)}>
+          <m.fieldset {...rise(0.08)}>
             <legend className="mb-3 text-sm font-bold text-foreground">
               בנים או בנות? <span className="font-normal text-dust">לכל אחד סולם יחידות אחר</span>
             </legend>
@@ -266,13 +267,13 @@ function GibushApp({
                 </button>
               ))}
             </div>
-          </motion.fieldset>
+          </m.fieldset>
         ) : null}
 
-        <motion.div {...rise(0.16)} className="space-y-3">
+        <m.div {...rise(0.16)} className="space-y-3">
           {start}
           <p className="text-sm leading-6 text-dust">{BENCHMARK_NOTE}</p>
-        </motion.div>
+        </m.div>
       </IntroHero>
 
       <IntroLadder ladder={content.ladders[gender ?? "male"]} />
@@ -377,7 +378,7 @@ function IntroLadder({ ladder }: { ladder: GibushContent["ladders"]["male"] }) {
           const elite = badge === "עילית";
           const { units, note } = splitUnits(l.units);
           return (
-            <motion.li
+            <m.li
               {...rise(row * 0.06)}
               key={l.name}
               className={`relative grid grid-cols-[3rem_1fr] items-center gap-x-4 gap-y-3 overflow-hidden border bg-card py-4 pe-4 ps-5 md:grid-cols-[3.5rem_13rem_1fr] ${
@@ -423,7 +424,7 @@ function IntroLadder({ ladder }: { ladder: GibushContent["ladders"]["male"] }) {
                 </ul>
                 {note ? <p className="mt-1.5 text-sm text-dust">{note}</p> : null}
               </div>
-            </motion.li>
+            </m.li>
           );
         })}
       </ol>
@@ -464,12 +465,12 @@ function IntroOutcome() {
       </h2>
       <ul className="space-y-8 sm:space-y-10">
         {OUTCOME.map(({ tone, title, body }, i) => (
-          <motion.li {...rise(i * 0.08)} key={title} className={`border-s-4 ps-5 ${tone}`}>
+          <m.li {...rise(i * 0.08)} key={title} className={`border-s-4 ps-5 ${tone}`}>
             <p className="text-2xl font-black leading-tight text-foreground sm:text-3xl">{title}</p>
             <p className="mt-2 max-w-xl text-pretty text-base leading-7 text-dust sm:text-lg sm:leading-8">
               {body}
             </p>
-          </motion.li>
+          </m.li>
         ))}
       </ul>
     </section>

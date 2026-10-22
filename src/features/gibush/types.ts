@@ -79,6 +79,9 @@ export function stageFor(stage: Stage, gender: Gender): Stage {
  * Level names for shared links (`?u=` is an index here, so only append). Public on purpose: a
  * shared card shows only a score and a level. Must list every ladder name (a test checks).
  */
+/** The public page, used in share links and in the route's head (so keep it out of Result.tsx). */
+export const SHARE_URL = "https://kachkivun.com/gibush";
+
 export const SHARE_LEVELS = [
   "קו ראשון",
   "חטיבות החי״ר",

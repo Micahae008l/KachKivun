@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import { animate, motion, useInView, useReducedMotion } from "framer-motion";
+import { animate, m, useInView, useReducedMotion } from "framer-motion";
 import { Check, Lock } from "lucide-react";
 import {
   PROFILE_RUNGS,
@@ -31,7 +31,7 @@ function Reveal({
 }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={reduce ? false : { opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -39,7 +39,7 @@ function Reveal({
       transition={{ duration: 0.55, delay, ease: EASE }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -72,7 +72,7 @@ function CountUp({ value, className = "" }: { value: number; className?: string 
 function Grow({ pct, delay = 0, className }: { pct: number; delay?: number; className: string }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div
+    <m.div
       className={className}
       initial={reduce ? false : { width: 0 }}
       whileInView={{ width: `${pct}%` }}
@@ -183,7 +183,7 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
       <div className="px-2 pt-8" dir="ltr" aria-hidden>
         <div className="relative h-2 rounded-full bg-primary/15">
           {dapar != null ? (
-            <motion.div
+            <m.div
               className="absolute inset-y-0 left-0 rounded-full bg-primary"
               initial={reduce ? false : { width: 0 }}
               whileInView={{ width: `${daparPct(dapar)}%` }}
@@ -230,7 +230,7 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
           const open = dapar != null && dapar >= door.dapar;
           const gap = dapar == null ? null : door.dapar - dapar;
           return (
-            <motion.li
+            <m.li
               key={door.dapar}
               initial={reduce ? false : { opacity: 0, transform: "translateY(6px)" }}
               whileInView={{ opacity: 1, transform: "translateY(0px)" }}
@@ -267,7 +267,7 @@ export function DaparDoorsCard({ answers }: { answers: AssessmentAnswers }) {
                   {open ? "פתוח לכם" : gap == null ? "לא ידוע" : `חסרות ${gap} נק׳`}
                 </span>
               </div>
-            </motion.li>
+            </m.li>
           );
         })}
       </ul>
@@ -387,7 +387,7 @@ export function NextStepsCard({ answers }: { answers: AssessmentAnswers }) {
     >
       <ol className="space-y-2.5">
         {steps.map((step, i) => (
-          <motion.li
+          <m.li
             key={step}
             initial={reduce ? false : { opacity: 0, transform: "translateY(8px)" }}
             whileInView={{ opacity: 1, transform: "translateY(0px)" }}
@@ -399,7 +399,7 @@ export function NextStepsCard({ answers }: { answers: AssessmentAnswers }) {
               {i + 1}
             </span>
             <span className="text-sm leading-6 text-foreground">{step}</span>
-          </motion.li>
+          </m.li>
         ))}
       </ol>
     </Card>

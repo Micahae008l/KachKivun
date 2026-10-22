@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { ArrowRight, X } from "lucide-react";
 import { stageFor, type Gender, type GibushContent, type Stage } from "./types";
 import { answerOrder, candidatesLeft, type Answers } from "./scoring";
@@ -124,7 +124,7 @@ export function Simulation({
         </header>
 
         {/* Enter-only: an exit animation can strand the screen blank on fast taps. */}
-        <motion.section
+        <m.section
           key={stage.id}
           aria-label={title}
           className="min-w-0 lg:my-auto lg:w-full lg:max-w-[70rem] lg:self-center"
@@ -143,7 +143,7 @@ export function Simulation({
             big
             header={false}
           />
-        </motion.section>
+        </m.section>
 
         <footer className="space-y-3">
           <QuestionStrip
@@ -191,7 +191,7 @@ function Backdrop({ photo }: { photo: GibushPhoto }) {
       aria-hidden
     >
       <AnimatePresence initial={false}>
-        <motion.img
+        <m.img
           key={photo.id}
           src={photo.src}
           srcSet={photo.srcSet}
@@ -258,7 +258,7 @@ function Count({ left, start, prev }: { left: number; start: number; prev?: Stag
     <div className="shrink-0 text-left">
       <p className="text-sm text-dust lg:text-[15px]" aria-live="polite">
         <span className="sr-only">מועמדים שנשארו: </span>
-        <motion.span
+        <m.span
           key={left}
           initial={reduce ? false : { opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -266,7 +266,7 @@ function Count({ left, start, prev }: { left: number; start: number; prev?: Stag
           dir="ltr"
         >
           {left}
-        </motion.span>{" "}
+        </m.span>{" "}
         מתוך {start}
         <span className="hidden lg:inline"> נשארו</span>
       </p>

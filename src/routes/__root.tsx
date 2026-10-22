@@ -14,7 +14,7 @@ import { QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-q
 import { warmApi, bootstrapAuth, logoutRequest } from "@/lib/api";
 import { getToken, isStoredAdmin, setStoredRole, subscribeAuth } from "@/lib/auth";
 import { prefetchAuthedData, sessionQueryOptions } from "@/lib/queries";
-import { MotionConfig } from "framer-motion";
+import { LazyMotion, MotionConfig } from "framer-motion";
 import { ChevronLeft, ClipboardList, Menu, X } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { FREE_TOOLS, FREE_TOOLS_LABEL, NavToolsMenu } from "@/components/NavToolsMenu";
@@ -45,6 +45,9 @@ const FONT_CSS =
 const FONT_LOADER_SCRIPT = `(function(){var l=document.createElement("link");l.rel="stylesheet";l.href=${JSON.stringify(FONT_CSS)};document.head.appendChild(l)})()`;
 
 const SITE_URL = "https://kachkivun.com";
+
+// Animation features load after the entry; m.* components render without animating until they arrive.
+const loadMotionFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
 
 // Loaded after hydration: no toast can fire before then, and it keeps sonner out of the entry bundle.
 const Toaster = lazy(() => import("sonner").then((m) => ({ default: m.Toaster })));
@@ -151,16 +154,18 @@ function RootLayout() {
 
   return (
     <MotionConfig reducedMotion={manualReduceMotion ? "always" : "user"}>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <RootLayoutInner />
-          {mounted && (
-            <Suspense fallback={null}>
-              <Toaster richColors position="top-center" />
-            </Suspense>
-          )}
-        </QueryClientProvider>
-      </ErrorBoundary>
+      <LazyMotion features={loadMotionFeatures} strict>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <RootLayoutInner />
+            {mounted && (
+              <Suspense fallback={null}>
+                <Toaster richColors position="top-center" />
+              </Suspense>
+            )}
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </LazyMotion>
     </MotionConfig>
   );
 }

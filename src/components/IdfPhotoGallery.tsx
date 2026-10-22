@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { IdfPhotoPanel } from "@/components/IdfPhotoPanel";
 import { IDF_PHOTO_CATALOG, type IdfPhoto } from "@/lib/idf-photo-catalog";
 
@@ -37,7 +37,7 @@ export function IdfPhotoGallery({
   return (
     <div className={`grid gap-1 ${colClass[columns] ?? colClass[3]} ${className}`}>
       {photos.map((photo, i) => (
-        <motion.div
+        <m.div
           key={photo.id}
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -50,7 +50,7 @@ export function IdfPhotoGallery({
             overlayClassName="from-background/15 via-transparent to-background/40"
             creditPosition="corner"
           />
-        </motion.div>
+        </m.div>
       ))}
     </div>
   );

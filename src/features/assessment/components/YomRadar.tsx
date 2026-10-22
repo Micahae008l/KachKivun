@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { YOM_HAMEAH_KEYS, YOM_HAMEAH_LABELS_HE, type YomHameahKey } from "@/lib/yom-hameah";
 import { dimensionRows } from "../insights";
 import type { AssessmentAnswers } from "../types";
@@ -29,13 +29,26 @@ const angle = (i: number) => -Math.PI / 2 + (i * 2 * Math.PI) / YOM_HAMEAH_KEYS.
 const point = (i: number, radius: number) =>
   [CX + radius * Math.cos(angle(i)), CY + radius * Math.sin(angle(i))] as const;
 const pathFor = (radii: number[]) =>
-  radii.map((r, i) => `${i ? "L" : "M"}${point(i, r).map((n) => n.toFixed(1)).join(" ")}`).join(" ") + " Z";
+  radii
+    .map(
+      (r, i) =>
+        `${i ? "L" : "M"}${point(i, r)
+          .map((n) => n.toFixed(1))
+          .join(" ")}`,
+    )
+    .join(" ") + " Z";
 
 /**
  * 11-axis radar of the מא"ה scores; strongest dimensions are highlighted.
  * `live` re-animates on every change (the input step); otherwise it draws once when scrolled into view.
  */
-export function YomRadar({ answers, live = false }: { answers: AssessmentAnswers; live?: boolean }) {
+export function YomRadar({
+  answers,
+  live = false,
+}: {
+  answers: AssessmentAnswers;
+  live?: boolean;
+}) {
   const reduce = useReducedMotion();
   const { rows, flat } = dimensionRows(answers);
   const top = new Set(flat ? [] : rows.filter((r) => r.top).map((r) => r.key));
@@ -65,10 +78,20 @@ export function YomRadar({ answers, live = false }: { answers: AssessmentAnswers
       ))}
       {YOM_HAMEAH_KEYS.map((key, i) => {
         const [x, y] = point(i, R);
-        return <line key={key} x1={CX} y1={CY} x2={x} y2={y} className="stroke-iron/25" strokeWidth={1} />;
+        return (
+          <line
+            key={key}
+            x1={CX}
+            y1={CY}
+            x2={x}
+            y2={y}
+            className="stroke-iron/25"
+            strokeWidth={1}
+          />
+        );
       })}
 
-      <motion.path
+      <m.path
         initial={reduce ? false : { d: collapsed }}
         {...play}
         transition={{ duration: reduce ? 0 : live ? 0.35 : 0.9, ease: EASE }}
@@ -81,7 +104,7 @@ export function YomRadar({ answers, live = false }: { answers: AssessmentAnswers
         const [x, y] = point(i, radii[i]);
         const strong = top.has(key);
         return (
-          <motion.circle
+          <m.circle
             key={key}
             initial={reduce ? false : { cx: CX, cy: CY }}
             {...(live

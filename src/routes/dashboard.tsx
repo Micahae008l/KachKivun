@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { TONES, matchTone, type Tone } from "@/lib/tones";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   Calendar,
   CheckCircle2,
@@ -109,7 +109,7 @@ function Card({
   tone?: Tone;
 }) {
   return (
-    <motion.section
+    <m.section
       variants={fadeUp}
       className={`min-w-0 border border-iron/30 bg-card p-4 text-right sm:p-6 ${className}`}
     >
@@ -118,7 +118,7 @@ function Card({
         {title}
       </h2>
       {children}
-    </motion.section>
+    </m.section>
   );
 }
 
@@ -230,14 +230,14 @@ function DashboardPage() {
     data.aiProfileMissing?.map((k) => AI_PROFILE_MISSING_LABELS[k] ?? k).filter(Boolean) ?? [];
 
   return (
-    <motion.div
+    <m.div
       variants={stagger}
       initial="hidden"
       animate="show"
       className="mx-auto max-w-5xl space-y-4 px-4 py-6 sm:space-y-5 sm:px-6 sm:py-10"
       dir="rtl"
     >
-      <motion.header variants={fadeUp} className="flex flex-wrap items-end justify-between gap-3">
+      <m.header variants={fadeUp} className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs text-dust">הדשבורד שלך</p>
           <h1 className="mt-1 truncate text-2xl font-black text-foreground sm:text-3xl">
@@ -253,7 +253,7 @@ function DashboardPage() {
           <span className="h-2 w-2 rounded-full bg-olive" aria-hidden />
           {statusHebrew(data.user.status)}
         </span>
-      </motion.header>
+      </m.header>
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
@@ -300,7 +300,7 @@ function DashboardPage() {
             </Card>
           ) : null}
 
-          <motion.div variants={fadeUp} className="grid grid-cols-3 gap-2 sm:gap-3">
+          <m.div variants={fadeUp} className="grid grid-cols-3 gap-2 sm:gap-3">
             <Stat
               label='דפ"ר'
               value={dapar != null ? String(dapar) : "-"}
@@ -314,17 +314,13 @@ function DashboardPage() {
               note="מתוך 97"
             />
             <Stat label="מא״ה" value={yom.label} pct={yom.pct} note="ממוצע מ־5" />
-          </motion.div>
+          </m.div>
 
           {showStrengths && answers ? <StrengthsCard answers={answers} /> : null}
         </div>
       </div>
 
-      <motion.nav
-        variants={fadeUp}
-        aria-label="פעולות מהירות"
-        className="grid gap-2 sm:grid-cols-3"
-      >
+      <m.nav variants={fadeUp} aria-label="פעולות מהירות" className="grid gap-2 sm:grid-cols-3">
         <QuickLink
           to="/post-signup"
           hash="edit"
@@ -334,12 +330,12 @@ function DashboardPage() {
         />
         <QuickLink to="/role-insights" icon={Compass} label="כל התפקידים בצה״ל" tone="teal" />
         <QuickLink to="/ai-counselor" icon={Sparkles} label="התוצאות המלאות" tone="olive" />
-      </motion.nav>
+      </m.nav>
 
-      <motion.div variants={fadeUp}>
+      <m.div variants={fadeUp}>
         <DashboardAccountPreferences data={data} />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }
 
@@ -587,7 +583,7 @@ function Meter({ value, label }: { value: number; label: string }) {
       className="h-2 w-full overflow-hidden rounded-full bg-primary/15"
       {...progressBarProps(clamped, label)}
     >
-      <motion.div
+      <m.div
         className="h-full rounded-full bg-primary"
         initial={{ width: 0 }}
         animate={{ width: `${clamped}%` }}

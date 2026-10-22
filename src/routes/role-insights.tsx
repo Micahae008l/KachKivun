@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ChevronDown, ChevronLeft, Search, Shield } from "lucide-react";
 import { listRoles, roleInsightSlug } from "@/lib/api";
 import { fetchRoleCatalog } from "@/lib/roles-public";
@@ -86,7 +86,7 @@ function RoleInsightsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 topo-lines">
-      <motion.header
+      <m.header
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease }}
@@ -126,7 +126,7 @@ function RoleInsightsPage() {
             </Link>
           </p>
         </div>
-      </motion.header>
+      </m.header>
 
       <QuizCta compact title="לא בטוחים מאיפה להתחיל?" />
 

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Bot, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/ai-secretary")({
@@ -18,7 +18,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 function AiSecretaryPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 sm:py-24 topo-lines" dir="rtl">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease }}
@@ -46,7 +46,7 @@ function AiSecretaryPage() {
           <Sparkles className="h-4 w-4" aria-hidden />
           ליוצר התאמת תפקידים
         </Link>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

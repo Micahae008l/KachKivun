@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import {
   Brain,
   CheckCircle2,
@@ -428,7 +428,8 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
       markFunnelStep(currentStep);
     }
   }, [currentStep, editMode, legacyMode, loginIntent]);
-  const progress = loginIntent || legacyMode ? rawProgress : Math.max(peakProgress.current, rawProgress);
+  const progress =
+    loginIntent || legacyMode ? rawProgress : Math.max(peakProgress.current, rawProgress);
   peakProgress.current = progress;
   const meta =
     loginIntent && currentStep === "email"
@@ -833,7 +834,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
           )}
         </div>
 
-        <motion.section
+        <m.section
           // No entrance before mount: the server-rendered question must paint visible, not at opacity 0.
           initial={reduceMotion || !mounted ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -858,10 +859,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
             </div>
             <div
               className="h-1.5 overflow-hidden rounded-full bg-iron/20"
-              {...progressBarProps(
-                progress,
-                `התקדמות בהערכה: ${progress}%`,
-              )}
+              {...progressBarProps(progress, `התקדמות בהערכה: ${progress}%`)}
             >
               <div
                 className="h-full origin-right bg-primary transition-transform duration-300 ease-out"
@@ -877,7 +875,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
           </div>
 
           <div className="px-4 py-6 short:py-3 sm:px-8 sm:py-8 sm:short:py-5">
-            <motion.div
+            <m.div
               key={currentStep}
               initial={
                 reduceMotion || !mounted
@@ -1025,7 +1023,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
                   ) : null}
                 </div>
               ) : null}
-            </motion.div>
+            </m.div>
 
             <div className="mt-6 flex items-center justify-between gap-4 border-t border-iron/20 pt-4 pl-12 short:mt-3 short:pt-3 sm:mt-8 sm:pt-6 sm:pl-0">
               {!isAuthStep ? (
@@ -1088,7 +1086,7 @@ export function PostSignupAssessmentPage({ mode, offer }: PostSignupAssessmentPa
               </p>
             ) : null}
           </div>
-        </motion.section>
+        </m.section>
 
         {!authenticated && !legacyMode ? (
           <button
