@@ -545,6 +545,7 @@ function AdminPage() {
                           <th className="py-2 pl-3 font-medium">מקור</th>
                           <th className="py-2 pl-3 font-medium">נרשם</th>
                           <th className="py-2 pl-3 font-medium">שם</th>
+                          <th className="py-2 pl-3 font-medium">מין</th>
                           <th className="py-2 pl-3 font-medium">סטטוס</th>
                           <th className="py-2 pl-3 font-medium">תפקיד</th>
                           <th className="py-2 pl-3 font-medium">AI</th>
@@ -822,6 +823,9 @@ function UserRow({
         </td>
         <td className="py-3 pl-3 font-mono text-[11px] text-dust">{formatDate(user.createdAt)}</td>
         <td className="py-3 pl-3">{user.preferredName || "-"}</td>
+        <td className="py-3 pl-3 text-dust">
+          {user.gender === "male" ? "בן" : user.gender === "female" ? "בת" : "-"}
+        </td>
         <td className="py-3 pl-3 text-dust">{statusHebrew(user.status)}</td>
         <td className="py-3 pl-3">
           <span
@@ -907,7 +911,7 @@ function UserRow({
       </tr>
       {open ? (
         <tr className="border-b border-iron/20 bg-background/40">
-          <td colSpan={12} className="px-3">
+          <td colSpan={13} className="px-3">
             <AdminUserJourney userId={user.id} />
           </td>
         </tr>

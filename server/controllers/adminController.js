@@ -150,7 +150,9 @@ export async function listUsers(req, res) {
       Preferences.find({ userId: { $in: userIds } }).lean(),
       Assessment.find({ userId: { $in: userIds } })
         .sort({ completedAt: -1, _id: -1 })
-        .select("userId answers.daparScore answers.medicalProfile answers.yomHameahSource")
+        .select(
+          "userId answers.daparScore answers.medicalProfile answers.yomHameahSource answers.gender",
+        )
         .lean(),
       AiUsageLog.aggregate([
         { $match: { userId: { $in: userIds } } },
@@ -232,6 +234,8 @@ export async function listUsers(req, res) {
         },
         aiTokens: tokenStatus,
         source: sources.get(id) ?? { source: "unknown", estimated: true },
+        // What the user picked: the latest questionnaire first, then the saved profile; null if neither.
+        gender: assessmentMap.get(id)?.answers?.gender ?? stats?.gender ?? null,
         journey: journeyStage({
           assessed: assessmentMap.has(id),
           result: resultsMap.get(id),
