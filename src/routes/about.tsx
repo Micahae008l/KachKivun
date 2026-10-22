@@ -3,7 +3,7 @@ import { TONES, type Tone } from "@/lib/tones";
 
 /** Cards and stats take the site accents in turn, so the page is not all olive. */
 const ABOUT_TONES: Tone[] = ["steel", "sand", "teal", "rust"];
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   ChevronRight,
   Compass,
@@ -64,7 +64,7 @@ function AboutPage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease }}
@@ -89,7 +89,7 @@ function AboutPage() {
               רעש ובלי מנוי. ההערכה ושתי התאמות (מקומות 5 ו־4) בחינם. שלוש ההתאמות החזקות (3, 2 ו־1)
               נפתחות בתשלום חד־פעמי אחד.
             </p>
-          </motion.div>
+          </m.div>
 
           <StatStrip
             className="mt-12 border-t border-iron/25 pt-8 sm:mt-14"
@@ -106,7 +106,7 @@ function AboutPage() {
       <section className="py-14 sm:py-28" aria-labelledby="mission-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid items-center gap-12 lg:grid-cols-[3fr_2fr] lg:gap-20">
-            <motion.div
+            <m.div
               variants={fadeUp}
               initial="hidden"
               whileInView="show"
@@ -136,9 +136,9 @@ function AboutPage() {
                   אליהן.&rdquo;
                 </p>
               </blockquote>
-            </motion.div>
+            </m.div>
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.94 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-80px" }}
@@ -153,7 +153,7 @@ function AboutPage() {
                 loading="lazy"
                 fetchPriority="auto"
               />
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </section>
@@ -163,7 +163,7 @@ function AboutPage() {
       {/* ── Pillars ── */}
       <section className="py-14 sm:py-28" aria-labelledby="pillars-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <motion.div
+          <m.div
             variants={fadeUp}
             initial="hidden"
             whileInView="show"
@@ -176,7 +176,7 @@ function AboutPage() {
             <h2 id="pillars-heading" className="text-3xl font-bold leading-tight sm:text-4xl">
               שלושה עקרונות, בלי פשרות
             </h2>
-          </motion.div>
+          </m.div>
 
           <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
             <Pillar
@@ -206,7 +206,7 @@ function AboutPage() {
       {/* ── Founder ── */}
       <section className="py-14 sm:py-28" aria-labelledby="ceo-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <motion.div
+          <m.div
             variants={fadeUp}
             initial="hidden"
             whileInView="show"
@@ -217,9 +217,9 @@ function AboutPage() {
             <h2 id="ceo-heading" className="text-3xl font-bold text-foreground sm:text-4xl">
               מאחורי הקלעים
             </h2>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -273,7 +273,7 @@ function AboutPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -282,7 +282,7 @@ function AboutPage() {
       {/* ── Contact ── */}
       <section className="py-14 sm:py-28" aria-labelledby="contact-heading">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <motion.div
+          <m.div
             variants={fadeUp}
             initial="hidden"
             whileInView="show"
@@ -296,7 +296,7 @@ function AboutPage() {
             <p className="mt-3 max-w-2xl text-[0.9375rem] leading-[1.75] text-dust">
               שאלות על המוצר, פרטיות, שותפויות או דיווח על באג, נשמח לשמוע.
             </p>
-          </motion.div>
+          </m.div>
 
           <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
             <ContactCard
@@ -329,7 +329,7 @@ function AboutPage() {
 
       {/* ── Closing CTA ── */}
       <section className="border-t border-iron/30 py-14 sm:py-28">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -341,7 +341,7 @@ function AboutPage() {
             <Lock className="h-3 w-3" aria-hidden />
             ללא סיסמה, רק אימייל וקוד חד-פעמי
           </p>
-        </motion.div>
+        </m.div>
       </section>
 
       {/* CC licenses require a credit for every photo, including the ones shown without a caption. */}
@@ -393,7 +393,7 @@ function Pillar({
   idx: number;
 }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
@@ -407,7 +407,7 @@ function Pillar({
       </div>
       <h3 className="mb-2 text-base font-bold text-foreground">{title}</h3>
       <p className="text-sm leading-[1.7] text-dust">{desc}</p>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -440,7 +440,7 @@ function ContactCard({
   const className = `group block border border-r-2 border-iron/20 bg-card p-6 text-right transition-colors hover:bg-secondary/40 sm:p-8 ${TONES[ABOUT_TONES[idx % 4]].edge}`;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
@@ -457,6 +457,6 @@ function ContactCard({
       ) : (
         <div className={className}>{inner}</div>
       )}
-    </motion.div>
+    </m.div>
   );
 }

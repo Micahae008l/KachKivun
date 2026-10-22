@@ -9,7 +9,7 @@ import {
   type CSSProperties,
 } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import {
   BookOpen,
   Briefcase,
@@ -846,7 +846,7 @@ export function RoleMatchCards({
 
       {/* One match at a time, 5 to 1. Swipe right or press "next" to move toward place 1. */}
       <div className="-mx-1 overflow-x-clip px-1 py-1">
-        <motion.div
+        <m.div
           key={slideKey(current)}
           initial={
             reduce ? false : { opacity: 0, transform: `translateX(${dir > 0 ? -40 : 40}px)` }
@@ -863,7 +863,7 @@ export function RoleMatchCards({
           className="space-y-4"
         >
           {renderSlide(current)}
-        </motion.div>
+        </m.div>
       </div>
 
       <div className="flex items-center justify-between gap-3">

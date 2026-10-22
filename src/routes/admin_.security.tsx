@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   Activity,
   AlertTriangle,
@@ -33,7 +33,7 @@ import {
 
 export const Route = createFileRoute("/admin_/security")({
   component: SecurityPage,
-  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
 });
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -296,8 +296,8 @@ function SecurityPage() {
       ) : busy ? (
         <AdminSkeleton />
       ) : (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
-          <motion.div
+        <m.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
+          <m.div
             variants={fadeUp}
             className="flex flex-col-reverse gap-4 border-b border-iron/30 pb-6 sm:flex-row sm:items-end sm:justify-between"
           >
@@ -340,7 +340,7 @@ function SecurityPage() {
                 חזרה לדשבורד
               </Link>
             </div>
-          </motion.div>
+          </m.div>
 
           {overview.isError ? (
             <div className="border border-destructive/40 bg-card p-6 text-center text-destructive">
@@ -348,7 +348,7 @@ function SecurityPage() {
             </div>
           ) : ov ? (
             <>
-              <motion.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <m.div variants={fadeUp} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <MetricCard
                   icon={Activity}
                   label="אירועים ב־24 שעות"
@@ -373,9 +373,9 @@ function SecurityPage() {
                   value={String(ov.blockedIpCount)}
                   hint={`${ov.totals.allTime} אירועים סה״כ`}
                 />
-              </motion.div>
+              </m.div>
 
-              <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+              <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
                 <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                   אירועי אבטחה · 48 שעות אחרונות
                 </p>
@@ -455,9 +455,9 @@ function SecurityPage() {
                     </AreaChart>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
 
-              <motion.div variants={fadeUp} className="grid gap-4 lg:grid-cols-2">
+              <m.div variants={fadeUp} className="grid gap-4 lg:grid-cols-2">
                 <div className="border border-iron/30 bg-card p-5 sm:p-6">
                   <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
                     סוגי אירועים · 7 ימים
@@ -574,11 +574,11 @@ function SecurityPage() {
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             </>
           ) : null}
 
-          <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+          <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <p className="font-mono text-xs tracking-wide text-dust uppercase">יומן אירועים</p>
               <div className="flex flex-wrap items-center gap-2">
@@ -699,9 +699,9 @@ function SecurityPage() {
                 </div>
               </>
             )}
-          </motion.div>
+          </m.div>
 
-          <motion.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
+          <m.div variants={fadeUp} className="border border-iron/30 bg-card p-5 sm:p-6">
             <p className="mb-4 font-mono text-xs tracking-wide text-dust uppercase">
               חסימת כתובות IP
             </p>
@@ -796,8 +796,8 @@ function SecurityPage() {
                 </table>
               </div>
             )}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </div>
   );

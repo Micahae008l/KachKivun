@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronLeft, Crosshair } from "lucide-react";
 import { toast } from "sonner";
 import { getDashboardStats, getPaymentOffer, updateProfile, type YomHameah } from "@/lib/api";
@@ -28,7 +28,7 @@ import { idfPhotoAt } from "@/lib/idf-images";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
-  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" },] }),
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
 });
 
 const DAPAR_SCORES = [10, 20, 30, 40, 50, 60, 70, 80, 90] as const;
@@ -277,7 +277,7 @@ function OnboardingPage() {
           <div className="flex gap-1">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div key={i} className="relative h-1 flex-1 overflow-hidden bg-iron/20">
-                <motion.div
+                <m.div
                   className="absolute inset-y-0 right-0 bg-primary"
                   initial={{ width: "0%" }}
                   animate={{ width: i <= step ? "100%" : "0%" }}
@@ -293,7 +293,7 @@ function OnboardingPage() {
 
         <div className="border border-iron/30 bg-card p-5 overflow-hidden sm:p-8">
           <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
+            <m.div
               key={step}
               custom={direction}
               variants={slideVariants}
@@ -449,7 +449,7 @@ function OnboardingPage() {
                   </button>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { toast } from "sonner";
 import { Check, ChevronDown, Copy, Lock } from "lucide-react";
 import {
@@ -112,7 +112,7 @@ function Row({
       </button>
       <AnimatePresence initial={false}>
         {open ? (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -120,7 +120,7 @@ function Row({
             className="overflow-hidden"
           >
             <div className="border-t border-iron/25 p-4 sm:p-5">{children}</div>
-          </motion.div>
+          </m.div>
         ) : null}
       </AnimatePresence>
     </section>
@@ -278,7 +278,7 @@ function WhatIf({
       ) : null}
 
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div
+        <m.div
           key={scenario.key}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.22, ease } }}
@@ -325,7 +325,7 @@ function WhatIf({
           >
             {scenario.metric === "dapar" ? "מתי אפשר לבקש מבחן חוזר" : "איך מערערים על פרופיל"}
           </Link>
-        </motion.div>
+        </m.div>
       </AnimatePresence>
 
       {extras.unlocked ? null : (

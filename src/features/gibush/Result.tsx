@@ -1,12 +1,19 @@
 import { useMemo } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { Mountain, RefreshCw, Star } from "lucide-react";
 import { ShareButtons } from "@/components/ShareButtons";
 import { QuizCta } from "@/components/QuizCta";
-import { BENCHMARK_NOTE, SHARE_LEVELS, type Gender, type GibushContent, type Level } from "./types";
+import {
+  BENCHMARK_NOTE,
+  SHARE_LEVELS,
+  SHARE_URL,
+  type Gender,
+  type GibushContent,
+  type Level,
+} from "./types";
 import { evaluate, type Answers } from "./scoring";
 
-export const SHARE_URL = "https://kachkivun.com/gibush";
+export { SHARE_URL };
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function Result({
@@ -48,7 +55,7 @@ export function Result({
     <div className="space-y-14 sm:space-y-20">
       {/* How the day ended, with the card beside it */}
       {/* Phones: text, card, then sharing. Desktop: the card beside both. */}
-      <motion.header
+      <m.header
         {...reveal(0)}
         className="grid items-center gap-8 md:grid-cols-[1fr_auto] md:gap-x-16 md:gap-y-8"
       >
@@ -91,20 +98,20 @@ export function Result({
           />
           <p className="text-sm text-dust">בקישור רואים רק את הציון והרמה, בלי שם ובלי תשובות.</p>
         </div>
-      </motion.header>
+      </m.header>
 
       {/* The ladder */}
-      <motion.section {...reveal(0.15)} aria-labelledby="ladder-h">
+      <m.section {...reveal(0.15)} aria-labelledby="ladder-h">
         <SectionTitle id="ladder-h">עד איפה הגעתם בסולם</SectionTitle>
         <p className="mt-2 max-w-2xl text-base leading-7 text-dust">
           כל עמודה היא רמה. הצבועות כבר בידיים שלכם. לטיס ולחובלים יש דרך משלהם לשתי הרמות העליונות:
           חשיבה, תכנון וצוות במקום סחיבה.
         </p>
         <LadderBars ladder={r.ladder} level={r.level} />
-      </motion.section>
+      </m.section>
 
       {/* Gaps */}
-      <motion.section {...reveal(0.25)} aria-labelledby="gaps-h">
+      <m.section {...reveal(0.25)} aria-labelledby="gaps-h">
         <SectionTitle id="gaps-h">מה חסר לשלב הבא</SectionTitle>
         {r.gaps.length ? (
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -133,10 +140,10 @@ export function Result({
             אין פער בולט במספרים. מה שנשאר הוא להחזיק את הרמה ולהגיע רעננים.
           </p>
         )}
-      </motion.section>
+      </m.section>
 
       {/* Plan */}
-      <motion.section {...reveal(0.35)} aria-labelledby="plan-h">
+      <m.section {...reveal(0.35)} aria-labelledby="plan-h">
         <SectionTitle id="plan-h">
           {r.weeks === 1 ? "התוכנית לשבוע שנשאר" : `התוכנית ל־${r.weeks} השבועות שנשארו`}
         </SectionTitle>
@@ -162,7 +169,7 @@ export function Result({
             );
           })}
         </ol>
-      </motion.section>
+      </m.section>
 
       <QuizCta title="מעבר לגיבוש: איזה תפקיד בצה״ל הכי מתאים לכם?" />
 
@@ -215,17 +222,17 @@ function RankReveal({ name, units, animate }: { name: string; units: string; ani
   return (
     <div className="mt-5">
       <p className="text-sm font-bold text-dust">הדרגה שלכם</p>
-      <motion.h1
+      <m.h1
         initial={animate ? { opacity: 0, scale: 0.92 } : false}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.15, ease }}
         className="mt-2 origin-right text-4xl font-black leading-none text-foreground sm:text-6xl"
       >
         {name}
-      </motion.h1>
+      </m.h1>
       <p className="mt-3 max-w-xl text-base leading-7 text-foreground/90">{units}</p>
       {badge ? (
-        <motion.p
+        <m.p
           initial={animate ? { opacity: 0, y: 6 } : false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.45, ease }}
@@ -240,7 +247,7 @@ function RankReveal({ name, units, animate }: { name: string; units: string; ani
               ? "מעטים מאוד מגיעים לרמה הזאת."
               : "רוב המועמדים לא מגיעים לרמה הזאת."}
           </span>
-        </motion.p>
+        </m.p>
       ) : null}
     </div>
   );

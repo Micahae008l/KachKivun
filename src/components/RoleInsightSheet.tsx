@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ExternalLink, X } from "lucide-react";
 import { getRoleInsight } from "@/lib/api";
 import { RoleReviewsPanel } from "@/components/RoleReviewsPanel";
@@ -12,7 +12,13 @@ const ease = [0.16, 1, 0.3, 1] as const;
  * One role's details in a sheet over the current page (bottom sheet on phones), so reading
  * about a role never navigates away from where the person was.
  */
-export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; onClose: () => void }) {
+export function RoleInsightSheet({
+  slug,
+  onClose,
+}: {
+  slug: string | undefined;
+  onClose: () => void;
+}) {
   const reduce = useReducedMotion();
   const detailQuery = useQuery({
     queryKey: ["role-insight", slug],
@@ -37,7 +43,7 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
   return (
     <AnimatePresence>
       {slug ? (
-        <motion.div
+        <m.div
           className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 backdrop-blur-sm sm:items-center sm:p-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -45,7 +51,7 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
           transition={{ duration: reduce ? 0 : 0.2 }}
           onClick={onClose}
         >
-          <motion.div
+          <m.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="role-insight-title"
@@ -63,7 +69,10 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
                 <p className="font-mono text-[11px] tracking-wide text-primary uppercase">
                   {detail?.category || "תפקיד"}
                 </p>
-                <h2 id="role-insight-title" className="text-xl font-black text-foreground sm:text-2xl">
+                <h2
+                  id="role-insight-title"
+                  className="text-xl font-black text-foreground sm:text-2xl"
+                >
                   {detail?.roleTitle || "טוען…"}
                 </h2>
               </div>
@@ -98,7 +107,10 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
                     <h3 className="mb-2 text-xs font-bold text-foreground">מה עושים בפועל</h3>
                     <ul className="flex flex-wrap gap-1.5">
                       {detail.signals.map((s) => (
-                        <li key={s} className="border border-iron/30 bg-background/40 px-2 py-0.5 text-xs text-dust">
+                        <li
+                          key={s}
+                          className="border border-iron/30 bg-background/40 px-2 py-0.5 text-xs text-dust"
+                        >
                           {s}
                         </li>
                       ))}
@@ -110,21 +122,25 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
                   <div>
                     <h3 className="mb-2 text-xs font-bold text-foreground">דרישות</h3>
                     <ul className="flex flex-wrap gap-1.5">
-                      {[...detail.requirements, ...(detail.serviceLengthLabel ? [detail.serviceLengthLabel] : [])].map(
-                        (s) => (
-                          <li
-                            key={s}
-                            className="border border-iron/30 bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-foreground"
-                          >
-                            {s}
-                          </li>
-                        ),
-                      )}
+                      {[
+                        ...detail.requirements,
+                        ...(detail.serviceLengthLabel ? [detail.serviceLengthLabel] : []),
+                      ].map((s) => (
+                        <li
+                          key={s}
+                          className="border border-iron/30 bg-secondary/60 px-2 py-0.5 text-xs font-semibold text-foreground"
+                        >
+                          {s}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : null}
 
-                <div className="flex flex-col gap-2 border-t border-iron/20 pt-4 sm:flex-row sm:justify-start" dir="rtl">
+                <div
+                  className="flex flex-col gap-2 border-t border-iron/20 pt-4 sm:flex-row sm:justify-start"
+                  dir="rtl"
+                >
                   <a
                     href={detail.officialSearchUrl}
                     target="_blank"
@@ -148,8 +164,8 @@ export function RoleInsightSheet({ slug, onClose }: { slug: string | undefined; 
                 <RoleReviewsPanel roleSlug={detail.slug} roleTitle={detail.roleTitle} />
               </div>
             ) : null}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       ) : null}
     </AnimatePresence>
   );
