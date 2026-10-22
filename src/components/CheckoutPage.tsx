@@ -12,6 +12,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PromoCodeRedeem } from "@/components/PromoCodeRedeem";
 import { FormField } from "@/components/FormField";
 import {
   checkoutParentPaymentShare,
@@ -476,6 +477,8 @@ export function CheckoutPage({ shareToken }: Props) {
                 </li>
               ))}
             </ul>
+            {/* A code needs the account it unlocks, so the parent link has no code box. */}
+            {isSharedCheckout ? null : <PromoCodeRedeem />}
             <div className="mt-5 border-t border-iron/20 pt-4 text-xs leading-5 text-dust">
               {info.processor ? (
                 <p>

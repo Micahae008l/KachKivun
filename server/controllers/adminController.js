@@ -288,7 +288,8 @@ async function signupFunnel() {
     RoleRecommendation.distinct("userId"),
     PaymentOrder.distinct("userId"),
     PaymentOrder.distinct("userId", { status: "paid" }),
-    Entitlement.distinct("userId", { status: "active" }),
+    // Promo-code unlocks are free, so they do not count as paying users.
+    Entitlement.distinct("userId", { status: "active", source: { $ne: "promo" } }),
   ]);
   const paid = new Set([...paidOrders, ...unlocked].map(String));
   return {

@@ -21,6 +21,11 @@ import {
 } from "../controllers/adminController.js";
 import { getInsights } from "../controllers/adminInsightsController.js";
 import {
+  createPromoCode,
+  listPromoCodes,
+  updatePromoCode,
+} from "../controllers/promoCodesController.js";
+import {
   adminListReviews,
   adminModerateReview,
 } from "../controllers/roleReviewsController.js";
@@ -48,6 +53,10 @@ router.patch(
   updateUserTokenCap
 );
 router.delete("/users/:id", validateRequest(validateObjectIdParam("id")), deleteUser);
+
+router.get("/promo-codes", listPromoCodes);
+router.post("/promo-codes", createPromoCode);
+router.patch("/promo-codes/:id", validateRequest(validateObjectIdParam("id")), updatePromoCode);
 
 router.get("/role-reviews", adminListReviews);
 router.patch(

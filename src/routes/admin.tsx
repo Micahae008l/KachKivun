@@ -14,8 +14,10 @@ import {
   RefreshCw,
   AlertTriangle,
   ChevronDown,
+  Ticket,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminPromoCodes } from "@/components/AdminPromoCodes";
 import { AdminSkeleton, AdminUsersTableSkeleton } from "@/components/skeletons/PageSkeletons";
 import {
   AdminUserJourney,
@@ -83,12 +85,13 @@ function statusHebrew(status: string) {
   return "לפני גיוס";
 }
 
-type AdminTab = "overview" | "users" | "ai" | "reviews";
+type AdminTab = "overview" | "users" | "ai" | "reviews" | "promo";
 const TABS: { id: AdminTab; label: string; icon: typeof Users }[] = [
   { id: "overview", label: "סקירה", icon: Sparkles },
   { id: "users", label: "משתמשים", icon: Users },
   { id: "ai", label: "AI ועלויות", icon: DollarSign },
   { id: "reviews", label: "ביקורות", icon: MessageSquare },
+  { id: "promo", label: "קודי הטבה", icon: Ticket },
 ];
 const PAGE = 50;
 
@@ -588,6 +591,12 @@ function AdminPage() {
                   ) : null}
                 </>
               )}
+            </m.div>
+          ) : null}
+
+          {tab === "promo" ? (
+            <m.div variants={fadeUp}>
+              <AdminPromoCodes />
             </m.div>
           ) : null}
 

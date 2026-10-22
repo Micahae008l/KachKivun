@@ -15,6 +15,7 @@ import {
   mockConfirmReturn,
   refundOrder,
 } from "../controllers/paymentsController.js";
+import { redeemPromo } from "../controllers/promoCodesController.js";
 import { authenticateToken } from "../middleware/auth.js";
 import { requirePaymentsEnabled } from "../middleware/paymentsEnabled.js";
 import { validateRequest } from "../middleware/validateRequest.js";
@@ -60,6 +61,8 @@ router.post(
   checkoutShare,
 );
 router.post("/claim", authenticateToken, claimLimiter, claimPayment);
+// Same slow limiter as claims: codes are short, so guessing has to be expensive.
+router.post("/redeem", authenticateToken, claimLimiter, redeemPromo);
 router.get("/orders", authenticateToken, listOrders);
 router.get("/orders/:publicId", authenticateToken, getOrderStatus);
 router.get("/return/:publicId/:returnToken", getReturnStatus);

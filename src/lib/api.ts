@@ -1216,6 +1216,48 @@ export function deleteAdminUser(userId: string) {
   );
 }
 
+export type AdminPromoCode = {
+  id: string;
+  code: string;
+  note: string;
+  maxUses: number | null;
+  usedCount: number;
+  expiresAt: string | null;
+  active: boolean;
+  createdAt: string;
+};
+
+export function getAdminPromoCodes() {
+  return apiFetch<{ codes: AdminPromoCode[] }>("/api/admin/promo-codes");
+}
+
+export function createAdminPromoCode(input: {
+  code?: string;
+  note: string;
+  maxUses: number | null;
+  expiresAt: string | null;
+}) {
+  return apiFetch<{ code: AdminPromoCode }>("/api/admin/promo-codes", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function setAdminPromoCodeActive(id: string, active: boolean) {
+  return apiFetch<{ code: AdminPromoCode }>(`/api/admin/promo-codes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ active }),
+  });
+}
+
+/** Unlocks the paid places with a promo code. */
+export function redeemPromoCode(code: string) {
+  return apiFetch<{ status: "unlocked" | "already_unlocked"; code: string }>(
+    "/api/payments/redeem",
+    { method: "POST", body: JSON.stringify({ code }) },
+  );
+}
+
 export type SecurityEventType =
   | "rate_limit_api"
   | "rate_limit_auth"
