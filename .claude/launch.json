@@ -55,6 +55,18 @@
       "env": {
         "PORT": "3102"
       }
+    },
+    {
+      "name": "reels",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8091",
+        "--directory",
+        "marketing/ig-reels-2026-10-24"
+      ],
+      "port": 8091
     }
   ]
 }

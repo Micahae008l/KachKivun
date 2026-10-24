@@ -1,14 +1,26 @@
 """ElevenLabs voice + music for a reel.
-Usage: python eleven.py <reel>        reads audio/<reel>.json, writes audio/<reel>/line-N.mp3, music.mp3, timing.json
+Usage: python eleven.py <reel> [--music]   reads audio/<reel>.json, writes audio/<reel>/line-N.mp3, music.mp3, timing.json
 audio/<reel>.json: {"music": "<prompt>", "lines": ["<voice line per scene>", ...]}  (lines optional: music only)
-Key: ELEVENLABS_API_KEY env var (falls back to the Windows user environment). Voice: ELEVENLABS_VOICE_ID, else a premade male voice.
+Key: ELEVENLABS_API_KEY env var (falls back to the Windows user environment).
+Voice: "voice" in the json (Nimrod, ZiofZHcEBTn5sRySe5h8, a native Hebrew voice), else ELEVENLABS_VOICE_ID, else a premade voice.
+Existing music.mp3 is kept unless --music is passed. Hebrew tips: put niqqud on acronyms and on words the voice misreads (עֲרָבִית, שְׁחָקִים).
 """
-import json, os, pathlib, subprocess, sys, urllib.request, urllib.error
+import json, os, pathlib, re, subprocess, sys, urllib.request, urllib.error
 import imageio_ffmpeg
 
 API = "https://api.elevenlabs.io"
 HERE = pathlib.Path(__file__).resolve().parent
 FF = imageio_ffmpeg.get_ffmpeg_exe()
+
+
+SUBFIX = {"דפר": "דפ״ר", "מטכל": "מטכ״ל", "גמ״א": "גאמ״א"}  # subtitles show the written form, not the voice spelling
+
+
+def subtext(line):
+    t = re.sub(r"[֑-ׇ]", "", line).replace('"', "״")
+    for a, b in SUBFIX.items():
+        t = re.sub(rf"(?<![א-ת]){a}(?![א-ת])", b, t)
+    return t
 
 
 def key():
@@ -56,6 +68,8 @@ def hebrew_model():
 
 
 def voice_id():
+    if spec.get("voice"):
+        return spec["voice"]
     if os.environ.get("ELEVENLABS_VOICE_ID"):
         return os.environ["ELEVENLABS_VOICE_ID"]
     voices = json.loads(call("/v1/voices"))["voices"]
@@ -72,14 +86,15 @@ spec = json.loads((HERE / "audio" / f"{reel}.json").read_text(encoding="utf-8"))
 out = HERE / "audio" / reel
 out.mkdir(parents=True, exist_ok=True)
 
-scenes = []  # per scene: list of line durations
+scenes, texts = [], []  # per scene: line durations, and the line text for subtitles (niqqud stripped)
 if spec.get("lines"):
     model, vid = hebrew_model(), voice_id()
     print("voice model", model, "voice", vid)
     for i, group in enumerate(spec["lines"]):
         group = [group] if isinstance(group, str) else group
-        scenes.append([])
+        scenes.append([]); texts.append([])
         for j, line in enumerate(group):
+            texts[-1].append(subtext(line))
             f = out / f"line-{i}-{j}.mp3"
             body = {"text": line, "model_id": model, "language_code": "he",
                     "voice_settings": {"stability": 0.4, "similarity_boost": 0.8, "style": 0.35, "speed": 1.08, "use_speaker_boost": True}}
@@ -88,7 +103,9 @@ if spec.get("lines"):
             print(f"scene {i} line {j}: {scenes[-1][-1]:.2f}s")
 durs = [d for g in scenes for d in g]
 
-(out / "timing.json").write_text(json.dumps({"scenes": scenes}), encoding="utf-8")
+(out / "timing.json").write_text(json.dumps({"scenes": scenes, "texts": texts}, ensure_ascii=False), encoding="utf-8")
+if (out / "music.mp3").exists() and "--music" not in sys.argv:
+    print("music kept (pass --music to regenerate)"); sys.exit(0)
 
 # music long enough for the stretched reel; record.mjs trims it to the video
 total = int(spec.get("music_seconds") or (sum(durs) + 0.5 * len(durs) + 12 if durs else 30))

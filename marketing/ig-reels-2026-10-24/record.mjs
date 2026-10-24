@@ -10,7 +10,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const [ffmpeg, ...ids] = process.argv.slice(2);
-const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+// CHROME env var overrides; otherwise the usual install path per OS
+const CHROME = process.env.CHROME || { win32: "C:/Program Files/Google/Chrome/Application/chrome.exe", darwin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }[process.platform] || "google-chrome";
 const FPS = 30, PORT = 9341;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const outDir = path.join(here, "out");
@@ -36,8 +37,8 @@ try {
   for (const reel of ids) {
     const aDir = path.join(here, "audio", reel);
     const tFile = path.join(aDir, "timing.json"), mFile = path.join(aDir, "music.mp3");
-    const timing = fs.existsSync(tFile) ? JSON.parse(fs.readFileSync(tFile, "utf8")).scenes : null;
-    const q = timing && timing.some((x) => x.length) ? `&timing=${encodeURIComponent(JSON.stringify(timing))}` : "";
+    const timing = fs.existsSync(tFile) ? JSON.parse(fs.readFileSync(tFile, "utf8")) : null;
+    const q = timing && timing.scenes && timing.scenes.some((x) => x.length) ? `&timing=${encodeURIComponent(JSON.stringify(timing))}` : "";
     await send("Page.navigate", { url: `${pathToFileURL(path.join(here, "engine.html")).href}?reel=${reel}${q}` });
     await sleep(300);
     for (let i = 0; i < 120 && !(await evaluate("window.__ready === true").catch(() => false)); i++) await sleep(250);
@@ -47,7 +48,7 @@ try {
       for (const sec of process.env.STILLS.split(",")) {
         await evaluate(`render(${Number(sec)})`);
         const shot = await send("Page.captureScreenshot", { format: "png" });
-        fs.writeFileSync(path.join(outDir, `${reel}-still-${sec}.png`), Buffer.from(shot.data, "base64"));
+        fs.writeFileSync(path.join(here, "stills", `${reel}-still-${sec}.png`), Buffer.from(shot.data, "base64"));
       }
       console.log(`${reel}: ${dur.toFixed(1)}s, stills saved`);
       continue;

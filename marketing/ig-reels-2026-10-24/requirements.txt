@@ -1,0 +1,4 @@
+imageio-ffmpeg
+numpy
+# only for fixvoice.py (checks the voice by transcribing it back); on NVIDIA GPUs also: nvidia-cublas-cu12 nvidia-cudnn-cu12==9.*
+faster-whisper

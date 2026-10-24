@@ -35,6 +35,17 @@ body{font-family:Heebo,sans-serif;color:var(--fg);position:relative}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 #brand{position:absolute;left:70px;top:300px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:30px;opacity:.9;text-shadow:0 2px 8px rgba(0,0,0,.8);z-index:3}
 #bar{position:absolute;left:0;top:0;height:6px;background:var(--g);z-index:3}
+.amb{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;width:760px;height:760px;border-radius:50%;filter:blur(90px);opacity:.2;mix-blend-mode:screen}
+.dot{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff}
+.giant{position:absolute;left:-200px;white-space:nowrap;font-weight:900;font-size:420px;line-height:1;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.07);letter-spacing:-.02em}
+.ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ico svg *{stroke-dasharray:1;stroke-dashoffset:var(--d,0)}
+#subs{position:absolute;left:60px;right:60px;top:1295px;text-align:center;z-index:4;font-weight:900;font-size:52px;line-height:1.3}
+#subs span.box{display:inline;background:rgba(7,9,11,.78);padding:6px 18px;border-radius:14px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+#subs b{font-weight:900;color:#fff;opacity:.55}
+#subs b.on{opacity:1;color:var(--g)}
+#subs b.done{opacity:1}
 #credit{position:absolute;right:70px;top:256px;font-size:19px;color:rgba(255,255,255,.55);direction:ltr;z-index:3}
 </style>
 </head>
@@ -46,6 +57,8 @@ body{font-family:Heebo,sans-serif;color:var(--fg);position:relative}
 <div id="brand"><svg viewBox="0 20 200 186" width="36" height="34"><path d="M100 0 L170 66 L140 66 L100 28 L60 66 L30 66 Z" fill="#c9de9f" transform="translate(0 30)"/><path d="M100 0 L170 66 L140 66 L100 28 L60 66 L30 66 Z" fill="oklch(0.70 0.11 128)" opacity="0.85" transform="translate(0 80)"/><path d="M100 0 L170 66 L140 66 L100 28 L60 66 L30 66 Z" fill="#6f8a45" opacity="0.55" transform="translate(0 130)"/></svg>קח כיוון</div>
 <div id="credit"></div>
 <div id="bar"></div>
+<div id="subs"></div>
+<script src="icons.js"></script>
 <script src="reels.js"></script>
 <script>
 // ---------- helpers shared with reels.js ----------
@@ -70,6 +83,7 @@ function makeH(scene, sceneStart) {
     // full-bleed photo with slow push (Ken Burns); returns upd(t)
     photo(name, { dark = 0.55, from = 1.12, to = 1.0, x = 0, pos = "center", tint } = {}) {
       const back = H.el("div", "position:absolute;inset:0"); scene.c.prepend(back);
+      back.style.zIndex = 0;
       const p = H.el("div", `background-image:url('${IMG[name]}');background-position:${pos}`, back); p.className = "photo";
       H.el("div", `background:linear-gradient(180deg,rgba(7,9,11,${dark}) 0%,rgba(7,9,11,${dark * 0.6}) 40%,rgba(7,9,11,${Math.min(0.96, dark + 0.35)}) 100%)${tint ? `,${tint}` : ""}`, back).className = "shade";
       scene.credit = CREDIT[name];
@@ -112,6 +126,18 @@ function makeH(scene, sceneStart) {
       if (sfx) H.cue(at, sfx);
       return (t) => H.st(e, eo(pr(t, at, at + 0.12)), `translateX(${(1 - eo5(pr(t, at, at + 0.38))) * dist}px)`);
     },
+    // big line icon that draws itself in, then floats gently
+    icon(name, { x = 390, y = 1000, size = 300, color = "var(--g)", at = 0.2, glow = true, op = 1 } = {}) {
+      const e = H.el("div", `position:absolute;left:${x}px;top:${y}px;width:${size}px;height:${size}px;color:${color};opacity:${op};${glow ? `filter:drop-shadow(0 0 30px ${color})` : ""}`, null,
+        `<svg viewBox="0 0 24 24">${ICONS[name] || ""}</svg>`);
+      e.className = "ico";
+      H.cue(at, "whoosh");
+      return (t) => { e.style.setProperty("--d", 1 - eo(pr(t, at, at + 0.7))); e.style.opacity = op * pr(t, at, at + 0.05); e.style.transform = `translateY(${Math.sin((t - at) * 2.2) * 10}px) scale(${lerp(0.85, 1, eo(pr(t, at, at + 0.5)))})`; };
+    },
+    giant(text, { y = 1250, speed = 60 } = {}) {
+      const g = H.el("div", `top:${y}px`, scene.amb, text); g.className = "giant";
+      return (t) => { g.style.transform = `translateX(${-speed * t}px)`; };
+    },
     fadeOut(e, at, d = 0.2) { return (t) => { if (t > at) e.style.opacity = 1 - pr(t, at, at + d); }; },
   };
   return H;
@@ -123,7 +149,10 @@ const REEL = REELS[P.get("reel")];
 const stage = document.getElementById("stage");
 const CUES = [], FLASHES = [], SHAKES = [];
 // voice timing from record.mjs: TIMING[scene] = [line seconds, ...]. Each scene stretches to fit its lines; scene.vo = line start times.
-const TIMING = JSON.parse(P.get("timing") || "null");
+const TIMING_RAW = JSON.parse(P.get("timing") || "null");
+const TIMING = TIMING_RAW && (TIMING_RAW.scenes || TIMING_RAW);
+const TEXTS = (TIMING_RAW && TIMING_RAW.texts) || null;
+const SUBS = [];
 window.VO = [];
 let T = 0;
 const SC = REEL.scenes.map((def, i) => {
@@ -131,13 +160,31 @@ const SC = REEL.scenes.map((def, i) => {
   const scene = { c, a: T, dur: def.dur, vo: null };
   if (TIMING && TIMING[i] && TIMING[i].length) {
     let at = def.voStart ?? 0.2;
-    scene.vo = TIMING[i].map((d, j) => { const s = at; window.VO.push([T + s, i, j]); at += d + 0.08; return s; });
+    scene.vo = TIMING[i].map((d, j) => {
+      const s = at; window.VO.push([T + s, i, j]);
+      if (TEXTS && TEXTS[i] && TEXTS[i][j] && def.subs !== false) SUBS.push({ a: T + s, b: T + s + d, text: TEXTS[i][j] });
+      at += d + 0.08; return s;
+    });
     scene.dur = Math.max(def.dur, Math.ceil((at + (def.tail ?? 0.45)) * 2) / 2);
   }
   const H = makeH(scene, T);
+  if (def.ambient !== false) {
+    const amb = H.el("div", ""); amb.className = "amb"; scene.amb = amb;
+    const tint = def.tint || REEL.tint || ["oklch(0.62 0.14 130)", "oklch(0.5 0.12 250)"];
+    const blobs = tint.map((c, k) => { const b = H.el("div", `background:${c}`, amb); b.className = "blob"; return b; });
+    const rnd = (k) => { const x = Math.sin(k * 127.1 + i * 31.7) * 43758.5453; return x - Math.floor(x); };
+    const dots = Array.from({ length: 26 }, (_, k) => { const d = H.el("div", `left:${rnd(k) * 1080}px;opacity:${0.08 + rnd(k + 50) * 0.22};transform:scale(${0.5 + rnd(k + 9) * 1.4})`, amb); d.className = "dot"; return [d, rnd(k + 20) * 1920, 30 + rnd(k + 33) * 70]; });
+    const g = def.giant ? H.giant(def.giant, { y: def.giantY ?? 1330 }) : null;
+    scene.ambUpd = (t) => {
+      const T0 = scene.a + t;
+      blobs.forEach((b, k) => { b.style.left = `${-300 + 600 * (0.5 + 0.5 * Math.sin(T0 * 0.35 + k * 2.1))}px`; b.style.top = `${k ? 1050 : -250 + 200 * Math.sin(T0 * 0.27 + k)}px`; });
+      dots.forEach(([d, y0, sp]) => { d.style.top = `${((y0 - sp * T0) % 1920 + 1920) % 1920}px`; });
+      if (g) g(t);
+    };
+  }
   if (i > 0) { H.cue(0, def.cut || "cut"); if (def.flash !== false) H.flash(0, 0.4); }
   const ups = [].concat(def.build(H, scene)).filter(Boolean);
-  scene.upd = (t) => ups.forEach((u) => u(t));
+  scene.upd = (t) => { if (scene.ambUpd) scene.ambUpd(t); ups.forEach((u) => u(t)); };
   T += scene.dur;
   return scene;
 });
@@ -146,7 +193,23 @@ window.CUES = CUES.sort((x, y) => x[0] - y[0]);
 window.GROOVE = REEL.groove ?? 0;
 const flashEl = document.getElementById("flash"), grain = document.getElementById("grain"), bar = document.getElementById("bar"), creditEl = document.getElementById("credit");
 
+const subsEl = document.getElementById("subs");
+let subKey = null, subWords = [];
+function renderSubs(t) {
+  const cur = SUBS.find((x) => t >= x.a - 0.05 && t < x.b + 0.25);
+  if (!cur) { subsEl.innerHTML = ""; subKey = null; return; }
+  if (subKey !== cur) {
+    subKey = cur;
+    const words = cur.text.split(/\s+/).filter(Boolean);
+    subsEl.innerHTML = `<span class="box">${words.map((w) => `<b>${w}</b>`).join(" ")}</span>`;
+    const total = words.reduce((n, w) => n + w.length + 1, 0); let acc = 0;
+    subWords = [...subsEl.querySelectorAll("b")].map((el, k) => { const a = cur.a + ((cur.b - cur.a) * acc) / total; acc += words[k].length + 1; return [el, a]; });
+  }
+  subWords.forEach(([el, a], k) => { const next = subWords[k + 1] ? subWords[k + 1][1] : cur.b; el.className = t >= next ? "done" : t >= a ? "on" : ""; });
+  subsEl.style.opacity = eo(pr(t, cur.a - 0.05, cur.a + 0.1));
+}
 window.render = (t) => {
+  renderSubs(t);
   SC.forEach((s, i) => {
     const on = t >= s.a && (t < s.a + s.dur || (i === SC.length - 1));
     s.c.style.display = on ? "block" : "none";
